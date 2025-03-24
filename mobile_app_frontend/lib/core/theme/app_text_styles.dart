@@ -3,49 +3,49 @@ import 'app_colors.dart';
 
 class AppTextStyles {
   // Bold Text Styles
-  static const TextStyle heading1Bold = TextStyle(
+  static const TextStyle displayXlBold = TextStyle(
     fontSize: 60.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.2, // Line height (adjust as needed)
   );
 
-  static const TextStyle heading2Bold = TextStyle(
+  static const TextStyle displaMdBold = TextStyle(
     fontSize: 36.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading3Bold = TextStyle(
+  static const TextStyle displaySmBold = TextStyle(
     fontSize: 30.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body1Bold = TextStyle(
+  static const TextStyle textLgBold = TextStyle(
     fontSize: 20.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body2Bold = TextStyle(
+  static const TextStyle textMdBold = TextStyle(
     fontSize: 16.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body3Bold = TextStyle(
+  static const TextStyle textSmBold = TextStyle(
     fontSize: 14.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body4Bold = TextStyle(
+  static const TextStyle textXsmBold = TextStyle(
     fontSize: 12.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
@@ -53,56 +53,49 @@ class AppTextStyles {
   );
 
   // Semibold Text Styles
-  static const TextStyle heading1Semibold = TextStyle(
+  static const TextStyle displayXlSemibold = TextStyle(
     fontSize: 60.0,
     fontWeight: FontWeight.w600, // Semibold
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading2Semibold = TextStyle(
+  static const TextStyle displayMdSemibold = TextStyle(
     fontSize: 36.0,
     fontWeight: FontWeight.w600,
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading3Semibold = TextStyle(
-    fontSize: 30.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
-    color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
-  );
-
-  static const TextStyle bodySemibold = TextStyle(
+  static const TextStyle displaySmSemibold = TextStyle(
     fontSize: 30.0,
     fontWeight: FontWeight.w600,
     color: AppColors.neutral600,
     height: 1.5,
   );
 
-  static const TextStyle body1Semibold = TextStyle(
+  static const TextStyle textLgSemibold = TextStyle(
     fontSize: 20.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body2Semibold = TextStyle(
+  static const TextStyle textMdSemibold = TextStyle(
     fontSize: 16.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body3Semibold = TextStyle(
+  static const TextStyle textSmSemibold = TextStyle(
     fontSize: 14.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body4Semibold = TextStyle(
+  static const TextStyle textXsmSemibold = TextStyle(
     fontSize: 12.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
@@ -110,56 +103,49 @@ class AppTextStyles {
   );
 
   // Medium Text Styles
-  static const TextStyle heading1Medium = TextStyle(
+  static const TextStyle displayXlMedium = TextStyle(
     fontSize: 60.0,
     fontWeight: FontWeight.w500, // Medium
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading2Medium = TextStyle(
+  static const TextStyle displayMdMedium = TextStyle(
     fontSize: 36.0,
     fontWeight: FontWeight.w500,
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading3Medium = TextStyle(
-    fontSize: 30.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
-    color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
-  );
-
-  static const TextStyle bodyMedium = TextStyle(
+  static const TextStyle displaySmMedium = TextStyle(
     fontSize: 30.0,
     fontWeight: FontWeight.w500,
     color: AppColors.neutral600,
     height: 1.5,
   );
 
-  static const TextStyle body1Medium = TextStyle(
+  static const TextStyle textLgMedium = TextStyle(
     fontSize: 20.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body2Medium = TextStyle(
+  static const TextStyle textMdMedium = TextStyle(
     fontSize: 16.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body3Medium = TextStyle(
+  static const TextStyle textSmMedium = TextStyle(
     fontSize: 14.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body4Medium = TextStyle(
+  static const TextStyle textXsmMedium = TextStyle(
     fontSize: 12.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
@@ -167,56 +153,49 @@ class AppTextStyles {
   );
 
   // Regular Text Styles
-  static const TextStyle heading1Regular = TextStyle(
+  static const TextStyle displayXlRegular = TextStyle(
     fontSize: 60.0,
     fontWeight: FontWeight.normal, // Regular
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading2Regular = TextStyle(
+  static const TextStyle displayMdRegular = TextStyle(
     fontSize: 36.0,
     fontWeight: FontWeight.normal,
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading3Regular = TextStyle(
-    fontSize: 30.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
-    color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
-  );
-
-  static const TextStyle bodyRegular = TextStyle(
+  static const TextStyle displaySmRegular = TextStyle(
     fontSize: 30.0,
     fontWeight: FontWeight.normal,
     color: AppColors.neutral600,
     height: 1.5,
   );
 
-  static const TextStyle body1Regular = TextStyle(
+  static const TextStyle textLgRegular = TextStyle(
     fontSize: 20.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body2Regular = TextStyle(
+  static const TextStyle textMdRegular = TextStyle(
     fontSize: 16.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body3Regular = TextStyle(
+  static const TextStyle textSmRegular = TextStyle(
     fontSize: 14.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.5, // Line height for body text
   );
 
-  static const TextStyle body4Regular = TextStyle(
+  static const TextStyle textXsmRegular = TextStyle(
     fontSize: 12.0, // Adjust based on your design
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
