@@ -27,15 +27,15 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
         backgroundColor: AppColors.neutral500,
         title: const Text(
           "Add New Service Type",
-          style: AppTextStyles.heading3Bold,
+          style: AppTextStyles.displaySmBold,
         ),
         content: TextField(
           controller: customController,
           style:
-              AppTextStyles.body2Regular.copyWith(color: AppColors.neutral100),
+              AppTextStyles.textMdRegular.copyWith(color: AppColors.neutral100),
           decoration: InputDecoration(
             hintText: "Enter service type",
-            hintStyle: AppTextStyles.body3Regular
+            hintStyle: AppTextStyles.textSmRegular
                 .copyWith(color: AppColors.neutral200),
             enabledBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: AppColors.neutral300),
@@ -50,7 +50,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               "Cancel",
-              style: AppTextStyles.body2Bold,
+              style: AppTextStyles.textMdBold,
             ),
           ),
           TextButton(
@@ -66,7 +66,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
             },
             child: const Text(
               "Add",
-              style: AppTextStyles.body2Bold,
+              style: AppTextStyles.textMdBold,
             ),
           ),
         ],
@@ -81,7 +81,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
       children: [
         const Text(
           "Service Type",
-          style: AppTextStyles.body1Bold,
+          style: AppTextStyles.textLgBold,
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
@@ -91,7 +91,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
               value: value,
               child: Text(
                 value,
-                style: AppTextStyles.body2Regular,
+                style: AppTextStyles.textMdRegular,
               ),
             );
           }).toList()
@@ -100,7 +100,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
                 value: "Add New",
                 child: Text(
                   "+ Add New Service Type",
-                  style: AppTextStyles.body2Bold
+                  style: AppTextStyles.textMdBold
                       .copyWith(color: AppColors.primary200),
                 ),
               ),
@@ -128,7 +128,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
           ),
           dropdownColor: AppColors.neutral500,
           style:
-              AppTextStyles.body2Regular.copyWith(color: AppColors.neutral100),
+              AppTextStyles.textMdRegular.copyWith(color: AppColors.neutral100),
         ),
       ],
     );
