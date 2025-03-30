@@ -25,7 +25,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.neutral500,
-        title: const Text(
+        title: Text(
           "Add New Service Type",
           style: AppTextStyles.displaySmBold,
         ),
@@ -48,7 +48,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               "Cancel",
               style: AppTextStyles.textMdBold,
             ),
@@ -64,7 +64,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
               }
               Navigator.pop(context);
             },
-            child: const Text(
+            child: Text(
               "Add",
               style: AppTextStyles.textMdBold,
             ),
@@ -79,7 +79,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Service Type",
           style: AppTextStyles.textLgBold,
         ),
