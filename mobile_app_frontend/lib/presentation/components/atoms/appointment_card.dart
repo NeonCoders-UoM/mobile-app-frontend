@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_app_frontend/core/theme/app_colors.dart';
+import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/custom_button.dart';
 
 class AppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0x302e31), // Background color of the card
+      color: AppColors.neutral400, // Background color of the card
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15), // Rounded corners
       ),
@@ -14,12 +16,10 @@ class AppointmentCard extends StatelessWidget {
         width: 360, // Set a fixed width for the card
         padding: EdgeInsets.all(16), // Padding inside the card
         decoration: BoxDecoration(
-          color: const Color.fromARGB(
-              144, 120, 120, 117), // Background color of the card
-          borderRadius: BorderRadius.circular(15), // Rounded corners
+          color: AppColors.neutral450, // Background color of the card
+          borderRadius: BorderRadius.circular(8), // Rounded corners
           border: Border.all(
-              color: const Color.fromARGB(144, 120, 120, 117)
-                  .withOpacity(0.5)), // Light border
+              color: AppColors.neutral450.withOpacity(0.5)), // Light border
         ),
         child: Column(
           crossAxisAlignment:
@@ -30,11 +30,13 @@ class AppointmentCard extends StatelessWidget {
             // Row for "Janaka Motors" with Home Icon
             Row(
               children: [
-                Icon(Icons.home, color: Colors.white, size: 18), // Home icon
+                Icon(Icons.home,
+                    color: AppColors.neutral150, size: 18), // Home icon
                 SizedBox(width: 8), // Space between icon and text
                 Text(
                   "Janaka Motors",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  style: AppTextStyles.body1Medium
+                      .copyWith(color: AppColors.neutral150, fontSize: 16),
                 ),
               ],
             ),
@@ -44,11 +46,12 @@ class AppointmentCard extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.access_time,
-                    color: Colors.white, size: 18), // Clock icon
+                    color: AppColors.neutral150, size: 18), // Clock icon
                 SizedBox(width: 8),
                 Text(
                   "Sat, Feb, 2025",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  style: AppTextStyles.body1Medium
+                      .copyWith(color: AppColors.neutral150, fontSize: 16),
                 ),
               ],
             ),
