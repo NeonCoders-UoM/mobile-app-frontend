@@ -15,7 +15,6 @@ class RemindersPage extends StatefulWidget {
 }
 
 class _RemindersPageState extends State<RemindersPage> {
-  // Make the reminders list mutable
   List<Map<String, dynamic>> reminders = [
     {
       'title': 'Oil Change',
@@ -82,10 +81,9 @@ class _RemindersPageState extends State<RemindersPage> {
             ),
             const SizedBox(height: 16.0),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: AddReminderButton(
                 onPressed: () async {
-                  // Navigate to SetReminderPage and wait for the result
                   final newReminder = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -110,8 +108,9 @@ class _RemindersPageState extends State<RemindersPage> {
                   title: reminder['title'] ?? 'Untitled',
                   description: reminder['description'] ?? 'No description',
                   status: reminder['status'] ?? ServiceStatus.upcoming,
-                  onTap: () {
-                    showDialog(
+                  onTap: () async {
+                    // Show the dialog and wait for a result
+                    final result = await showDialog<Map<String, dynamic>>(
                       context: context,
                       builder: (context) => ReminderDetailsDialog(
                         title: reminder['title'],
@@ -120,14 +119,29 @@ class _RemindersPageState extends State<RemindersPage> {
                         mileageInterval: reminder['mileageInterval'],
                         timeInterval: reminder['timeInterval'],
                         lastServiceDate: reminder['lastServiceDate'],
-                        onEdit: () {
-                          Navigator.pop(context);
-                        },
+                        reminder: reminder, // Pass the full reminder
+                        index: index, // Pass the index
+                        onEdit:
+                            () {}, // Not used anymore, but required by the constructor
                         onDelete: () {
+                          // Implement delete functionality
+                          setState(() {
+                            reminders.removeAt(index);
+                          });
                           Navigator.pop(context);
                         },
                       ),
                     );
+
+                    // If a result is returned (from EditReminderPage), update the reminder
+                    if (result != null) {
+                      setState(() {
+                        final updatedReminder =
+                            result['reminder'] as Map<String, dynamic>;
+                        final updatedIndex = result['index'] as int;
+                        reminders[updatedIndex] = updatedReminder;
+                      });
+                    }
                   },
                 );
               },

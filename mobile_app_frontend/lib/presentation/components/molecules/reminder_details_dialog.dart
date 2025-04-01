@@ -5,6 +5,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/service_reminder_card.dart';
+import 'package:mobile_app_frontend/presentation/pages/edit_reminder_page.dart';
 
 class ReminderDetailsDialog extends StatelessWidget {
   final String title;
@@ -15,6 +16,8 @@ class ReminderDetailsDialog extends StatelessWidget {
   final String lastServiceDate;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final Map<String, dynamic> reminder; // Add the full reminder data
+  final int index;
 
   const ReminderDetailsDialog({
     Key? key,
@@ -26,6 +29,8 @@ class ReminderDetailsDialog extends StatelessWidget {
     required this.lastServiceDate,
     required this.onEdit,
     required this.onDelete,
+    required this.reminder,
+    required this.index,
   }) : super(key: key);
 
   // Helper method to get status text and color
@@ -83,7 +88,7 @@ class ReminderDetailsDialog extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                title,
+                title ?? 'Untitled',
                 style: AppTextStyles.textLgSemibold.copyWith(
                   color: AppColors.neutral100,
                 ),
@@ -123,9 +128,28 @@ class ReminderDetailsDialog extends StatelessWidget {
             children: [
               CustomButton(
                 label: 'EDIT',
-                type: ButtonType.primary, // Blue button
+                type: ButtonType.primary,
                 size: ButtonSize.small,
-                onTap: onEdit,
+                onTap: () async {
+                  // Navigate to EditReminderPage and wait for the result
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditReminderPage(
+                        reminder: reminder,
+                        index: index,
+                      ),
+                    ),
+                  );
+
+                  // If a result is returned, pass it back to the RemindersPage
+                  if (result != null) {
+                    Navigator.pop(context, result);
+                  } else {
+                    Navigator.pop(
+                        context); // Close the dialog if no changes were made
+                  }
+                },
               ),
               CustomButton(
                 label: 'DELETE',
