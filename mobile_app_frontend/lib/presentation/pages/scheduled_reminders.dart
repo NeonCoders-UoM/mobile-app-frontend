@@ -5,12 +5,18 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:mobile_app_frontend/presentation/components/molecules/reminder_details_dialog.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/service_reminder_card.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_header.dart';
+import 'package:mobile_app_frontend/presentation/pages/set_reminder_page.dart';
 
-class RemindersPage extends StatelessWidget {
+class RemindersPage extends StatefulWidget {
   const RemindersPage({Key? key}) : super(key: key);
 
-  // Sample data (replace with actual data source)
-  final List<Map<String, dynamic>> reminders = const [
+  @override
+  _RemindersPageState createState() => _RemindersPageState();
+}
+
+class _RemindersPageState extends State<RemindersPage> {
+  // Make the reminders list mutable
+  List<Map<String, dynamic>> reminders = [
     {
       'title': 'Oil Change',
       'description': 'Next: 15,000 km or in 8 months',
@@ -78,30 +84,39 @@ class RemindersPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: AddReminderButton(
-                onPressed: () {
-                  // Add your desired functionality here
+                onPressed: () async {
+                  // Navigate to SetReminderPage and wait for the result
+                  final newReminder = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const SetReminderPage()),
+                  );
+                  if (newReminder != null) {
+                    setState(() {
+                      reminders.add(newReminder);
+                    });
+                  }
                 },
               ),
             ),
-            const SizedBox(height: 32.0), // Padding between button and list
+            const SizedBox(height: 32.0),
             ListView.separated(
-              shrinkWrap: true, // Needed inside SingleChildScrollView
-              physics:
-                  const NeverScrollableScrollPhysics(), // Disable ListView's scrolling
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: reminders.length,
               itemBuilder: (context, index) {
                 final reminder = reminders[index];
                 return ServiceReminderCard(
-                  title: reminder['title'],
-                  description: reminder['description'],
-                  status: reminder['status'],
+                  title: reminder['title'] ?? 'Untitled',
+                  description: reminder['description'] ?? 'No description',
+                  status: reminder['status'] ?? ServiceStatus.upcoming,
                   onTap: () {
                     showDialog(
                       context: context,
                       builder: (context) => ReminderDetailsDialog(
                         title: reminder['title'],
                         nextDue: reminder['nextDue'],
-                        status: reminder['status'],
+                        status: reminder['status'] ?? ServiceStatus.upcoming,
                         mileageInterval: reminder['mileageInterval'],
                         timeInterval: reminder['timeInterval'],
                         lastServiceDate: reminder['lastServiceDate'],
@@ -116,8 +131,7 @@ class RemindersPage extends StatelessWidget {
                   },
                 );
               },
-              separatorBuilder: (context, index) =>
-                  const SizedBox(height: 4.0), // 4px padding between items
+              separatorBuilder: (context, index) => const SizedBox(height: 4.0),
             ),
           ],
         ),
