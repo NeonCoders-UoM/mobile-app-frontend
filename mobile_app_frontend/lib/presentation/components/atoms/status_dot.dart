@@ -28,7 +28,7 @@ class StatusDot extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           status,
-          style: AppTextStyles.textXsmRegular.copyWith(
+          style: AppTextStyles.body4Regular.copyWith(
             color: AppColors.neutral200, // Light gray for status text
           ),
         ),
