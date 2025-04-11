@@ -43,7 +43,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
             children: [
               Text(
                   "Your vehicle service at Ranjan Motors is now complete. Thank you for choosing us!",
-                  style: AppTextStyles.displayMdRegular
+                  style: AppTextStyles.body2Regular
                       .copyWith(color: AppColors.neutral150)),
               const SizedBox(height: 16),
               _buildInfoRow("Service Center:", "Janaka Motors"),
@@ -54,7 +54,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
               const SizedBox(height: 16),
               Text(
                   "We hope you had a great experience! Your feedback helps us improve our service.",
-                  style: AppTextStyles.displayMdRegular
+                  style: AppTextStyles.body2Regular
                       .copyWith(color: AppColors.neutral150)),
               const SizedBox(height: 24),
               Text("Rate Your Experience",
