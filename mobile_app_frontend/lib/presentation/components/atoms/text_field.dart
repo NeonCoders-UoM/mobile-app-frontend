@@ -86,7 +86,6 @@ class _InputFieldAtomState extends State<InputFieldAtom> {
                   : Colors.white,
             ),
           ),
-          const SizedBox(height: 8),
         ],
         const SizedBox(height: 8),
         TextField(
