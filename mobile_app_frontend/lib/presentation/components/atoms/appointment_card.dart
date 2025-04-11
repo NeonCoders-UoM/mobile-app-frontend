@@ -35,7 +35,7 @@ class AppointmentCard extends StatelessWidget {
                 SizedBox(width: 8), // Space between icon and text
                 Text(
                   "Janaka Motors",
-                  style: AppTextStyles.body1Medium
+                  style: AppTextStyles.displayMdMedium
                       .copyWith(color: AppColors.neutral150, fontSize: 16),
                 ),
               ],
@@ -50,7 +50,7 @@ class AppointmentCard extends StatelessWidget {
                 SizedBox(width: 8),
                 Text(
                   "Sat, Feb, 2025",
-                  style: AppTextStyles.body1Medium
+                  style: AppTextStyles.displayMdMedium
                       .copyWith(color: AppColors.neutral150, fontSize: 16),
                 ),
               ],
