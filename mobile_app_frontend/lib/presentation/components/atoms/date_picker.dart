@@ -45,7 +45,7 @@ class _DatePickerState extends State<DatePicker> {
         children: [
           Text(
             'Appointment Date',
-            style: AppTextStyles.heading2Regular
+            style: AppTextStyles.displaySmRegular
                 .copyWith(color: AppColors.neutral100, fontSize: 20),
           ),
           SizedBox(height: 8),
