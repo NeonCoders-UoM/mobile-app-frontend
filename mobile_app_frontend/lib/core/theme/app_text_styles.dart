@@ -1,225 +1,205 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTextStyles {
   // Bold Text Styles
-  static const TextStyle heading1Bold = TextStyle(
-    fontSize: 60.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle displayXlBold = GoogleFonts.montserrat(
+    fontSize: 60.0,
+    fontWeight: FontWeight.bold, // w700
     color: AppColors.neutral600,
-    height: 1.2, // Line height (adjust as needed)
+    height: 1.2,
   );
 
-  static const TextStyle heading2Bold = TextStyle(
-    fontSize: 36.0, // Adjust based on your design
+  static TextStyle displayMdBold = GoogleFonts.montserrat(
+    fontSize: 36.0,
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading3Bold = TextStyle(
-    fontSize: 30.0, // Adjust based on your design
+  static TextStyle displaySmBold = GoogleFonts.montserrat(
+    fontSize: 30.0,
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body1Bold = TextStyle(
-    fontSize: 20.0, // Adjust based on your design
+  static TextStyle textLgBold = GoogleFonts.montserrat(
+    fontSize: 20.0,
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body2Bold = TextStyle(
-    fontSize: 16.0, // Adjust based on your design
+  static TextStyle textMdBold = GoogleFonts.montserrat(
+    fontSize: 16.0,
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body3Bold = TextStyle(
-    fontSize: 14.0, // Adjust based on your design
+  static TextStyle textSmBold = GoogleFonts.montserrat(
+    fontSize: 14.0,
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body4Bold = TextStyle(
-    fontSize: 12.0, // Adjust based on your design
+  static TextStyle textXsmBold = GoogleFonts.montserrat(
+    fontSize: 12.0,
     fontWeight: FontWeight.bold,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
   // Semibold Text Styles
-  static const TextStyle heading1Semibold = TextStyle(
+  static TextStyle displayXlSemibold = GoogleFonts.montserrat(
     fontSize: 60.0,
     fontWeight: FontWeight.w600, // Semibold
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading2Semibold = TextStyle(
+  static TextStyle displayMdSemibold = GoogleFonts.montserrat(
     fontSize: 36.0,
     fontWeight: FontWeight.w600,
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading3Semibold = TextStyle(
-    fontSize: 30.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
-    color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
-  );
-
-  static const TextStyle bodySemibold = TextStyle(
+  static TextStyle displaySmSemibold = GoogleFonts.montserrat(
     fontSize: 30.0,
     fontWeight: FontWeight.w600,
     color: AppColors.neutral600,
     height: 1.5,
   );
 
-  static const TextStyle body1Semibold = TextStyle(
-    fontSize: 20.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textLgSemibold = GoogleFonts.montserrat(
+    fontSize: 20.0,
+    fontWeight: FontWeight.w600,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body2Semibold = TextStyle(
-    fontSize: 16.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textMdSemibold = GoogleFonts.montserrat(
+    fontSize: 16.0,
+    fontWeight: FontWeight.w600,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body3Semibold = TextStyle(
-    fontSize: 14.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textSmSemibold = GoogleFonts.montserrat(
+    fontSize: 14.0,
+    fontWeight: FontWeight.w600,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body4Semibold = TextStyle(
-    fontSize: 12.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textXsmSemibold = GoogleFonts.montserrat(
+    fontSize: 12.0,
+    fontWeight: FontWeight.w600,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
   // Medium Text Styles
-  static const TextStyle heading1Medium = TextStyle(
+  static TextStyle displayXlMedium = GoogleFonts.montserrat(
     fontSize: 60.0,
     fontWeight: FontWeight.w500, // Medium
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading2Medium = TextStyle(
+  static TextStyle displayMdMedium = GoogleFonts.montserrat(
     fontSize: 36.0,
     fontWeight: FontWeight.w500,
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading3Medium = TextStyle(
-    fontSize: 30.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
-    color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
-  );
-
-  static const TextStyle bodyMedium = TextStyle(
+  static TextStyle displaySmMedium = GoogleFonts.montserrat(
     fontSize: 30.0,
     fontWeight: FontWeight.w500,
     color: AppColors.neutral600,
     height: 1.5,
   );
 
-  static const TextStyle body1Medium = TextStyle(
-    fontSize: 20.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textLgMedium = GoogleFonts.montserrat(
+    fontSize: 20.0,
+    fontWeight: FontWeight.w500,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body2Medium = TextStyle(
-    fontSize: 16.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textMdMedium = GoogleFonts.montserrat(
+    fontSize: 16.0,
+    fontWeight: FontWeight.w500,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body3Medium = TextStyle(
-    fontSize: 14.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textSmMedium = GoogleFonts.montserrat(
+    fontSize: 14.0,
+    fontWeight: FontWeight.w500,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body4Medium = TextStyle(
-    fontSize: 12.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textXsmMedium = GoogleFonts.montserrat(
+    fontSize: 12.0,
+    fontWeight: FontWeight.w500,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
   // Regular Text Styles
-  static const TextStyle heading1Regular = TextStyle(
+  static TextStyle displayXlRegular = GoogleFonts.montserrat(
     fontSize: 60.0,
-    fontWeight: FontWeight.normal, // Regular
+    fontWeight: FontWeight.normal, // w400
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading2Regular = TextStyle(
+  static TextStyle displayMdRegular = GoogleFonts.montserrat(
     fontSize: 36.0,
     fontWeight: FontWeight.normal,
     color: AppColors.neutral600,
     height: 1.2,
   );
 
-  static const TextStyle heading3Regular = TextStyle(
-    fontSize: 30.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
-    color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
-  );
-
-  static const TextStyle bodyRegular = TextStyle(
+  static TextStyle displaySmRegular = GoogleFonts.montserrat(
     fontSize: 30.0,
     fontWeight: FontWeight.normal,
     color: AppColors.neutral600,
     height: 1.5,
   );
 
-  static const TextStyle body1Regular = TextStyle(
-    fontSize: 20.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textLgRegular = GoogleFonts.montserrat(
+    fontSize: 20.0,
+    fontWeight: FontWeight.normal,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body2Regular = TextStyle(
-    fontSize: 16.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textMdRegular = GoogleFonts.montserrat(
+    fontSize: 16.0,
+    fontWeight: FontWeight.normal,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body3Regular = TextStyle(
-    fontSize: 14.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textSmRegular = GoogleFonts.montserrat(
+    fontSize: 14.0,
+    fontWeight: FontWeight.normal,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 
-  static const TextStyle body4Regular = TextStyle(
-    fontSize: 12.0, // Adjust based on your design
-    fontWeight: FontWeight.bold,
+  static TextStyle textXsmRegular = GoogleFonts.montserrat(
+    fontSize: 12.0,
+    fontWeight: FontWeight.normal,
     color: AppColors.neutral600,
-    height: 1.5, // Line height for body text
+    height: 1.5,
   );
 }
