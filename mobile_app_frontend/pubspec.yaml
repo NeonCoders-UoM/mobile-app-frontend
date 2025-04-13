@@ -71,7 +71,6 @@ flutter:
     - assets/icons/emergency.svg
     - assets/icons/edit.svg
     - assets/icons/delete.svg
-    - assets/icons/start_car_bg.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
