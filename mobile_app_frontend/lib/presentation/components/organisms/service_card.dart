@@ -54,7 +54,7 @@ class ServiceCard extends StatelessWidget {
                     children: [
                       ServiceText(
                         text: title,
-                        style: AppTextStyles.textMdSemibold.copyWith(
+                        style: AppTextStyles.body2Semibold.copyWith(
                           color: AppColors.neutral100, // White title
                         ),
                       ),
@@ -66,7 +66,7 @@ class ServiceCard extends StatelessWidget {
                       else
                         ServiceText(
                           text: status,
-                          style: AppTextStyles.textSmRegular.copyWith(
+                          style: AppTextStyles.body3Regular.copyWith(
                             color: AppColors.neutral200, // Light gray status
                           ),
                         ),
@@ -77,7 +77,7 @@ class ServiceCard extends StatelessWidget {
                   if (subtitle != null)
                     ServiceText(
                       text: subtitle!,
-                      style: AppTextStyles.textSmRegular.copyWith(
+                      style: AppTextStyles.body3Regular.copyWith(
                         color: AppColors.neutral200, // Light gray
                       ),
                     ),
@@ -86,7 +86,7 @@ class ServiceCard extends StatelessWidget {
                     const SizedBox(height: 4.0),
                     ServiceText(
                       text: description!,
-                      style: AppTextStyles.textSmRegular.copyWith(
+                      style: AppTextStyles.body3Regular.copyWith(
                         color: AppColors.neutral200,
                       ),
                     ),
@@ -96,7 +96,7 @@ class ServiceCard extends StatelessWidget {
                     const SizedBox(height: 4.0),
                     ServiceText(
                       text: date!,
-                      style: AppTextStyles.textSmRegular.copyWith(
+                      style: AppTextStyles.body3Regular.copyWith(
                         color: AppColors.neutral200,
                       ),
                     ),
