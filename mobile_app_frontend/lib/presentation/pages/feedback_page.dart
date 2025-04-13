@@ -43,7 +43,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
             children: [
               Text(
                   "Your vehicle service at Ranjan Motors is now complete. Thank you for choosing us!",
-                  style: AppTextStyles.displayMdRegular
+                  style: AppTextStyles.body2Regular
                       .copyWith(color: AppColors.neutral150)),
               const SizedBox(height: 16),
               _buildInfoRow("Service Center:", "Janaka Motors"),
@@ -54,11 +54,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
               const SizedBox(height: 16),
               Text(
                   "We hope you had a great experience! Your feedback helps us improve our service.",
-                  style: AppTextStyles.displayMdRegular
+                  style: AppTextStyles.body2Regular
                       .copyWith(color: AppColors.neutral150)),
               const SizedBox(height: 24),
               Text("Rate Your Experience",
-                  style: AppTextStyles.displayMdRegular
+                  style: AppTextStyles.body1Medium
                       .copyWith(color: AppColors.neutral100)),
               const SizedBox(height: 8),
               StarRating(
@@ -70,7 +70,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
               ),
               const SizedBox(height: 24),
               Text("Tell us more about your experience...",
-                  style: AppTextStyles.displayMdRegular
+                  style: AppTextStyles.body2Regular
                       .copyWith(color: AppColors.neutral150)),
               const SizedBox(height: 8),
               Container(
@@ -118,8 +118,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
       padding: const EdgeInsets.only(bottom: 6),
       child: RichText(
         text: TextSpan(
-          style: AppTextStyles.displayMdRegular
-              .copyWith(color: AppColors.neutral150),
+          style:
+              AppTextStyles.body2Regular.copyWith(color: AppColors.neutral150),
           children: [
             TextSpan(
               text: "$title ",
