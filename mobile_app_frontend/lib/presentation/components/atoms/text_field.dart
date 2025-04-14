@@ -5,7 +5,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_fi
 
 class InputFieldAtom extends StatefulWidget {
   final InputFieldState state;
-  final String label;
+  final String? label;
   final String placeholder;
   final String? helperText;
   final bool showHelperText; // New parameter to toggle helper text visibility
@@ -22,7 +22,7 @@ class InputFieldAtom extends StatefulWidget {
   const InputFieldAtom({
     super.key,
     required this.state,
-    required this.label,
+    this.label,
     required this.placeholder,
     this.helperText,
     this.showHelperText = true, // Default to true
@@ -77,14 +77,16 @@ class _InputFieldAtomState extends State<InputFieldAtom> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.label,
-          style: AppTextStyles.textSmRegular.copyWith(
-            color: widget.state == InputFieldState.disabled
-                ? AppColors.neutral300
-                : Colors.white,
+        if (widget.label != null) ...[
+          Text(
+            widget.label!,
+            style: AppTextStyles.textSmRegular.copyWith(
+              color: widget.state == InputFieldState.disabled
+                  ? AppColors.neutral300
+                  : Colors.white,
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: 8),
         TextField(
           controller: widget.controller,
