@@ -45,7 +45,7 @@ class ServiceCenterCard extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: AppTextStyles.body1Bold.copyWith(
+                    style: AppTextStyles.textMdBold.copyWith(
                       color: AppColors.neutral100,
                       fontSize: 16,
                     ),
@@ -53,25 +53,25 @@ class ServiceCenterCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     address,
-                    style: AppTextStyles.body3Regular
+                    style: AppTextStyles.textMdBold
                         .copyWith(color: AppColors.neutral150),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     distance,
-                    style: AppTextStyles.body3Regular
+                    style: AppTextStyles.textMdBold
                         .copyWith(color: AppColors.neutral150),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "Loyalty Points : $loyaltyPoints",
-                    style: AppTextStyles.body3Regular
+                    style: AppTextStyles.textMdBold
                         .copyWith(color: AppColors.neutral150),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "Estimated Cost : $estimatedCost",
-                    style: AppTextStyles.body3Regular
+                    style: AppTextStyles.textMdBold
                         .copyWith(color: AppColors.neutral150),
                   ),
                 ],
