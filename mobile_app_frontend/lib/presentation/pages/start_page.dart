@@ -25,7 +25,7 @@ class StartPage extends StatelessWidget {
             height: 861, // adjust this height as needed
             width: 440,
             child: Image.asset(
-              'assets/icons/start_car_bg.png',
+              'assets/images/start_car_bg.png',
               fit: BoxFit.cover,
             ),
           ),
