@@ -49,7 +49,6 @@ class CostEstimateTable extends StatelessWidget {
                     color: AppColors.neutral200,
                   ),
                 ),
-                SizedBox(height: 20),
                 Text(
                   "Rs. ${costs[index].toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => ',')}",
                   style: AppTextStyles.textMdRegular.copyWith(
