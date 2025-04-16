@@ -32,7 +32,7 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Vehicle Details',
+        title: 'Edit Vehicle Details',
         showTitle: true,
         onBackPressed: () => Navigator.of(context).pop(),
       ),
