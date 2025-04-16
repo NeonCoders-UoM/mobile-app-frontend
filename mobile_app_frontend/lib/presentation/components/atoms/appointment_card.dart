@@ -6,13 +6,13 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_t
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 
 class AppointmentCard extends StatelessWidget {
-  final String garageName;
+  final String servicecenterName;
   final String date;
   final VoidCallback? onInvoicePressed;
 
   const AppointmentCard({
     super.key,
-    required this.garageName,
+    required this.servicecenterName,
     required this.date,
     this.onInvoicePressed,
   });
@@ -46,7 +46,7 @@ class AppointmentCard extends StatelessWidget {
                 const Icon(Icons.home, color: AppColors.neutral150, size: 18),
                 const SizedBox(width: 8),
                 Text(
-                  garageName,
+                  servicecenterName,
                   style: AppTextStyles.textLgMedium.copyWith(
                     color: AppColors.neutral150,
                     fontSize: 16,
@@ -69,9 +69,9 @@ class AppointmentCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             Align(
-              alignment: Alignment.bottomRight,
+              alignment: Alignment.centerRight,
               child: SizedBox(
                 width: 84,
                 height: 40,

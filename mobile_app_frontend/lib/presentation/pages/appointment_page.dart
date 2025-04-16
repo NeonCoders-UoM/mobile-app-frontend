@@ -19,35 +19,23 @@ class AppointmentPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppointmentCard(
-              garageName: "Janaka Motors",
+              servicecenterName: "Janaka Motors",
               date: "Sat, Feb, 2025",
-              onInvoicePressed: () {
-                print("Invoice tapped!");
-              },
             ),
             SizedBox(height: 24),
             AppointmentCard(
-              garageName: "Janaka Motors",
+              servicecenterName: "Janaka Motors",
               date: "Sat, Feb, 2025",
-              onInvoicePressed: () {
-                print("Invoice tapped!");
-              },
             ),
             SizedBox(height: 24),
             AppointmentCard(
-              garageName: "Janaka Motors",
+              servicecenterName: "Janaka Motors",
               date: "Sat, Feb, 2025",
-              onInvoicePressed: () {
-                print("Invoice tapped!");
-              },
             ),
             SizedBox(height: 24),
             AppointmentCard(
-              garageName: "Janaka Motors",
+              servicecenterName: "Janaka Motors",
               date: "Sat, Feb, 2025",
-              onInvoicePressed: () {
-                print("Invoice tapped!");
-              },
             ),
           ],
         ),
