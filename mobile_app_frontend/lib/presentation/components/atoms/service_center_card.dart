@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/custom_button.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 
 class ServiceCenterCard extends StatelessWidget {
-  final String name;
+  final String servicecenterName;
   final String address;
   final String distance;
   final String loyaltyPoints;
@@ -12,12 +14,16 @@ class ServiceCenterCard extends StatelessWidget {
 
   const ServiceCenterCard({
     super.key,
-    required this.name,
+    required this.servicecenterName,
     required this.address,
     required this.distance,
     required this.loyaltyPoints,
     required this.estimatedCost,
   });
+
+  void _handleview() {
+    print('Generating the invoice');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,42 +50,53 @@ class ServiceCenterCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    name,
-                    style: AppTextStyles.textMdBold.copyWith(
+                    servicecenterName,
+                    style: AppTextStyles.textMdSemibold.copyWith(
                       color: AppColors.neutral100,
                       fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     address,
-                    style: AppTextStyles.textMdBold
+                    style: AppTextStyles.textMdRegular
                         .copyWith(color: AppColors.neutral150),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     distance,
-                    style: AppTextStyles.textMdBold
+                    style: AppTextStyles.textMdRegular
                         .copyWith(color: AppColors.neutral150),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     "Loyalty Points : $loyaltyPoints",
-                    style: AppTextStyles.textMdBold
+                    style: AppTextStyles.textMdRegular
                         .copyWith(color: AppColors.neutral150),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     "Estimated Cost : $estimatedCost",
-                    style: AppTextStyles.textMdBold
+                    style: AppTextStyles.textMdRegular
                         .copyWith(color: AppColors.neutral150),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 16),
-            // Right side - View Button
-            //CustomButton(text: "View", onPressed: () {})
+            Align(
+              alignment: Alignment.topRight,
+              child: SizedBox(
+                width: 68,
+                height: 40,
+                child: CustomButton(
+                  label: 'View',
+                  type: ButtonType.primary,
+                  size: ButtonSize.small,
+                  onTap: _handleview,
+                ),
+              ),
+            ),
           ],
         ),
       ),
