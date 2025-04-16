@@ -1,66 +1,87 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/custom_button.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 
 class AppointmentCard extends StatelessWidget {
+  final String garageName;
+  final String date;
+  final VoidCallback? onInvoicePressed;
+
+  const AppointmentCard({
+    super.key,
+    required this.garageName,
+    required this.date,
+    this.onInvoicePressed,
+  });
+
+  void _onInvoicePressed() {
+    print('Generating the invoice');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: AppColors.neutral400, // Background color of the card
+      color: AppColors.neutral400,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15), // Rounded corners
+        borderRadius: BorderRadius.circular(15),
       ),
-      elevation: 4, // Adds a slight shadow effect
+      elevation: 4,
       child: Container(
-        width: 360, // Set a fixed width for the card
-        padding: EdgeInsets.all(16), // Padding inside the card
+        width: 360,
+        height: 152,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.neutral450, // Background color of the card
-          borderRadius: BorderRadius.circular(8), // Rounded corners
-          border: Border.all(
-              color: AppColors.neutral450.withOpacity(0.5)), // Light border
+          color: AppColors.neutral450,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.neutral450.withOpacity(0.5)),
         ),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start, // Align items to the left
-          mainAxisSize:
-              MainAxisSize.min, // Wrap content without taking extra space
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Row for "Janaka Motors" with Home Icon
             Row(
               children: [
-                Icon(Icons.home,
-                    color: AppColors.neutral150, size: 18), // Home icon
-                SizedBox(width: 8), // Space between icon and text
+                const Icon(Icons.home, color: AppColors.neutral150, size: 18),
+                const SizedBox(width: 8),
                 Text(
-                  "Janaka Motors",
-                  style: AppTextStyles.textMdBold
-                      .copyWith(color: AppColors.neutral150, fontSize: 16),
+                  garageName,
+                  style: AppTextStyles.textLgMedium.copyWith(
+                    color: AppColors.neutral150,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
-            SizedBox(height: 8), // Space between rows
-
-            // Row for Date with Clock Icon
+            const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.access_time,
-                    color: AppColors.neutral150, size: 18), // Clock icon
-                SizedBox(width: 8),
+                const Icon(Icons.access_time,
+                    color: AppColors.neutral150, size: 18),
+                const SizedBox(width: 8),
                 Text(
-                  "Sat, Feb, 2025",
-                  style: AppTextStyles.textMdBold
-                      .copyWith(color: AppColors.neutral150, fontSize: 16),
+                  date,
+                  style: AppTextStyles.textLgMedium.copyWith(
+                    color: AppColors.neutral150,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
-            SizedBox(height: 12), // Space before button
-
-            // Placeholder for the button component
+            const SizedBox(height: 12),
             Align(
-              alignment: Alignment.centerRight, // Align button to the right
-              child: CustomButton(), // Calling the separate button component
+              alignment: Alignment.bottomRight,
+              child: SizedBox(
+                width: 84,
+                height: 40,
+                child: CustomButton(
+                  label: 'Invoice',
+                  type: ButtonType.primary,
+                  size: ButtonSize.small,
+                  onTap: _onInvoicePressed,
+                ),
+              ),
             ),
           ],
         ),
