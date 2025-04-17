@@ -31,7 +31,7 @@ class _EditPersonaldetailsPageState extends State<EditPersonaldetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Hi, Welcome',
+        title: 'Edit Personal Details',
         showTitle: true,
         onBackPressed: () => Navigator.of(context).pop(),
       ),
