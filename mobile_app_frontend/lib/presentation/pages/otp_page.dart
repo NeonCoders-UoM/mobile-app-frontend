@@ -96,7 +96,7 @@ class _OtpScreenState extends State<OtpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Delete Vehicle',
+        title: 'OTP Verification',
         showTitle: true,
         onBackPressed: () => Navigator.of(context).pop(),
       ),
