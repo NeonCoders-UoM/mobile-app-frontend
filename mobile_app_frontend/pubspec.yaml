@@ -41,8 +41,6 @@ dependencies:
   shared_preferences: ^2.5.3
   fl_chart: ^0.70.2
 
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -78,6 +76,8 @@ flutter:
     - assets/icons/homegif.gif
     - assets/images/start_car_bg.png
     - assets/images/mustang_top.png
+    - assets/images/mustang.png
+    - assets/images/Mustang.svg
     - assets/icons/document_card_icon.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
