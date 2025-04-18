@@ -4,22 +4,24 @@ import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 
 class CostEstimateDescription extends StatelessWidget {
   final String servicecenterName;
-  final String vehicleRegNo;
+  final String? vehicleRegNo;
   final String appointmentDate;
-  final String loyaltyPoints;
+  final String? loyaltyPoints;
   final String serviceCenterId;
-  final String address;
-  final String distance;
+  final String? address;
+  final String? distance;
+  final List<String?>? services;
 
   const CostEstimateDescription({
     super.key,
     required this.servicecenterName,
-    required this.vehicleRegNo,
+    this.vehicleRegNo,
     required this.appointmentDate,
-    required this.loyaltyPoints,
+    this.loyaltyPoints,
     required this.serviceCenterId,
-    required this.address,
-    required this.distance,
+    this.address,
+    this.distance,
+    this.services,
   });
 
   @override
@@ -81,6 +83,16 @@ class CostEstimateDescription extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               "Distance : $distance",
+              style: AppTextStyles.textSmRegular
+                  .copyWith(color: AppColors.neutral150),
+            ),
+            Text(
+              "Distance : $distance",
+              style: AppTextStyles.textSmRegular
+                  .copyWith(color: AppColors.neutral150),
+            ),
+            Text(
+              "Services: ${services?.whereType<String>().join(', ')}",
               style: AppTextStyles.textSmRegular
                   .copyWith(color: AppColors.neutral150),
             ),

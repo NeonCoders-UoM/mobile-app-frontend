@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/star_rating.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/star_rating.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/cost_estimate_description.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
+import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
@@ -14,8 +19,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
   int rating = 0;
   final TextEditingController feedbackController = TextEditingController();
 
-  void _handleSubmit() {
-    String feedback = feedbackController.text;
+  void _handleSubmitFeedback() {
+    final feedback = feedbackController.text;
     debugPrint("Rating: $rating");
     debugPrint("Feedback: $feedback");
 
@@ -23,7 +28,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
       const SnackBar(content: Text("Thank you for your feedback!")),
     );
 
-    // Reset form
     setState(() {
       rating = 0;
       feedbackController.clear();
@@ -33,98 +37,96 @@ class _FeedbackPageState extends State<FeedbackPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.neutral400,
-      appBar: AppBar(title: const Text("Your Service is Complete! 🚗✅")),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  "Your vehicle service at Ranjan Motors is now complete. Thank you for choosing us!",
-                  style: AppTextStyles.textMdBold
-                      .copyWith(color: AppColors.neutral150)),
-              const SizedBox(height: 16),
-              _buildInfoRow("Service Center:", "Janaka Motors"),
-              _buildInfoRow("Date:", "2025-02-26"),
-              _buildInfoRow("Total Amount Paid:", "Rs. 15,000"),
-              _buildInfoRow(
-                  "List of Services Performed:", "Oil Change, Body Check"),
-              const SizedBox(height: 16),
-              Text(
-                  "We hope you had a great experience! Your feedback helps us improve our service.",
-                  style: AppTextStyles.textMdBold
-                      .copyWith(color: AppColors.neutral150)),
-              const SizedBox(height: 24),
-              Text("Rate Your Experience",
-                  style: AppTextStyles.textMdBold
-                      .copyWith(color: AppColors.neutral100)),
-              const SizedBox(height: 8),
-              StarRating(
-                onRatingChanged: (value) {
-                  setState(() {
-                    rating = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-              Text("Tell us more about your experience...",
-                  style: AppTextStyles.textMdBold
-                      .copyWith(color: AppColors.neutral150)),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.neutral200),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: TextField(
-                  controller: feedbackController,
-                  maxLines: 5,
-                  style: TextStyle(color: AppColors.neutral100),
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.all(12),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _handleSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    "Submit Your Feedback",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      appBar: CustomAppBar(
+        title: 'Cost Estimation',
+        showTitle: true,
+        onBackPressed: () => Navigator.of(context).pop(),
       ),
-    );
-  }
-
-  Widget _buildInfoRow(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: RichText(
-        text: TextSpan(
-          style: AppTextStyles.textMdBold.copyWith(color: AppColors.neutral150),
+      backgroundColor: AppColors.neutral400,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextSpan(
-              text: "$title ",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              "Your Service is Complete! 🚗✅",
+              style: AppTextStyles.textLgSemibold.copyWith(
+                color: AppColors.neutral100,
+              ),
             ),
-            TextSpan(text: value),
+            const SizedBox(height: 12),
+            Text(
+              "Your vehicle service at Janaka Motors is now complete. Thank you for choosing us!",
+              style: AppTextStyles.textMdRegular.copyWith(
+                color: AppColors.neutral150,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const CostEstimateDescription(
+              servicecenterName: "Janaka Motors",
+              vehicleRegNo: "CAX-4589",
+              appointmentDate: "2025-02-26",
+              loyaltyPoints: "120",
+              serviceCenterId: "SC123456",
+              address: "123 Main St, Colombo",
+              distance: "5.2 km",
+              services: ["Oil Change", "Body Check"],
+            ),
+            const SizedBox(height: 20),
+            Text(
+              "We hope you had a great experience! Your feedback helps us improve our service.",
+              style: AppTextStyles.textMdRegular.copyWith(
+                color: AppColors.neutral150,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              "Rate Your Experience",
+              style: AppTextStyles.textLgMedium.copyWith(
+                color: AppColors.neutral100,
+              ),
+            ),
+            const SizedBox(height: 8),
+            StarRating(
+              onRatingChanged: (value) {
+                setState(() {
+                  rating = value;
+                });
+              },
+            ),
+            const SizedBox(height: 32),
+            Text(
+              "Tell us more about your experience...",
+              style: AppTextStyles.textMdRegular.copyWith(
+                color: AppColors.neutral150,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.neutral200),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextField(
+                controller: feedbackController,
+                maxLines: 5,
+                style: TextStyle(color: AppColors.neutral100),
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.all(8),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              child: CustomButton(
+                label: 'Submit Your Feedback',
+                type: ButtonType.primary,
+                size: ButtonSize.medium,
+                onTap: _handleSubmitFeedback,
+              ),
+            ),
           ],
         ),
       ),
