@@ -78,6 +78,7 @@ flutter:
     - assets/images/mustang_top.png
     - assets/images/mustang.png
     - assets/images/Mustang.svg
+    - assets/icons/document_card_icon.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
