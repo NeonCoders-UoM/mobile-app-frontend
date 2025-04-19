@@ -54,12 +54,7 @@ class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
             children: [
               // Use CarComponent instead of manual implementation
               Center(
-                child: CarComponent(
-                  carModel: 'MUSTANG 1977',
-                  carNumber: 'ABB999395',
-                  imagePath:
-                      'assets/images/mustang.png', // Replace with your image path
-                ),
+                child: CarComponent(),
               ),
               const SizedBox(height: 16.0),
               // Expiry Date Input
