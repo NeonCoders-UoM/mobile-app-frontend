@@ -79,7 +79,7 @@ flutter:
     - assets/images/start_car_bg.png
     - assets/images/mustang_top.png
     - assets/icons/document_card_icon.svg
-    - assets/icons/success_icon.svg
+    - assets/icons/success_msg.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
