@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/presentation/pages/account_deleted_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/password_changed_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/payment_successful_message_page.dart';
 
 void main() {
   runApp(
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: PasswordChangedPage(),
+      home: PaymentSuccessfulMessagePage(),
     );
   }
 }
