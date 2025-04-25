@@ -24,8 +24,9 @@ class _ProfileOptionCardState extends State<ProfileOptionCard> {
       },
       child: Container(
         width: 400,
-        height: 76,
         child: Card(
+          margin: EdgeInsets.zero,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.zero,
           ),
