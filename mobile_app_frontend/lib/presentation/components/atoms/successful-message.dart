@@ -16,7 +16,7 @@ class SuccessfulMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 376,
+        width: 400,
         child: Column(
           children: [
             Text(
