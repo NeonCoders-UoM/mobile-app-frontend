@@ -79,6 +79,7 @@ flutter:
     - assets/images/mustang.png
     - assets/images/Mustang.svg
     - assets/icons/document_card_icon.svg
+    - assets/icons/success_msg.png
     - assets/icons/visa.png
     - assets/icons/mastercard.png
     - assets/icons/amex.png
