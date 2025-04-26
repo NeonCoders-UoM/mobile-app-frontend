@@ -53,6 +53,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 state: _passwordFieldState,
                 placeholder: 'Password',
                 label: 'Enter your password',
+                obscureText: true,
               ),
               SizedBox(
                 height: 32,
