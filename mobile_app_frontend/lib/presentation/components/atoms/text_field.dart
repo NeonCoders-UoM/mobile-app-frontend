@@ -18,6 +18,7 @@ class InputFieldAtom extends StatefulWidget {
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
   final TextInputType keyboardType;
+  final bool obscureText;
 
   const InputFieldAtom({
     super.key,
@@ -35,6 +36,7 @@ class InputFieldAtom extends StatefulWidget {
     this.controller,
     this.onChanged,
     this.keyboardType = TextInputType.text,
+    this.obscureText = false,
   });
 
   @override
@@ -89,6 +91,7 @@ class _InputFieldAtomState extends State<InputFieldAtom> {
         ],
         const SizedBox(height: 8),
         TextField(
+          obscureText: widget.obscureText,
           controller: widget.controller,
           onChanged: widget.onChanged,
           keyboardType: widget.keyboardType,
