@@ -19,6 +19,12 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   InputFieldState _passwordFieldState = InputFieldState.defaultState;
 
   @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutral400,
@@ -50,6 +56,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 height: 36,
               ),
               InputFieldAtom(
+                controller: _passwordController,
                 state: _passwordFieldState,
                 placeholder: 'Password',
                 label: 'Enter your password',
