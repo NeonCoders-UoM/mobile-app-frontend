@@ -8,7 +8,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_field_state.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/add_photo_button.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/added_document_card.dart';
-import 'package:mobile_app_frontend/presentation/components/molecules/car_component.dart'; // Import the CarComponent
+import 'package:mobile_app_frontend/presentation/components/molecules/car_component.dart';
 
 class AddServiceDocumentsPage extends StatefulWidget {
   const AddServiceDocumentsPage({Key? key}) : super(key: key);
@@ -52,20 +52,18 @@ class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Use CarComponent instead of manual implementation
+              // Use CarComponent
               Center(
                 child: CarComponent(),
               ),
               const SizedBox(height: 16.0),
-              // Expiry Date Input
+              // Document Name Input
               InputFieldAtom(
                 state: InputFieldState.defaultState,
-                placeholder: '25/02/2024',
-                label: 'Expire Date',
-                trailingIcon: Icons.calendar_today_outlined,
-                showTrailingIcon: true,
-                onTrailingIconTap: () {
-                  // Implement date picker logic here
+                placeholder: 'Enter document name',
+                label: 'Document Name',
+                onChanged: (value) {
+                  // Update state if needed
                 },
               ),
               const SizedBox(height: 16.0),
