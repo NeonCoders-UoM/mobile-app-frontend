@@ -8,17 +8,17 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_field_state.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/add_photo_button.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/added_document_card.dart';
-import 'package:mobile_app_frontend/presentation/components/molecules/car_component.dart';
+import 'package:mobile_app_frontend/presentation/components/molecules/car_component.dart'; // Import the CarComponent
 
-class AddServiceDocumentsPage extends StatefulWidget {
-  const AddServiceDocumentsPage({Key? key}) : super(key: key);
+class AddVehicleDocumentsPage extends StatefulWidget {
+  const AddVehicleDocumentsPage({Key? key}) : super(key: key);
 
   @override
-  _AddServiceDocumentsPageState createState() =>
-      _AddServiceDocumentsPageState();
+  _AddVehicleDocumentsPageState createState() =>
+      _AddVehicleDocumentsPageState();
 }
 
-class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
+class _AddVehicleDocumentsPageState extends State<AddVehicleDocumentsPage> {
   // Mock list of documents (you can replace this with actual file picker logic)
   final List<Map<String, String>> _documents = [];
 
@@ -52,18 +52,20 @@ class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Use CarComponent
+              // Use CarComponent instead of manual implementation
               Center(
                 child: CarComponent(),
               ),
               const SizedBox(height: 16.0),
-              // Document Name Input
+              // Expiry Date Input
               InputFieldAtom(
                 state: InputFieldState.defaultState,
-                placeholder: 'Enter document name',
-                label: 'Document Name',
-                onChanged: (value) {
-                  // Update state if needed
+                placeholder: '25/02/2024',
+                label: 'Expire Date',
+                trailingIcon: Icons.calendar_today_outlined,
+                showTrailingIcon: true,
+                onTrailingIconTap: () {
+                  // Implement date picker logic here
                 },
               ),
               const SizedBox(height: 16.0),
