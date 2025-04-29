@@ -5,11 +5,17 @@ import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 class CustomDropdownField extends StatefulWidget {
   final List<String> items;
   final ValueChanged<String> onChanged;
+  final String? label;
+  final String? hintText;
+  final bool allowAddNew;
 
   const CustomDropdownField({
     super.key,
     required this.items,
     required this.onChanged,
+    this.label,
+    this.hintText,
+    this.allowAddNew = false,
   });
 
   @override
@@ -26,7 +32,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.neutral500,
         title: Text(
-          "Add New Service Type",
+          "Add New",
           style: AppTextStyles.displaySmBold,
         ),
         content: TextField(
@@ -34,7 +40,7 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
           style:
               AppTextStyles.textMdRegular.copyWith(color: AppColors.neutral100),
           decoration: InputDecoration(
-            hintText: "Enter service type",
+            hintText: "Enter new item",
             hintStyle: AppTextStyles.textSmRegular
                 .copyWith(color: AppColors.neutral200),
             enabledBorder: const OutlineInputBorder(
@@ -76,37 +82,47 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
 
   @override
   Widget build(BuildContext context) {
+    final List<DropdownMenuItem<String>> dropdownItems = widget.items
+        .map(
+          (value) => DropdownMenuItem(
+            value: value,
+            child: Text(
+              value,
+              style: AppTextStyles.textMdRegular
+                  .copyWith(color: AppColors.neutral100),
+            ),
+          ),
+        )
+        .toList();
+
+    if (widget.allowAddNew) {
+      dropdownItems.add(
+        DropdownMenuItem(
+          value: "Add New",
+          child: Text(
+            "+ Add New",
+            style:
+                AppTextStyles.textMdBold.copyWith(color: AppColors.neutral200),
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Service Type",
-          style: AppTextStyles.textLgBold,
-        ),
-        const SizedBox(height: 8),
+        if (widget.label != null) ...[
+          Text(
+            widget.label!,
+            style: AppTextStyles.textSmRegular.copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+        ],
         DropdownButtonFormField<String>(
           value: selectedValue,
-          items: widget.items.map((String value) {
-            return DropdownMenuItem(
-              value: value,
-              child: Text(
-                value,
-                style: AppTextStyles.textMdRegular,
-              ),
-            );
-          }).toList()
-            ..add(
-              DropdownMenuItem(
-                value: "Add New",
-                child: Text(
-                  "+ Add New Service Type",
-                  style: AppTextStyles.textMdBold
-                      .copyWith(color: AppColors.primary200),
-                ),
-              ),
-            ),
+          items: dropdownItems,
           onChanged: (String? newValue) {
-            if (newValue == "Add New") {
+            if (newValue == "Add New" && widget.allowAddNew) {
               _showAddServiceDialog();
             } else {
               setState(() {
@@ -121,14 +137,21 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
               borderSide: BorderSide(color: AppColors.neutral300),
             ),
             focusedBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primary200),
+              borderSide: BorderSide(color: AppColors.neutral150),
             ),
             filled: true,
-            fillColor: AppColors.neutral500,
+            fillColor: AppColors.neutral400,
           ),
-          dropdownColor: AppColors.neutral500,
-          style:
-              AppTextStyles.textMdRegular.copyWith(color: AppColors.neutral100),
+          hint: Text(
+            widget.hintText ?? "Select an item",
+            style: AppTextStyles.textSmRegular.copyWith(
+              color: AppColors.neutral200,
+            ),
+          ),
+          dropdownColor: AppColors.neutral300,
+          style: AppTextStyles.textMdRegular.copyWith(
+            color: AppColors.neutral100,
+          ),
         ),
       ],
     );
