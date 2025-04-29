@@ -101,6 +101,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 32.0),
             // Vehicle Header
             const VehicleHeader(
               vehicleName: 'Mustang 1977',
@@ -111,6 +112,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 48.0),
                   // Additional vehicle details
                   Text(
                     'Vehicle Registration No: AB89B395',
@@ -125,7 +127,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
                       color: AppColors.neutral200,
                     ),
                   ),
-                  const SizedBox(height: 24.0),
+                  const SizedBox(height: 32.0),
                   // Service Type Input
                   InputFieldAtom(
                     state: InputFieldState.defaultState,
