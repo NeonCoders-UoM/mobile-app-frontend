@@ -56,7 +56,7 @@ class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
               Center(
                 child: CarComponent(),
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 40.0),
               // Document Name Input
               InputFieldAtom(
                 state: InputFieldState.defaultState,
@@ -66,7 +66,7 @@ class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
                   // Update state if needed
                 },
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 56.0),
               // Attach Photo Button
               AddPhotoButton(
                 onTap: _addDocument, // Mock adding a document
@@ -86,11 +86,15 @@ class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
                 const SizedBox(height: 16.0),
               ],
               // Done Button
-              Center(
+              SizedBox(
+                width: MediaQuery.of(context).size.width -
+                    32.0, // Full width minus padding
                 child: CustomButton(
                   label: 'DONE',
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
+                  customWidth:
+                      MediaQuery.of(context).size.width - 32.0, // Full width
                   onTap: () {
                     Navigator.pop(context); // Return to previous page
                   },
