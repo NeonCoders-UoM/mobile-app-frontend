@@ -49,11 +49,12 @@ class RemindersPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 32.0),
             const VehicleHeader(
               vehicleName: 'Mustang 1977',
               vehicleId: 'AB89B395',
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 48.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: AddReminderButton(
