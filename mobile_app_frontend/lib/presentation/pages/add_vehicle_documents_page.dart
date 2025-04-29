@@ -68,7 +68,7 @@ class _AddVehicleDocumentsPageState extends State<AddVehicleDocumentsPage> {
                   // Implement date picker logic here
                 },
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 56.0),
               // Attach Photo Button
               AddPhotoButton(
                 onTap: _addDocument, // Mock adding a document
@@ -88,11 +88,15 @@ class _AddVehicleDocumentsPageState extends State<AddVehicleDocumentsPage> {
                 const SizedBox(height: 16.0),
               ],
               // Done Button
-              Center(
+              SizedBox(
+                width: MediaQuery.of(context).size.width -
+                    32.0, // Full width minus padding
                 child: CustomButton(
                   label: 'DONE',
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
+                  customWidth:
+                      MediaQuery.of(context).size.width - 32.0, // Full width
                   onTap: () {
                     Navigator.pop(context); // Return to previous page
                   },
