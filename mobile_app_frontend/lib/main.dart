@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/presentation/pages/advanced_payment_required_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/change_password_page.dart';
@@ -18,3 +19,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
