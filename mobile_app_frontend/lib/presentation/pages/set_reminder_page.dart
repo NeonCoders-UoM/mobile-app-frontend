@@ -60,11 +60,13 @@ class _SetReminderPageState extends State<SetReminderPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 32.0),
             // Vehicle Header
             const VehicleHeader(
               vehicleName: 'Mustang 1977',
               vehicleId: 'AB89B395',
             ),
+            const SizedBox(height: 48.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Column(
@@ -84,7 +86,7 @@ class _SetReminderPageState extends State<SetReminderPage> {
                       color: AppColors.neutral200,
                     ),
                   ),
-                  const SizedBox(height: 24.0),
+                  const SizedBox(height: 48.0),
                   // Service Type Input
                   InputFieldAtom(
                     state: InputFieldState.defaultState,

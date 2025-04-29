@@ -23,50 +23,50 @@ class AddNewServicePage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            const SizedBox(height: 24.0),
             const InputFieldAtom(
+              label: 'Service Name',
               state: InputFieldState.defaultState,
               placeholder: 'Service Name',
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 32.0),
             const InputFieldAtom(
+              label: 'Date',
               state: InputFieldState.defaultState,
               placeholder: 'Date',
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 32.0),
             const InputFieldAtom(
+              label: 'Cost',
               state: InputFieldState.defaultState,
               placeholder: 'Cost',
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 32.0),
             const InputFieldAtom(
+              label: 'Service Center Name',
               state: InputFieldState.defaultState,
               placeholder: 'Service Center Name',
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 32.0),
             const InputFieldAtom(
+              label: 'Description',
               state: InputFieldState.defaultState,
               placeholder: 'Description',
             ),
-            const SizedBox(height: 32.0),
-            Center(
-              // Wrap the Row in a Center widget to center it
-              child: Row(
-                mainAxisSize:
-                    MainAxisSize.min, // Use min to shrink-wrap the Row
-                mainAxisAlignment: MainAxisAlignment
-                    .center, // Center the buttons within the Row
-                children: [
-                  const SizedBox(width: 16.0), // Add spacing between buttons
-                  CustomButton(
-                    label: 'ADD NEW DOCUMENT',
-                    type: ButtonType.primary,
-                    size: ButtonSize.medium,
-                    onTap: () {
-                      // Handle document addition logic here
-                    },
-                  ),
-                ],
+            const SizedBox(height: 172.0),
+            SizedBox(
+              width: MediaQuery.of(context).size.width -
+                  32.0, // Full width minus padding
+              child: CustomButton(
+                label: 'ADD NEW DOCUMENT',
+                type: ButtonType.primary,
+                size: ButtonSize.medium,
+                customWidth:
+                    MediaQuery.of(context).size.width - 32.0, // Full width
+                onTap: () {
+                  // Handle document addition logic here
+                },
               ),
             ),
           ],
