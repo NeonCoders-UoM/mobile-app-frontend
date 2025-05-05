@@ -38,8 +38,16 @@ class AppointmentPage extends StatelessWidget {
               date: "Sat, Feb, 2025",
             ),
           ],
+          
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+    onPressed: () {
+      // TODO: Add navigation or action here
+    },
+    backgroundColor: AppColors.neutral150, // or your preferred color
+    child: const Icon(Icons.add),
+  ),
     );
   }
 }
