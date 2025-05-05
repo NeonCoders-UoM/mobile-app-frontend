@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/presentation/pages/advanced_payment_required_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/change_password_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/costestimate_page.dart';
 
 void main() {
   runApp(
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AdvancedPaymentRequiredPage(),
+      home: CostEstimatePage(),
     );
   }
 }
