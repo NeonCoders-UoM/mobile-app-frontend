@@ -5,6 +5,9 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/presentation/pages/costestimate_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/select_payment_method_page.dart';
+
 
 class AdvancedPaymentRequiredPage extends StatelessWidget {
   const AdvancedPaymentRequiredPage({super.key});
@@ -13,7 +16,7 @@ class AdvancedPaymentRequiredPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutral400,
-      appBar: CustomAppBar(title: ''),
+      appBar: CustomAppBar(title: '',onBackPressed: () => Navigator.of(context).pop(),),
       body: Center(
         child: SizedBox(
           width: 380,
@@ -100,7 +103,9 @@ class AdvancedPaymentRequiredPage extends StatelessWidget {
                 label: 'Proceed to Payment',
                 type: ButtonType.primary,
                 size: ButtonSize.large,
-                onTap: () => {},
+                onTap: () => {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SelectPaymentMethodPage())),
+                },
                 customHeight: 56,
                 customWidth: 380,
               ),
@@ -111,7 +116,12 @@ class AdvancedPaymentRequiredPage extends StatelessWidget {
                 label: 'Cancel Booking',
                 type: ButtonType.danger,
                 size: ButtonSize.large,
-                onTap: () => {},
+                onTap: () => {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CostEstimatePage()),
+                  )
+                },
                 customHeight: 56,
                 customWidth: 380,
               ),
