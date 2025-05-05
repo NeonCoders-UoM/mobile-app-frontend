@@ -1,13 +1,5 @@
-import 'package:flutter/material.dart'
-import 'package:mobile_app_frontend/presentation/pages/advanced_payment_required_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/change_password_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/vehicle_deleted_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/appointmentconfirmation_page.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointmentdateselection_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/fuel_summary_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/service_history_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 
 

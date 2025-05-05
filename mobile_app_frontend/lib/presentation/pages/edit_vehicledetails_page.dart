@@ -7,6 +7,8 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetails_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 
 class EditVehicledetailsPage extends StatefulWidget {
   const EditVehicledetailsPage({Key? key}) : super(key: key);
@@ -24,9 +26,11 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
   final TextEditingController _modelController = TextEditingController();
   final TextEditingController _fuelTypeController = TextEditingController();
 
-  void _handleUpdate() {
+ /*void _handleUpdate() {
     print('succesfully Updated');
   }
+
+*/
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +110,9 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
                           label: 'update',
                           type: ButtonType.primary,
                           size: ButtonSize.medium,
-                          onTap: _handleUpdate,
+                          onTap: () => {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const VehicleDetailsPage()))
+                          },
                         ),
                       ),
                       const SizedBox(height: 12),
