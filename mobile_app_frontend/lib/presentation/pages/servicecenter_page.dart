@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/service_center_card.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'package:mobile_app_frontend/presentation/pages/appointmentconfirmation_page.dart';
 
 class ServiceCenterPage extends StatelessWidget {
   const ServiceCenterPage({super.key});
@@ -12,7 +13,9 @@ class ServiceCenterPage extends StatelessWidget {
       appBar: CustomAppBar(
         title: 'Near by partner services',
         showTitle: true,
-        onBackPressed: () => Navigator.of(context).pop(),
+        onBackPressed: () => {
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> AppointmentconfirmationPage(selectedServices: [],selectedDate: DateTime.now(),) ))
+        },
       ),
       backgroundColor: AppColors.neutral400,
       body: Padding(

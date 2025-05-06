@@ -110,7 +110,7 @@ class _AppointmentdateselectionPageState
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
                   onTap: () {
-                    
+                    Navigator.push(context, MaterialPageRoute(builder: (context) =>  ServiceselectionPage(selectedDate: DateTime.now(),)));
                   },
                 ),
               ),

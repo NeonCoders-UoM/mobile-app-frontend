@@ -4,6 +4,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/successful-message.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 
 class PaymentSuccessfulMessagePage extends StatelessWidget {
   const PaymentSuccessfulMessagePage({super.key});
@@ -22,11 +23,11 @@ class PaymentSuccessfulMessagePage extends StatelessWidget {
             height: 404,
           ),
           CustomButton(
-            label: 'Return to Login',
+            label: 'Home',
             type: ButtonType.primary,
             size: ButtonSize.large,
             onTap: () {
-              // Handle document addition logic here
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const VehicleDetailsPage()));
             },
             customWidth: 360.0,
             customHeight: 56.0,

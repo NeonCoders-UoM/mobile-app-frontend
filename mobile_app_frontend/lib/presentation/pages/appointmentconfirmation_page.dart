@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
-import 'package:mobile_app_frontend/presentation/pages/home_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/serviceselection_page.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/date_picker.dart';
-import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+
 
 class AppointmentconfirmationPage extends StatefulWidget {
   final DateTime selectedDate;
@@ -58,7 +58,7 @@ class _AppointmentconfirmationPageState
         title: 'Appointment',
         showTitle: true,
         onBackPressed: () => {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const VehicleDetailsPage()))
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const AppointmentPage()))
         },
       ),
       body: SafeArea(
