@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/appointment_card.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'package:mobile_app_frontend/presentation/pages/appointmentdateselection_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 
 class AppointmentPage extends StatelessWidget {
+  const AppointmentPage( {super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Appointments',
         showTitle: true,
-        onBackPressed: () => Navigator.of(context).pop(),
+        onBackPressed: () => {
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> const VehicleDetailsPage()))
+        },
       ),
       backgroundColor: AppColors.neutral400,
       body: Padding(
@@ -40,6 +45,15 @@ class AppointmentPage extends StatelessWidget {
           ],
         ),
       ),
+
+      floatingActionButton: FloatingActionButton(
+    onPressed: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const AppointmentdateselectionPage()));
+    },
+    backgroundColor: AppColors.neutral150, // or your preferred color
+    child: const Icon(Icons.add),
+  ),
+
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/payment_details_form.dart';
+import 'package:mobile_app_frontend/presentation/pages/payment_successful_message_page.dart';
 
 class EnterPaymentDetailsPage extends StatelessWidget {
   const EnterPaymentDetailsPage({Key? key}) : super(key: key);
@@ -46,6 +47,7 @@ class EnterPaymentDetailsPage extends StatelessWidget {
               print("Card Holder: ${cardHolderController.text}");
               print("Card Number: ${cardNumberController.text}");
               print("Label: ${labelController.text}");
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccessfulMessagePage()));
               // Add payment processing logic here
             },
           ),

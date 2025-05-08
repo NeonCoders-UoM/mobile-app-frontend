@@ -4,6 +4,7 @@ import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
+import 'package:mobile_app_frontend/presentation/pages/costestimate_page.dart';
 
 class ServiceCenterCard extends StatelessWidget {
   final String servicecenterName;
@@ -21,9 +22,10 @@ class ServiceCenterCard extends StatelessWidget {
     required this.estimatedCost,
   });
 
-  void _handleview() {
+  /*void _handleview() {
     print('Generating the invoice');
   }
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +95,9 @@ class ServiceCenterCard extends StatelessWidget {
                   label: 'View',
                   type: ButtonType.primary,
                   size: ButtonSize.small,
-                  onTap: _handleview,
+                  onTap: () => {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CostEstimatePage()))
+                  },
                 ),
               ),
             ),
