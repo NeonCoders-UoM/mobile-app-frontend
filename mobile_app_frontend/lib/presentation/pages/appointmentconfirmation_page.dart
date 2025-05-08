@@ -4,6 +4,7 @@ import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
+
 import 'package:mobile_app_frontend/presentation/pages/serviceselection_page.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
@@ -60,6 +61,7 @@ class _AppointmentconfirmationPageState
         onBackPressed: () => {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const AppointmentPage()))
         },
+
       ),
       body: SafeArea(
         child: Padding(
@@ -166,7 +168,7 @@ class _AppointmentconfirmationPageState
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ServiceCenterPage()),);
+                    // Apply logic here
                   },
                 ),
               ),

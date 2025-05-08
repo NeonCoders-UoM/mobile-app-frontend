@@ -8,17 +8,17 @@ import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicle_deleted_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 
+
 class DeleteVehiclePage extends StatelessWidget {
   const DeleteVehiclePage({super.key});
 
- /* void _handledeletevehicle() {
+  void _handledeletevehicle() {
     print('Successfully deleted');
   }
 
   void _handleback() {
     print('fefef');
   }
-  */
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +55,11 @@ class DeleteVehiclePage extends StatelessWidget {
                   label: 'Delete Vehicle',
                   type: ButtonType.danger,
                   size: ButtonSize.medium,
+
                   onTap: () => {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const VehicleDeletedPage()))
                   },
+
                 ),
               ),
               const SizedBox(height: 24),
@@ -67,9 +69,7 @@ class DeleteVehiclePage extends StatelessWidget {
                   label: 'Go Back',
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
-                  onTap: () => {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const VehicleDetailsPage()))
-                  },
+                  onTap: _handleback,
                 ),
               ),
             ],

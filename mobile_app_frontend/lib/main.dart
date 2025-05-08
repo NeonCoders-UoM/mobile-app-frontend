@@ -4,6 +4,8 @@ import 'package:mobile_app_frontend/presentation/pages/costestimate_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 
+
+
 void main() {
   runApp(
     MyApp(),
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: VehicleDetailsPage()
+      home: VehicleDeletedPage(),
     );
   }
 }

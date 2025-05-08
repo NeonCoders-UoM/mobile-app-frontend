@@ -43,9 +43,9 @@ class AppointmentPage extends StatelessWidget {
               date: "Sat, Feb, 2025",
             ),
           ],
-          
         ),
       ),
+
       floatingActionButton: FloatingActionButton(
     onPressed: () {
       Navigator.push(context, MaterialPageRoute(builder: (context) => const AppointmentdateselectionPage()));
@@ -53,6 +53,7 @@ class AppointmentPage extends StatelessWidget {
     backgroundColor: AppColors.neutral150, // or your preferred color
     child: const Icon(Icons.add),
   ),
+
     );
   }
 }

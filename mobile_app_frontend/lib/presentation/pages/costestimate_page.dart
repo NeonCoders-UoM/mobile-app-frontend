@@ -6,16 +6,13 @@ import 'package:mobile_app_frontend/presentation/components/atoms/cost_estimate_
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
-import 'package:mobile_app_frontend/presentation/pages/advanced_payment_required_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
 
 class CostEstimatePage extends StatelessWidget {
   const CostEstimatePage({super.key});
 
-  /*void _handleBookAppointment() {
+  void _handleBookAppointment() {
     print('Proceeding to the BookAppointment');
   }
-  */
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +30,7 @@ class CostEstimatePage extends StatelessWidget {
       appBar: CustomAppBar(
         title: 'Cost Estimation',
         showTitle: true,
-        onBackPressed: () => {
-          Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ServiceCenterPage()),
-          ),
-        }
+        onBackPressed: () => Navigator.of(context).pop(),
       ),
       backgroundColor: AppColors.neutral400,
       body: SafeArea(
@@ -69,12 +61,7 @@ class CostEstimatePage extends StatelessWidget {
                   label: 'Book an Appointment',
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
-                  onTap: () => {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdvancedPaymentRequiredPage()),
-                      )
-                  }//_handleBookAppointment,
+                  onTap: _handleBookAppointment,
                 ),
               ),
             ],
