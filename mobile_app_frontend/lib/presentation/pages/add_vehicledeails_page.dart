@@ -7,6 +7,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'package:mobile_app_frontend/presentation/pages/profile_options_page.dart';
 
 class AddVehicledetailsPage extends StatefulWidget {
   const AddVehicledetailsPage({Key? key}) : super(key: key);
@@ -20,7 +21,8 @@ class _AddVehicledetailsPageState extends State<AddVehicledetailsPage> {
       TextEditingController();
   final TextEditingController _chassisNumberController =
       TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
+      final TextEditingController _mileageController = TextEditingController();
+  final TextEditingController _brandController = TextEditingController();
   final TextEditingController _modelController = TextEditingController();
   final TextEditingController _fuelTypeController = TextEditingController();
 
@@ -34,7 +36,7 @@ class _AddVehicledetailsPageState extends State<AddVehicledetailsPage> {
       appBar: CustomAppBar(
         title: 'Add Vehicle ',
         showTitle: true,
-        onBackPressed: () => Navigator.of(context).pop(),
+        onBackPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileOptionPage())),
       ),
       backgroundColor: AppColors.neutral400,
       body: SafeArea(
@@ -62,20 +64,19 @@ class _AddVehicledetailsPageState extends State<AddVehicledetailsPage> {
                 ),
                 const SizedBox(height: 32),
                 InputFieldAtom(
-                  label: 'Category',
-                  placeholder: 'Category',
-                  controller: _categoryController,
+                  label: 'Mileage',
+                  placeholder: 'Mileage',
+                  controller: _mileageController,
                   keyboardType: TextInputType.text,
                   state: InputFieldState.defaultState,
                 ),
                 const SizedBox(height: 32),
-                CustomDropdownField(
-                  label: "Vehicle Type",
-                  items: ["Honda", "Benz", "BMW"],
-                  hintText: 'Choose a Type',
-                  onChanged: (val) {
-                    print("Selected: $val");
-                  },
+                 InputFieldAtom(
+                  label: 'Brand',
+                  placeholder: 'Brand',
+                  controller: _brandController,
+                  keyboardType: TextInputType.text,
+                  state: InputFieldState.defaultState,
                 ),
                 const SizedBox(height: 32),
                 InputFieldAtom(

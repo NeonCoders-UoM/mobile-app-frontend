@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/text_field.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/custom_dropdown_field.dart';
@@ -22,15 +25,95 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
       TextEditingController();
   final TextEditingController _chassisNumberController =
       TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _mileageController = TextEditingController();
   final TextEditingController _modelController = TextEditingController();
   final TextEditingController _fuelTypeController = TextEditingController();
+  final TextEditingController _brandController = TextEditingController();
 
- /*void _handleUpdate() {
-    print('succesfully Updated');
+  String _responseMessage = '';
+  final int _vehicleId = 32; // You want to fetch data for VehicleID = 32
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVehicleDetails();
   }
 
-*/
+  Future<void> _fetchVehicleDetails() async {
+    final url = Uri.parse('http://localhost:5285/api/vehicles/$_vehicleId');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        setState(() {
+          _registrationNumberController.text = data['registrationNumber'] ?? '';
+          _chassisNumberController.text = data['chassiNumber'] ?? '';
+          _mileageController.text = data['mileage']?.toString() ?? '';
+          _brandController.text = data['brand'] ?? '';
+          _modelController.text = data['model'] ?? '';
+          _fuelTypeController.text = data['fuelType'] ?? '';
+        });
+      } else {
+        setState(() {
+          _responseMessage =
+              'Failed to load vehicle details. Status code: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _responseMessage = 'Error fetching vehicle details: $e';
+      });
+    }
+  }
+
+  Future<void> _handleUpdate() async {
+    final url = Uri.parse('http://localhost:5285/api/vehicles/$_vehicleId');
+
+    final Map<String, dynamic> updatedVehicleData = {
+      'registrationNumber': _registrationNumberController.text,
+      'chassiNumber': _chassisNumberController.text,
+      'mileage': _mileageController.text,
+      'brand': _brandController.text,
+      'model': _modelController.text,
+      'fuelType': _fuelTypeController.text,
+    };
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(updatedVehicleData),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _responseMessage = 'Vehicle updated successfully!';
+        });
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_responseMessage)),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const VehicleDetailsPage()),
+        );
+      } else {
+        setState(() {
+          _responseMessage =
+              'Failed to update. Status code: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _responseMessage = 'Error occurred: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,20 +149,19 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
                 ),
                 const SizedBox(height: 32),
                 InputFieldAtom(
-                  label: 'Category',
-                  placeholder: 'Category',
-                  controller: _categoryController,
-                  keyboardType: TextInputType.text,
+                  label: 'Mileage',
+                  placeholder: 'Mileage',
+                  controller: _mileageController,
+                  keyboardType: TextInputType.number,
                   state: InputFieldState.defaultState,
                 ),
                 const SizedBox(height: 32),
-                CustomDropdownField(
-                  label: "Vehicle Type",
-                  items: ["Honda", "Benz", "BMW"],
-                  hintText: 'Choose a Type',
-                  onChanged: (val) {
-                    print("Selected: $val");
-                  },
+                InputFieldAtom(
+                  label: 'Brand',
+                  placeholder: 'Brand',
+                  controller: _brandController,
+                  keyboardType: TextInputType.text,
+                  state: InputFieldState.defaultState,
                 ),
                 const SizedBox(height: 32),
                 InputFieldAtom(
@@ -107,15 +189,18 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
                         width: 220,
                         height: 48,
                         child: CustomButton(
-                          label: 'update',
+                          label: 'Update',
                           type: ButtonType.primary,
                           size: ButtonSize.medium,
-                          onTap: () => {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const VehicleDetailsPage()))
-                          },
+                          onTap: _handleUpdate,
                         ),
                       ),
                       const SizedBox(height: 12),
+                      if (_responseMessage.isNotEmpty)
+                        Text(
+                          _responseMessage,
+                          style: const TextStyle(color: Colors.red),
+                        ),
                     ],
                   ),
                 ),

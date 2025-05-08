@@ -7,6 +7,7 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
+import 'package:mobile_app_frontend/presentation/pages/profile_options_page.dart';
 
 class DeleteAccountPage extends StatefulWidget {
   const DeleteAccountPage({super.key});
@@ -28,7 +29,8 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutral400,
-      appBar: CustomAppBar(title: 'Delete Account'),
+      appBar: CustomAppBar(title: 'Delete Account',
+      onBackPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileOptionPage())),),
       body: Center(
         child: SizedBox(
           width: 388,

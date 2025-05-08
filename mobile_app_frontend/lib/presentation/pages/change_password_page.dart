@@ -7,6 +7,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/text_field.dar
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_field_state.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/presentation/pages/profile_options_page.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -37,7 +38,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutral400,
-      appBar: CustomAppBar(title: 'Change password'),
+      appBar: CustomAppBar(title: 'Change password',
+      onBackPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileOptionPage())),),
       body: Center(
         child: SizedBox(
           width: 360,
