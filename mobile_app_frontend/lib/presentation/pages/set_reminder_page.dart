@@ -18,15 +18,9 @@ class SetReminderPage extends StatefulWidget {
 }
 
 class _SetReminderPageState extends State<SetReminderPage> {
-  // Controllers for input fields
-  final TextEditingController _serviceTypeController = TextEditingController();
-  final TextEditingController _mileageIntervalController =
-      TextEditingController();
-  final TextEditingController _timeIntervalController = TextEditingController();
-
-  // State for checkboxes
-  bool _isMileageIntervalEnabled = false;
-  bool _isTimeIntervalEnabled = false;
+  // Nullable Controllers for input fields
+  TextEditingController? _serviceTypeController;
+  TextEditingController? _timeIntervalController;
 
   // State for notify period dropdown
   String? _selectedNotifyPeriod;
@@ -41,10 +35,16 @@ class _SetReminderPageState extends State<SetReminderPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _serviceTypeController = TextEditingController();
+    _timeIntervalController = TextEditingController();
+  }
+
+  @override
   void dispose() {
-    _serviceTypeController.dispose();
-    _mileageIntervalController.dispose();
-    _timeIntervalController.dispose();
+    _serviceTypeController?.dispose();
+    _timeIntervalController?.dispose();
     super.dispose();
   }
 
@@ -61,7 +61,6 @@ class _SetReminderPageState extends State<SetReminderPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 32.0),
-            // Vehicle Header
             const VehicleHeader(
               vehicleName: 'Mustang 1977',
               vehicleId: 'AB89B395',
@@ -72,7 +71,6 @@ class _SetReminderPageState extends State<SetReminderPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Additional vehicle details
                   Text(
                     'Vehicle Registration No: AB89B395',
                     style: AppTextStyles.textSmRegular.copyWith(
@@ -87,7 +85,6 @@ class _SetReminderPageState extends State<SetReminderPage> {
                     ),
                   ),
                   const SizedBox(height: 48.0),
-                  // Service Type Input
                   InputFieldAtom(
                     state: InputFieldState.defaultState,
                     label: 'Service Type',
@@ -98,87 +95,17 @@ class _SetReminderPageState extends State<SetReminderPage> {
                     },
                   ),
                   const SizedBox(height: 16.0),
-                  // Mileage Interval Checkbox and Input
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isMileageIntervalEnabled,
-                        onChanged: (value) {
-                          setState(() {
-                            _isMileageIntervalEnabled = value ?? false;
-                            if (!_isMileageIntervalEnabled) {
-                              _mileageIntervalController.clear();
-                            }
-                          });
-                        },
-                        activeColor: AppColors.primary200,
-                        checkColor: AppColors.neutral100,
-                        side: const BorderSide(color: AppColors.neutral200),
-                      ),
-                      Text(
-                        'Mileage Interval',
-                        style: AppTextStyles.textSmRegular.copyWith(
-                          color: AppColors.neutral100,
-                        ),
-                      ),
-                    ],
-                  ),
                   InputFieldAtom(
-                    state: _isMileageIntervalEnabled
-                        ? InputFieldState.defaultState
-                        : InputFieldState.disabled,
-                    label: 'Mileage Interval',
-                    placeholder: 'Mileage Interval',
-                    controller: _mileageIntervalController,
-                    keyboardType: TextInputType.number,
-                    onChanged: _isMileageIntervalEnabled
-                        ? (value) {
-                            setState(() {});
-                          }
-                        : null,
-                  ),
-                  const SizedBox(height: 16.0),
-                  // Time Interval Checkbox and Input
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isTimeIntervalEnabled,
-                        onChanged: (value) {
-                          setState(() {
-                            _isTimeIntervalEnabled = value ?? false;
-                            if (!_isTimeIntervalEnabled) {
-                              _timeIntervalController.clear();
-                            }
-                          });
-                        },
-                        activeColor: AppColors.primary200,
-                        checkColor: AppColors.neutral100,
-                        side: const BorderSide(color: AppColors.neutral200),
-                      ),
-                      Text(
-                        'Time Interval',
-                        style: AppTextStyles.textSmRegular.copyWith(
-                          color: AppColors.neutral100,
-                        ),
-                      ),
-                    ],
-                  ),
-                  InputFieldAtom(
-                    state: _isTimeIntervalEnabled
-                        ? InputFieldState.defaultState
-                        : InputFieldState.disabled,
+                    state: InputFieldState.defaultState,
                     label: 'Time Interval',
                     placeholder: 'Time Interval',
                     controller: _timeIntervalController,
                     keyboardType: TextInputType.number,
-                    onChanged: _isTimeIntervalEnabled
-                        ? (value) {
-                            setState(() {});
-                          }
-                        : null,
+                    onChanged: (value) {
+                      setState(() {});
+                    },
                   ),
                   const SizedBox(height: 16.0),
-                  // Notify Period Dropdown
                   Text(
                     'Notify Period',
                     style: AppTextStyles.textSmRegular.copyWith(
@@ -233,8 +160,6 @@ class _SetReminderPageState extends State<SetReminderPage> {
                     iconEnabledColor: AppColors.neutral100,
                   ),
                   const SizedBox(height: 32.0),
-                  // Remind Me Button
-                  // In SetReminderPage
                   Center(
                     child: CustomButton(
                       label: 'Remind Me',
@@ -242,34 +167,14 @@ class _SetReminderPageState extends State<SetReminderPage> {
                       size: ButtonSize.large,
                       customWidth: double.infinity,
                       onTap: () {
-                        // Validate inputs before proceeding
-                        if (_serviceTypeController.text.isEmpty) {
+                        if ((_serviceTypeController?.text ?? '').isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 content: Text('Please enter a service type')),
                           );
                           return;
                         }
-                        if (!_isMileageIntervalEnabled &&
-                            !_isTimeIntervalEnabled) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Please select at least one interval (Mileage or Time)')),
-                          );
-                          return;
-                        }
-                        if (_isMileageIntervalEnabled &&
-                            _mileageIntervalController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Please enter a mileage interval')),
-                          );
-                          return;
-                        }
-                        if (_isTimeIntervalEnabled &&
-                            _timeIntervalController.text.isEmpty) {
+                        if ((_timeIntervalController?.text ?? '').isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 content: Text('Please enter a time interval')),
@@ -284,25 +189,20 @@ class _SetReminderPageState extends State<SetReminderPage> {
                           return;
                         }
 
-                        // Create the new reminder
                         final newReminder = {
-                          'title': _serviceTypeController.text,
+                          'title': _serviceTypeController!.text,
                           'description':
-                              'Next: ${_isMileageIntervalEnabled ? _mileageIntervalController.text + ' km' : ''}${_isMileageIntervalEnabled && _isTimeIntervalEnabled ? ' or ' : ''}${_isTimeIntervalEnabled ? 'in ' + _timeIntervalController.text + ' months' : ''}',
+                              'Next: in ${_timeIntervalController!.text} months',
                           'status': ServiceStatus.upcoming,
                           'nextDue':
-                              'Next: ${_isMileageIntervalEnabled ? _mileageIntervalController.text + ' km' : ''}${_isMileageIntervalEnabled && _isTimeIntervalEnabled ? ' or ' : ''}${_isTimeIntervalEnabled ? 'in ' + _timeIntervalController.text + ' months' : ''}',
-                          'mileageInterval': _isMileageIntervalEnabled
-                              ? _mileageIntervalController.text + 'km'
-                              : 'Not specified',
-                          'timeInterval': _isTimeIntervalEnabled
-                              ? _timeIntervalController.text + ' months'
-                              : 'Not specified',
+                              'Next: in ${_timeIntervalController!.text} months',
+                          'mileageInterval': 'Not specified',
+                          'timeInterval':
+                              '${_timeIntervalController!.text} months',
                           'lastServiceDate': 'Not specified',
                           'notifyPeriod': _selectedNotifyPeriod,
                         };
 
-                        // Return the new reminder and navigate back
                         Navigator.pop(context, newReminder);
                       },
                     ),

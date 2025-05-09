@@ -13,8 +13,7 @@ class AddNewServicePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          AppColors.neutral500, // Dark background matching the image
+      backgroundColor: AppColors.neutral500,
       appBar: const CustomAppBar(
         title: 'Add New Service',
         showTitle: true,
@@ -64,9 +63,7 @@ class AddNewServicePage extends StatelessWidget {
                 size: ButtonSize.medium,
                 customWidth:
                     MediaQuery.of(context).size.width - 32.0, // Full width
-                onTap: () {
-                  // Handle document addition logic here
-                },
+                onTap: () {},
               ),
             ),
           ],

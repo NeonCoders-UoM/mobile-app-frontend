@@ -4,6 +4,16 @@ import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_header.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/vehicle_detail_row.dart';
+import 'package:mobile_app_frontend/presentation/pages/add_service_documents_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/add_vehicle_documents_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/delete_vehicle_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/external-service-history_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/fuel_summary_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/scheduled_reminders.dart';
+import 'package:mobile_app_frontend/presentation/pages/service_history_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/set_reminder_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/edit_vehicledetails_page.dart';
 
 class VehicleDetailsPage extends StatelessWidget {
   const VehicleDetailsPage({Key? key}) : super(key: key);
@@ -66,18 +76,25 @@ class VehicleDetailsPage extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   children: [
-                    _iconWithLabel("assets/icons/documents.svg", "Documents"),
                     _iconWithLabel(
-                        "assets/icons/appointments.svg", "Appointments"),
-                    _iconWithLabel(
-                        "assets/icons/fuel_efficiency.svg", "Fuel Efficiency"),
-                    _iconWithLabel(
-                        "assets/icons/service_history.svg", "Service History"),
-                    _iconWithLabel(
-                        "assets/icons/set_reminders.svg", "Set Reminders"),
-                    _iconWithLabel("assets/icons/emergency.svg", "Emergency"),
-                    _iconWithLabel("assets/icons/edit.svg", "Edit"),
-                    _iconWithLabel("assets/icons/delete.svg", "Delete"),
+                        context,
+                        "assets/icons/documents.svg",
+                        "Documents",
+                        AddVehicleDocumentsPage()), //Change the page
+                    _iconWithLabel(context, "assets/icons/appointments.svg",
+                        "Appointments", AppointmentPage()),
+                    _iconWithLabel(context, "assets/icons/fuel_efficiency.svg",
+                        "Fuel Efficiency", FuelSummaryPage()),
+                    _iconWithLabel(context, "assets/icons/service_history.svg",
+                        "Service History", ServiceHistoryPage()),
+                    _iconWithLabel(context, "assets/icons/set_reminders.svg",
+                        "Set Reminders", RemindersPage()),
+                    _iconWithLabel(context, "assets/icons/emergency.svg",
+                        "Add Services", AddNewServicePage()),
+                    _iconWithLabel(context, "assets/icons/edit.svg", "Edit",
+                        EditVehicledetailsPage()),
+                    _iconWithLabel(context, "assets/icons/delete.svg", "Delete",
+                        DeleteVehiclePage()),
                   ],
                 ),
               ),
@@ -88,25 +105,35 @@ class VehicleDetailsPage extends StatelessWidget {
     );
   }
 
-  static Widget _iconWithLabel(String assetPath, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SvgPicture.asset(
-          assetPath,
-          height: 48,
-          color: AppColors.neutral100,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.textXsmRegular.copyWith(
+  static Widget _iconWithLabel(BuildContext context, String assetPath,
+      String label, Widget destinationScreen) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to the new screen when tapped
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => destinationScreen),
+        );
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            assetPath,
+            height: 48,
             color: AppColors.neutral100,
           ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.textXsmRegular.copyWith(
+              color: AppColors.neutral100,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

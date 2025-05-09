@@ -16,6 +16,7 @@ class CustomButton extends StatefulWidget {
   final IconData? trailingIcon; // Optional trailing icon
   final bool showLeadingIcon; // Toggle for leading icon visibility
   final bool showTrailingIcon; // Toggle for trailing icon visibility
+  final Color? customColor; //
 
   const CustomButton({
     Key? key,
@@ -29,6 +30,7 @@ class CustomButton extends StatefulWidget {
     this.trailingIcon,
     this.showLeadingIcon = false,
     this.showTrailingIcon = false,
+    this.customColor,
   }) : super(key: key);
 
   @override
@@ -88,6 +90,15 @@ class _CustomButtonState extends State<CustomButton> {
 
   // Determine button styles based on type and state
   Color _getBackgroundColor() {
+    if (widget.customColor != null) {
+      if (_currentState == ButtonState.active) {
+        return widget.customColor!.withOpacity(0.8);
+      }
+      if (_currentState == ButtonState.hover) {
+        return widget.customColor!.withOpacity(0.9);
+      }
+      return widget.customColor!;
+    }
     switch (widget.type) {
       case ButtonType.primary:
         if (_currentState == ButtonState.active) return AppColors.primary100;
@@ -109,6 +120,9 @@ class _CustomButtonState extends State<CustomButton> {
   }
 
   Color _getBorderColor() {
+    if (widget.customColor != null) {
+      return widget.customColor!;
+    }
     switch (widget.type) {
       case ButtonType.primary:
         return AppColors.primary200;
@@ -124,7 +138,7 @@ class _CustomButtonState extends State<CustomButton> {
   Color _getTextColor() {
     switch (widget.type) {
       case ButtonType.primary:
-        return AppColors.neutral100; // Same for all states
+        return AppColors.neutral100;
       case ButtonType.secondary:
         if (_currentState == ButtonState.active) return AppColors.primary100;
         if (_currentState == ButtonState.hover) return AppColors.primary300;
@@ -144,6 +158,9 @@ class _CustomButtonState extends State<CustomButton> {
 
   // Ripple effect color for InkWell
   Color _getSplashColor() {
+    if (widget.customColor != null) {
+      return widget.customColor!.withOpacity(0.3); // Use customColor for ripple
+    }
     switch (widget.type) {
       case ButtonType.primary:
         return AppColors.primary200.withOpacity(0.3);
@@ -185,8 +202,7 @@ class _CustomButtonState extends State<CustomButton> {
           widget.onTap(); // Trigger the callback
         },
         splashColor: _getSplashColor(), // Ripple effect color
-        borderRadius:
-            BorderRadius.circular(8.0), // Match the button's border radius
+        borderRadius: BorderRadius.circular(8.0),
         child: Container(
           width: _getWidth(),
           height: _getHeight(),

@@ -6,7 +6,7 @@ import 'package:mobile_app_frontend/presentation/components/molecules/notificati
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({Key? key}) : super(key: key);
 
-  // Sample data for notifications (replace with your actual data source)
+  // Sample data for notifications
   static final List<Map<String, String>> _notifications = [
     {
       'title': 'Oil Change',

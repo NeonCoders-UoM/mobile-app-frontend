@@ -26,13 +26,8 @@ class EditReminderPage extends StatefulWidget {
 
 class _EditReminderPageState extends State<EditReminderPage> {
   // Controllers for input fields
-  late TextEditingController _serviceTypeController;
-  late TextEditingController _mileageIntervalController;
-  late TextEditingController _timeIntervalController;
-
-  // State for checkboxes
-  late bool _isMileageIntervalEnabled;
-  late bool _isTimeIntervalEnabled;
+  TextEditingController? _serviceTypeController;
+  TextEditingController? _timeIntervalController;
 
   // State for notify period dropdown
   String? _selectedNotifyPeriod;
@@ -53,16 +48,6 @@ class _EditReminderPageState extends State<EditReminderPage> {
     _serviceTypeController =
         TextEditingController(text: widget.reminder['title']);
 
-    // Extract mileage interval (remove 'km' if present)
-    String mileageInterval =
-        widget.reminder['mileageInterval'] ?? 'Not specified';
-    if (mileageInterval != 'Not specified') {
-      mileageInterval = mileageInterval.replaceAll('km', '').trim();
-    }
-    _mileageIntervalController = TextEditingController(
-      text: mileageInterval != 'Not specified' ? mileageInterval : '',
-    );
-
     // Extract time interval (remove ' months' if present)
     String timeInterval = widget.reminder['timeInterval'] ?? 'Not specified';
     if (timeInterval != 'Not specified') {
@@ -72,20 +57,15 @@ class _EditReminderPageState extends State<EditReminderPage> {
       text: timeInterval != 'Not specified' ? timeInterval : '',
     );
 
-    // Initialize checkbox states
-    _isMileageIntervalEnabled =
-        widget.reminder['mileageInterval'] != 'Not specified';
-    _isTimeIntervalEnabled = widget.reminder['timeInterval'] != 'Not specified';
-
     // Initialize notify period
     _selectedNotifyPeriod = widget.reminder['notifyPeriod'];
   }
 
+  // Dispose controllers to free up resources
   @override
   void dispose() {
-    _serviceTypeController.dispose();
-    _mileageIntervalController.dispose();
-    _timeIntervalController.dispose();
+    _serviceTypeController?.dispose();
+    _timeIntervalController?.dispose();
     super.dispose();
   }
 
@@ -102,7 +82,6 @@ class _EditReminderPageState extends State<EditReminderPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 32.0),
-            // Vehicle Header
             const VehicleHeader(
               vehicleName: 'Mustang 1977',
               vehicleId: 'AB89B395',
@@ -113,7 +92,6 @@ class _EditReminderPageState extends State<EditReminderPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 48.0),
-                  // Additional vehicle details
                   Text(
                     'Vehicle Registration No: AB89B395',
                     style: AppTextStyles.textSmRegular.copyWith(
@@ -128,98 +106,25 @@ class _EditReminderPageState extends State<EditReminderPage> {
                     ),
                   ),
                   const SizedBox(height: 32.0),
-                  // Service Type Input
                   InputFieldAtom(
                     state: InputFieldState.defaultState,
                     label: 'Service Type',
                     placeholder: 'Service Type',
-                    controller: _serviceTypeController,
-                    onChanged: (value) {
-                      setState(() {});
-                    },
+                    controller:
+                        _serviceTypeController ?? TextEditingController(),
+                    onChanged: (value) => setState(() {}),
                   ),
                   const SizedBox(height: 16.0),
-                  // Mileage Interval Checkbox and Input
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isMileageIntervalEnabled,
-                        onChanged: (value) {
-                          setState(() {
-                            _isMileageIntervalEnabled = value ?? false;
-                            if (!_isMileageIntervalEnabled) {
-                              _mileageIntervalController.clear();
-                            }
-                          });
-                        },
-                        activeColor: AppColors.primary200,
-                        checkColor: AppColors.neutral100,
-                        side: const BorderSide(color: AppColors.neutral200),
-                      ),
-                      Text(
-                        'Mileage Interval',
-                        style: AppTextStyles.textSmRegular.copyWith(
-                          color: AppColors.neutral100,
-                        ),
-                      ),
-                    ],
-                  ),
                   InputFieldAtom(
-                    state: _isMileageIntervalEnabled
-                        ? InputFieldState.defaultState
-                        : InputFieldState.disabled,
-                    label: 'Mileage Interval',
-                    placeholder: 'Mileage Interval',
-                    controller: _mileageIntervalController,
-                    keyboardType: TextInputType.number,
-                    onChanged: _isMileageIntervalEnabled
-                        ? (value) {
-                            setState(() {});
-                          }
-                        : null,
-                  ),
-                  const SizedBox(height: 16.0),
-                  // Time Interval Checkbox and Input
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isTimeIntervalEnabled,
-                        onChanged: (value) {
-                          setState(() {
-                            _isTimeIntervalEnabled = value ?? false;
-                            if (!_isTimeIntervalEnabled) {
-                              _timeIntervalController.clear();
-                            }
-                          });
-                        },
-                        activeColor: AppColors.primary200,
-                        checkColor: AppColors.neutral100,
-                        side: const BorderSide(color: AppColors.neutral200),
-                      ),
-                      Text(
-                        'Time Interval',
-                        style: AppTextStyles.textSmRegular.copyWith(
-                          color: AppColors.neutral100,
-                        ),
-                      ),
-                    ],
-                  ),
-                  InputFieldAtom(
-                    state: _isTimeIntervalEnabled
-                        ? InputFieldState.defaultState
-                        : InputFieldState.disabled,
+                    state: InputFieldState.defaultState,
                     label: 'Time Interval',
                     placeholder: 'Time Interval',
-                    controller: _timeIntervalController,
+                    controller:
+                        _timeIntervalController ?? TextEditingController(),
                     keyboardType: TextInputType.number,
-                    onChanged: _isTimeIntervalEnabled
-                        ? (value) {
-                            setState(() {});
-                          }
-                        : null,
+                    onChanged: (value) => setState(() {}),
                   ),
                   const SizedBox(height: 16.0),
-                  // Notify Period Dropdown
                   Text(
                     'Notify Period',
                     style: AppTextStyles.textSmRegular.copyWith(
@@ -274,40 +179,20 @@ class _EditReminderPageState extends State<EditReminderPage> {
                     iconEnabledColor: AppColors.neutral100,
                   ),
                   const SizedBox(height: 32.0),
-                  // Save Button (full width, as in SetReminderPage)
                   CustomButton(
                     label: 'Save Changes',
                     type: ButtonType.primary,
                     size: ButtonSize.large,
                     customWidth: double.infinity,
                     onTap: () {
-                      // Validate inputs before proceeding
-                      if (_serviceTypeController.text.isEmpty) {
+                      if ((_serviceTypeController?.text ?? '').isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                               content: Text('Please enter a service type')),
                         );
                         return;
                       }
-                      if (!_isMileageIntervalEnabled &&
-                          !_isTimeIntervalEnabled) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Please select at least one interval (Mileage or Time)')),
-                        );
-                        return;
-                      }
-                      if (_isMileageIntervalEnabled &&
-                          _mileageIntervalController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Please enter a mileage interval')),
-                        );
-                        return;
-                      }
-                      if (_isTimeIntervalEnabled &&
-                          _timeIntervalController.text.isEmpty) {
+                      if ((_timeIntervalController?.text ?? '').isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                               content: Text('Please enter a time interval')),
@@ -322,28 +207,22 @@ class _EditReminderPageState extends State<EditReminderPage> {
                         return;
                       }
 
-                      // Create the updated reminder
                       final updatedReminder = {
-                        'title': _serviceTypeController.text,
+                        'title': _serviceTypeController!.text,
                         'description':
-                            'Next: ${_isMileageIntervalEnabled ? _mileageIntervalController.text + ' km' : ''}${_isMileageIntervalEnabled && _isTimeIntervalEnabled ? ' or ' : ''}${_isTimeIntervalEnabled ? 'in ' + _timeIntervalController.text + ' months' : ''}',
-                        'status': widget.reminder['status'] ??
-                            ServiceStatus
-                                .upcoming, // Preserve the original status
+                            'Next: in ${_timeIntervalController!.text} months',
+                        'status':
+                            widget.reminder['status'] ?? ServiceStatus.upcoming,
                         'nextDue':
-                            'Next: ${_isMileageIntervalEnabled ? _mileageIntervalController.text + ' km' : ''}${_isMileageIntervalEnabled && _isTimeIntervalEnabled ? ' or ' : ''}${_isTimeIntervalEnabled ? 'in ' + _timeIntervalController.text + ' months' : ''}',
-                        'mileageInterval': _isMileageIntervalEnabled
-                            ? _mileageIntervalController.text + 'km'
-                            : 'Not specified',
-                        'timeInterval': _isTimeIntervalEnabled
-                            ? _timeIntervalController.text + ' months'
-                            : 'Not specified',
+                            'Next: in ${_timeIntervalController!.text} months',
+                        'mileageInterval': 'Not specified',
+                        'timeInterval':
+                            '${_timeIntervalController!.text} months',
                         'lastServiceDate': widget.reminder['lastServiceDate'] ??
-                            'Not specified', // Preserve the original last service date
+                            'Not specified',
                         'notifyPeriod': _selectedNotifyPeriod,
                       };
 
-                      // Return the updated reminder and its index
                       Navigator.pop(context, {
                         'reminder': updatedReminder,
                         'index': widget.index,

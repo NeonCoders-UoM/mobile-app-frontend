@@ -19,11 +19,9 @@ class AddServiceDocumentsPage extends StatefulWidget {
 }
 
 class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
-  // Mock list of documents (you can replace this with actual file picker logic)
   final List<Map<String, String>> _documents = [];
 
   void _addDocument() {
-    // Mock adding a document (replace with actual file picker logic)
     setState(() {
       _documents.add({
         'name': 'Insurance Documents',
@@ -87,16 +85,14 @@ class _AddServiceDocumentsPageState extends State<AddServiceDocumentsPage> {
               ],
               // Done Button
               SizedBox(
-                width: MediaQuery.of(context).size.width -
-                    32.0, // Full width minus padding
+                width: MediaQuery.of(context).size.width - 32.0,
                 child: CustomButton(
                   label: 'DONE',
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
-                  customWidth:
-                      MediaQuery.of(context).size.width - 32.0, // Full width
+                  customWidth: MediaQuery.of(context).size.width - 32.0,
                   onTap: () {
-                    Navigator.pop(context); // Return to previous page
+                    Navigator.pop(context);
                   },
                 ),
               ),

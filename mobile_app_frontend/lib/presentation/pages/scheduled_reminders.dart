@@ -18,48 +18,53 @@ class _RemindersPageState extends State<RemindersPage> {
   List<Map<String, dynamic>> reminders = [
     {
       'title': 'Oil Change',
-      'description': 'Next: 15,000 km or in 8 months',
+      'description': 'Next: in 8 months',
       'status': ServiceStatus.upcoming,
-      'nextDue': '15,000 km or in 8 months',
-      'mileageInterval': '15,000km',
+      'nextDue': 'in 8 months',
       'timeInterval': '6 months',
       'lastServiceDate': '01/02/2025',
+      'mileageInterval': 'Not specified',
+      'notifyPeriod': '7 days before',
     },
     {
       'title': 'Tire Rotation',
-      'description': 'Next: 20,000 km or in 6 months',
+      'description': 'Next: in 6 months',
       'status': ServiceStatus.overdue,
-      'nextDue': '20,000 km or in 6 months',
-      'mileageInterval': '20,000km',
+      'nextDue': 'in 6 months',
       'timeInterval': '6 months',
       'lastServiceDate': '01/01/2025',
+      'mileageInterval': 'Not specified',
+      'notifyPeriod': '7 days before',
     },
     {
       'title': 'Service Type',
-      'description': 'Next Due',
+      'description': 'Next: in 12 months',
       'status': ServiceStatus.completed,
-      'nextDue': 'Next Due',
-      'mileageInterval': '10,000km',
+      'nextDue': 'in 12 months',
       'timeInterval': '12 months',
       'lastServiceDate': '01/03/2025',
+      'mileageInterval': 'Not specified',
+      'notifyPeriod': '7 days before',
     },
     {
       'title': 'Service Type',
-      'description': 'Next Due',
+      'description': 'Next: in 12 months',
       'status': ServiceStatus.scheduled,
-      'nextDue': 'Next Due',
-      'mileageInterval': '10,000km',
+      'nextDue': 'in 12 months',
       'timeInterval': '12 months',
       'lastServiceDate': '01/04/2025',
+      'mileageInterval': 'Not specified',
+      'notifyPeriod': '7 days before',
     },
     {
       'title': 'Service Type',
-      'description': 'Next Due',
+      'description': 'Next: in 12 months',
       'status': ServiceStatus.inProgress,
-      'nextDue': 'Next Due',
-      'mileageInterval': '10,000km',
+      'nextDue': 'in 12 months',
       'timeInterval': '12 months',
       'lastServiceDate': '01/05/2025',
+      'mileageInterval': 'Not specified',
+      'notifyPeriod': '7 days before',
     },
   ];
 
@@ -117,13 +122,11 @@ class _RemindersPageState extends State<RemindersPage> {
                         title: reminder['title'],
                         nextDue: reminder['nextDue'],
                         status: reminder['status'] ?? ServiceStatus.upcoming,
-                        mileageInterval: reminder['mileageInterval'],
                         timeInterval: reminder['timeInterval'],
                         lastServiceDate: reminder['lastServiceDate'],
-                        reminder: reminder, // Pass the full reminder
-                        index: index, // Pass the index
-                        onEdit:
-                            () {}, // Not used anymore, but required by the constructor
+                        reminder: reminder,
+                        index: index,
+                        onEdit: () {},
                         onDelete: () {
                           // Implement delete functionality
                           setState(() {

@@ -11,12 +11,11 @@ class ReminderDetailsDialog extends StatelessWidget {
   final String title;
   final String nextDue;
   final ServiceStatus status;
-  final String mileageInterval;
   final String timeInterval;
   final String lastServiceDate;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
-  final Map<String, dynamic> reminder; // Add the full reminder data
+  final Map<String, dynamic> reminder;
   final int index;
 
   const ReminderDetailsDialog({
@@ -24,7 +23,6 @@ class ReminderDetailsDialog extends StatelessWidget {
     required this.title,
     required this.nextDue,
     required this.status,
-    required this.mileageInterval,
     required this.timeInterval,
     required this.lastServiceDate,
     required this.onEdit,
@@ -74,13 +72,13 @@ class ReminderDetailsDialog extends StatelessWidget {
     final statusInfo = _getStatusInfo();
 
     return AlertDialog(
-      backgroundColor: AppColors.neutral400, // Dark background as in the image
+      backgroundColor: AppColors.neutral400,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
       ),
       contentPadding: const EdgeInsets.all(30.0),
       content: Column(
-        mainAxisSize: MainAxisSize.min, // Fit content size
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title and Status Row
@@ -118,7 +116,6 @@ class ReminderDetailsDialog extends StatelessWidget {
           // Details
           _buildDetailRow('NEXT DUE:', nextDue),
           _buildDetailRow('STATUS:', statusInfo.label),
-          _buildDetailRow('MILEAGE INTERVAL:', mileageInterval),
           _buildDetailRow('TIME INTERVAL:', timeInterval),
           _buildDetailRow('LAST SERVICE DATE:', lastServiceDate),
           const SizedBox(height: 24.0),
@@ -146,14 +143,13 @@ class ReminderDetailsDialog extends StatelessWidget {
                   if (result != null) {
                     Navigator.pop(context, result);
                   } else {
-                    Navigator.pop(
-                        context); // Close the dialog if no changes were made
+                    Navigator.pop(context);
                   }
                 },
               ),
               CustomButton(
                 label: 'DELETE',
-                type: ButtonType.danger, // Red button using the new danger type
+                type: ButtonType.danger,
                 size: ButtonSize.small,
                 onTap: onDelete,
               ),
