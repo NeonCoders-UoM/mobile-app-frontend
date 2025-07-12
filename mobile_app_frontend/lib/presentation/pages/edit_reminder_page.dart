@@ -264,7 +264,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
           backgroundColor: Colors.red,
         ),
       );
-      
+
       // Still return to previous screen on error, but with null result
       Navigator.pop(context, null);
     } finally {

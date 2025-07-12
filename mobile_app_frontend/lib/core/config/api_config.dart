@@ -23,6 +23,19 @@ class ApiConfig {
   static const String upcomingRemindersEndpoint = '/ServiceReminders/Upcoming';
   static const String reminderByIdEndpoint = '/ServiceReminders/{reminderId}';
 
+  // Service History endpoints - Updated to match VehicleServiceHistoryController
+  static const String vehicleServiceHistoryEndpoint = '/VehicleServiceHistory';
+  static const String vehicleServiceHistoryByVehicleEndpoint =
+      '/VehicleServiceHistory/Vehicle/{vehicleId}';
+  static const String vehicleServiceHistoryByIdEndpoint =
+      '/VehicleServiceHistory/{vehicleId}/{serviceHistoryId}';
+  static const String createVehicleServiceHistoryEndpoint =
+      '/VehicleServiceHistory/{vehicleId}';
+  static const String updateVehicleServiceHistoryEndpoint =
+      '/VehicleServiceHistory/{vehicleId}/{serviceHistoryId}';
+  static const String deleteVehicleServiceHistoryEndpoint =
+      '/VehicleServiceHistory/{vehicleId}/{serviceHistoryId}';
+
   // Get the current environment's base URL
   static String get currentBaseUrl {
     // You can use environment variables or build configurations
@@ -60,4 +73,36 @@ class ApiConfig {
 
   static String deleteReminderUrl(int reminderId) =>
       '$currentBaseUrl/ServiceReminders/$reminderId';
+
+  // Service History URL builders - Updated to match VehicleServiceHistoryController
+  static String getVehicleServiceHistoryUrl(int vehicleId) =>
+      '$currentBaseUrl/VehicleServiceHistory/Vehicle/$vehicleId';
+
+  static String getServiceHistoryByIdUrl(int vehicleId, int serviceHistoryId) =>
+      '$currentBaseUrl/VehicleServiceHistory/$vehicleId/$serviceHistoryId';
+
+  static String createServiceHistoryUrl(int vehicleId) =>
+      '$currentBaseUrl/VehicleServiceHistory/$vehicleId';
+
+  static String updateServiceHistoryUrl(int vehicleId, int serviceHistoryId) =>
+      '$currentBaseUrl/VehicleServiceHistory/$vehicleId/$serviceHistoryId';
+
+  static String deleteServiceHistoryUrl(int vehicleId, int serviceHistoryId) =>
+      '$currentBaseUrl/VehicleServiceHistory/$vehicleId/$serviceHistoryId';
+
+  // Alternative method names for consistency with repository usage
+  static String createVehicleServiceHistoryUrl(int vehicleId) =>
+      createServiceHistoryUrl(vehicleId);
+
+  static String updateVehicleServiceHistoryUrl(
+          int vehicleId, int serviceHistoryId) =>
+      updateServiceHistoryUrl(vehicleId, serviceHistoryId);
+
+  static String deleteVehicleServiceHistoryUrl(
+          int vehicleId, int serviceHistoryId) =>
+      deleteServiceHistoryUrl(vehicleId, serviceHistoryId);
+
+  static String getVehicleServiceHistoryByIdUrl(
+          int vehicleId, int serviceHistoryId) =>
+      getServiceHistoryByIdUrl(vehicleId, serviceHistoryId);
 }

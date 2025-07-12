@@ -12,7 +12,8 @@ void main() {
         'serviceReminderId': 1,
         'vehicleId': 1,
         'serviceId': 1,
-        'notes': 'This is a very long service name that should not cause any overflow issues in the dialog layout and should be properly truncated',
+        'notes':
+            'This is a very long service name that should not cause any overflow issues in the dialog layout and should be properly truncated',
         'reminderDate': '2024-12-31',
         'intervalMonths': 6,
         'notifyBeforeDays': 7,
@@ -59,7 +60,8 @@ void main() {
       expect(find.byType(ReminderDetailsDialog), findsOneWidget);
 
       // Verify that the long service name is displayed (should be truncated)
-      expect(find.textContaining('This is a very long service name'), findsOneWidget);
+      expect(find.textContaining('This is a very long service name'),
+          findsOneWidget);
 
       // Check that there are no overflow errors
       expect(tester.takeException(), isNull);
