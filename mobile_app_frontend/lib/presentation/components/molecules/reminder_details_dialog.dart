@@ -85,32 +85,43 @@ class ReminderDetailsDialog extends StatelessWidget {
         children: [
           // Title and Status Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title ?? 'Untitled',
-                style: AppTextStyles.textLgSemibold.copyWith(
-                  color: AppColors.neutral100,
+              Expanded(
+                flex: 2,
+                child: Text(
+                  title,
+                  style: AppTextStyles.textLgSemibold.copyWith(
+                    color: AppColors.neutral100,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
-              Row(
-                children: [
-                  Container(
-                    width: 11.0,
-                    height: 11.0,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: statusInfo.color,
+              const SizedBox(width: 8.0),
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 11.0,
+                      height: 11.0,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: statusInfo.color,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4.0),
-                  Text(
-                    statusInfo.label,
-                    style: AppTextStyles.textXsmRegular.copyWith(
-                      color: statusInfo.color,
+                    const SizedBox(width: 4.0),
+                    Flexible(
+                      child: Text(
+                        statusInfo.label,
+                        style: AppTextStyles.textXsmRegular.copyWith(
+                          color: statusInfo.color,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
