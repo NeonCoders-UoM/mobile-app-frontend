@@ -1,10 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:mobile_app_frontend/core/config/api_config.dart';
+import 'package:mobile_app_frontend/data/models/fuel_efficiency_model.dart';
+import 'package:mobile_app_frontend/data/repositories/fuel_efficiency_repository.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/fuel_input_form.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/fuel_usage_chart.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_app_frontend/presentation/components/molecules/monthly_fuel_usage_chart.dart';
 import '../../../core/models/fuel_usage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -17,58 +18,432 @@ class FuelSummaryPage extends StatefulWidget {
 }
 
 class FuelSummaryPageState extends State<FuelSummaryPage> {
-  final List<FuelUsage> _fuelEntries = [];
+  final List<FuelEfficiencyModel> _fuelEntries = [];
+  final FuelEfficiencyRepository _repository = FuelEfficiencyRepository();
+  bool _isLoading = false;
+  bool _isBackendConnected = false;
+  String? _errorMessage;
+  FuelEfficiencySummaryModel? _summary;
+  List<MonthlyFuelSummaryModel> _monthlyChartData = [];
+  int _selectedYear = DateTime.now().year;
 
   @override
   void initState() {
     super.initState();
     _loadEntries();
+    _testBackendConnection();
+  }
+
+  Future<void> _testBackendConnection() async {
+    final isConnected = await _repository.testConnection();
+    setState(() {
+      _isBackendConnected = isConnected;
+    });
   }
 
   Future<void> _loadEntries() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final entries = prefs.getStringList('fuel_entries') ?? [];
-      setState(() {
-        _fuelEntries.addAll(
-          entries.map((e) => FuelUsage.fromJson(jsonDecode(e))).toList(),
-        );
-      });
-    } catch (e) {
-      print('Error loading entries: $e');
-    }
-  }
-
-  Future<void> _saveEntries() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final entries = _fuelEntries.map((e) => jsonEncode(e.toJson())).toList();
-      await prefs.setStringList('fuel_entries', entries);
-    } catch (e) {
-      print('Error saving entries: $e');
-    }
-  }
-
-  void _addFuelUsage(FuelUsage entry) {
     setState(() {
-      _fuelEntries.add(entry);
+      _isLoading = true;
+      _errorMessage = null;
     });
-    _saveEntries();
+
+    try {
+      // Use default vehicle ID from config
+      final records =
+          await _repository.getFuelRecords(ApiConfig.defaultVehicleId);
+      final summary = await _repository
+          .getFuelSummary(ApiConfig.defaultVehicleId, year: _selectedYear);
+      final monthlyData = await _repository.getMonthlyChartData(
+          ApiConfig.defaultVehicleId, _selectedYear);
+
+      setState(() {
+        _fuelEntries.clear();
+        _fuelEntries.addAll(records);
+        _summary = summary;
+        _monthlyChartData = monthlyData;
+        _isLoading = false;
+      });
+
+      print(
+          '✅ Loaded ${records.length} fuel records and ${monthlyData.length} monthly data points');
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load fuel records: $e';
+      });
+      print('❌ Error loading fuel records: $e');
+    }
+  }
+
+  Future<void> _addFuelUsage(FuelUsage entry) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Convert legacy FuelUsage to FuelEfficiencyModel
+      final fuelRecord = FuelEfficiencyModel(
+        vehicleId: ApiConfig.defaultVehicleId,
+        date: entry.date, // Updated to use 'date' field to match backend DTO
+        fuelAmount: entry.amount,
+        fuelType: 'Petrol', // Default type, could be made selectable
+      );
+
+      final success = await _repository.addFuelRecord(fuelRecord);
+
+      if (success) {
+        // Add small delay to ensure database commit
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Reload data to get updated records
+        await _loadEntries();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Fuel record added successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        // If API failed, add to local storage (fallback already handled in repository)
+        setState(() {
+          _fuelEntries.add(fuelRecord);
+          _isLoading = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Fuel record saved locally (backend unavailable)'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding fuel record: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Map<String, double> _calculateMonthlySummary() {
-    final Map<String, double> summary = {};
-    for (var entry in _fuelEntries) {
-      final monthKey = DateFormat('yyyy-MM').format(entry.date);
-      summary[monthKey] = (summary[monthKey] ?? 0) + entry.amount;
+    return _repository.calculateMonthlySummary(_fuelEntries);
+  }
+
+  Widget _buildConnectionStatus() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _isBackendConnected
+            ? Colors.green.withOpacity(0.1)
+            : Colors.orange.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: _isBackendConnected ? Colors.green : Colors.orange,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _isBackendConnected ? Icons.cloud_done : Icons.cloud_off,
+            color: _isBackendConnected ? Colors.green : Colors.orange,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _isBackendConnected
+                  ? 'Connected to backend API'
+                  : 'Backend unavailable - using local storage',
+              style: AppTextStyles.textSmRegular.copyWith(
+                color: _isBackendConnected ? Colors.green : Colors.orange,
+              ),
+            ),
+          ),
+          if (!_isBackendConnected)
+            IconButton(
+              icon: const Icon(Icons.refresh, size: 18),
+              onPressed: _testBackendConnection,
+              color: Colors.orange,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryCards() {
+    if (_summary == null) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildSummaryCard(
+                'Total Fuel',
+                '${_summary!.totalFuelAmount.toStringAsFixed(1)} L',
+                Icons.local_gas_station,
+                AppColors.primary200,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSummaryCard(
+                'Records',
+                _summary!.totalRecords.toString(),
+                Icons.list,
+                AppColors.primary300,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSummaryCard(
+                'Avg Monthly',
+                '${_summary!.averageMonthlyFuel.toStringAsFixed(1)}L',
+                Icons.speed,
+                AppColors.primary100,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSummaryCard(
+                'This Year',
+                '${_summary!.totalFuelThisYear.toStringAsFixed(1)}L',
+                Icons.local_gas_station,
+                AppColors.neutral300,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildSummaryCard(
+      String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.neutral500,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: AppTextStyles.textSmRegular.copyWith(
+                  color: AppColors.neutral200,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: AppTextStyles.textLgSemibold.copyWith(
+              color: AppColors.neutral100,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildYearSelector() {
+    final currentYear = DateTime.now().year;
+    final years = List.generate(5, (index) => currentYear - index);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Text(
+            'Year:',
+            style: AppTextStyles.textSmSemibold.copyWith(
+              color: AppColors.neutral200,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: years.map((year) {
+                  final isSelected = year == _selectedYear;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => _changeYear(year),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary200
+                              : AppColors.neutral500,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary200
+                                : AppColors.neutral300,
+                          ),
+                        ),
+                        child: Text(
+                          year.toString(),
+                          style: AppTextStyles.textSmRegular.copyWith(
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.neutral200,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _changeYear(int year) async {
+    if (year == _selectedYear) return;
+
+    setState(() {
+      _selectedYear = year;
+      _isLoading = true;
+    });
+
+    try {
+      final summary = await _repository.getFuelSummary(
+        ApiConfig.defaultVehicleId,
+        year: year,
+      );
+      final monthlyData = await _repository.getMonthlyChartData(
+        ApiConfig.defaultVehicleId,
+        year,
+      );
+
+      setState(() {
+        _summary = summary;
+        _monthlyChartData = monthlyData;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load data for year $year: $e';
+      });
     }
-    return summary;
+  }
+
+  Widget _buildChartSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Monthly Fuel Usage',
+              style: AppTextStyles.textMdSemibold
+                  .copyWith(color: AppColors.neutral100),
+            ),
+            const Spacer(),
+            Text(
+              _selectedYear.toString(),
+              style: AppTextStyles.textSmRegular
+                  .copyWith(color: AppColors.neutral300),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildChart(),
+      ],
+    );
+  }
+
+  Widget _buildChart() {
+    // If we have backend monthly data, use the enhanced chart
+    if (_monthlyChartData.isNotEmpty) {
+      return MonthlyFuelUsageChart(
+        monthlyData: _monthlyChartData,
+        title: 'Monthly Fuel Usage (${_selectedYear})',
+      );
+    }
+
+    // Fallback to legacy chart for local data
+    final monthlySummary = _calculateMonthlySummary();
+    if (monthlySummary.isEmpty) {
+      return _buildEmptyChartState();
+    }
+
+    return FuelUsageChart(monthlySummary: monthlySummary);
+  }
+
+  Widget _buildEmptyChartState() {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: AppColors.neutral500,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.neutral400),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.local_gas_station_outlined,
+            size: 48,
+            color: AppColors.neutral300,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No fuel usage data for $_selectedYear',
+            style: AppTextStyles.textMdSemibold
+                .copyWith(color: AppColors.neutral200),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add fuel records to see monthly trends',
+            style: AppTextStyles.textSmRegular
+                .copyWith(color: AppColors.neutral300),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final monthlySummary = _calculateMonthlySummary();
-
     return Scaffold(
       backgroundColor: AppColors.neutral600,
       appBar: CustomAppBar(
@@ -76,33 +451,47 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
         showTitle: true,
         onBackPressed: null, // Disable back button (root screen)
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FuelInputForm(onSubmit: _addFuelUsage),
-              const SizedBox(height: 24),
-              Text(
-                'Monthly Summary',
-                style: AppTextStyles.textMdSemibold
-                    .copyWith(color: AppColors.neutral100),
-              ),
-              const SizedBox(height: 16),
-              monthlySummary.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No fuel usage recorded',
-                        style: AppTextStyles.textSmRegular
-                            .copyWith(color: AppColors.neutral300),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildConnectionStatus(),
+                    FuelInputForm(onSubmit: _addFuelUsage),
+                    const SizedBox(height: 24),
+                    _buildSummaryCards(),
+                    _buildYearSelector(),
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: AppTextStyles.textSmRegular
+                                    .copyWith(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    )
-                  : FuelUsageChart(monthlySummary: monthlySummary),
-            ],
-          ),
-        ),
-      ),
+                    _buildChartSection(),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }

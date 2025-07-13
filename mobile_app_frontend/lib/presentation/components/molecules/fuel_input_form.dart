@@ -51,7 +51,17 @@ class FuelInputFormState extends State<FuelInputForm> {
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
-        _selectedDate = picked;
+        // Ensure the selected date has a proper time component
+        // Set to current time to avoid midnight timezone issues
+        final now = DateTime.now();
+        _selectedDate = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          now.hour,
+          now.minute,
+          now.second,
+        );
       });
     }
   }

@@ -74,10 +74,11 @@ void main() async {
       notes: 'This is a test unverified service record',
     );
 
-    print('📤 Attempting to add unverified service (should try backend first)...');
+    print(
+        '📤 Attempting to add unverified service (should try backend first)...');
     final success = await repository.addUnverifiedService(testService);
     print('✅ Add unverified service result: ${success ? "Success" : "Failed"}');
-    
+
     if (success) {
       // Verify it was added by checking the service history
       print('🔍 Verifying service was added...');
@@ -91,8 +92,9 @@ void main() async {
       print('   ✓ Status: ${addedService.status}');
       print('   ✓ Provider: ${addedService.serviceProvider}');
       print('   ✓ Is Verified: ${addedService.isVerified}');
-      
-      if (addedService.serviceHistoryId != null && addedService.serviceHistoryId! > 0) {
+
+      if (addedService.serviceHistoryId != null &&
+          addedService.serviceHistoryId! > 0) {
         print('   🎉 SUCCESS: Service was sent to backend (has positive ID)');
       } else {
         print('   📱 INFO: Service stored locally only (negative/null ID)');
