@@ -157,7 +157,8 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Service record added! Check console for backend status.'),
+            content:
+                Text('Service record added! Check console for backend status.'),
             backgroundColor: Colors.green,
           ),
         );

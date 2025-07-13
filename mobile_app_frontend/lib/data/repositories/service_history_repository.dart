@@ -58,9 +58,10 @@ class ServiceHistoryRepository {
   Future<bool> addVerifiedService(ServiceHistoryModel service) async {
     try {
       print('🔧 Attempting to add service via API...');
-      print('   URL: ${ApiConfig.createVehicleServiceHistoryUrl(service.vehicleId)}');
+      print(
+          '   URL: ${ApiConfig.createVehicleServiceHistoryUrl(service.vehicleId)}');
       print('   JSON: ${json.encode(service.toCreateJson())}');
-      
+
       final response = await http
           .post(
             Uri.parse(
@@ -91,7 +92,7 @@ class ServiceHistoryRepository {
   Future<bool> addUnverifiedService(ServiceHistoryModel service) async {
     try {
       print('🔧 Attempting to add unverified service...');
-      
+
       // Create a backend-ready version of the service
       // Mark as unverified since it's from external service center
       final backendService = service.copyWith(
@@ -99,16 +100,16 @@ class ServiceHistoryRepository {
         serviceCenterId: null, // No registered service center
         servicedByUserId: null, // No registered technician
       );
-      
+
       // First, try to send to backend
       final backendSuccess = await addVerifiedService(backendService);
-      
+
       if (backendSuccess) {
         print('✅ Unverified service successfully sent to backend');
         return true;
       } else {
         print('⚠️ Backend failed, storing locally as fallback');
-        
+
         // Fallback: Store locally if backend fails
         final unverifiedService = service.copyWith(
           serviceHistoryId: _generateLocalId(),
@@ -121,7 +122,7 @@ class ServiceHistoryRepository {
       }
     } catch (e) {
       print('❌ Error adding unverified service: $e');
-      
+
       // Fallback: Store locally if exception occurs
       try {
         final unverifiedService = service.copyWith(
@@ -140,7 +141,8 @@ class ServiceHistoryRepository {
   }
 
   // Add unverified service locally only (for testing/offline mode)
-  Future<bool> addUnverifiedServiceLocalOnly(ServiceHistoryModel service) async {
+  Future<bool> addUnverifiedServiceLocalOnly(
+      ServiceHistoryModel service) async {
     try {
       final unverifiedService = service.copyWith(
         serviceHistoryId: _generateLocalId(),

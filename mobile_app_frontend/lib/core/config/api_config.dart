@@ -105,4 +105,32 @@ class ApiConfig {
   static String getVehicleServiceHistoryByIdUrl(
           int vehicleId, int serviceHistoryId) =>
       getServiceHistoryByIdUrl(vehicleId, serviceHistoryId);
+
+  // Fuel Efficiency URL builders
+  static String getFuelEfficienciesByVehicleUrl(int vehicleId) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId';
+
+  static String getFuelEfficiencySummaryUrl(int vehicleId, {int? year}) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/summary${year != null ? '?year=$year' : ''}';
+
+  static String getMonthlyChartDataUrl(int vehicleId, int year) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/chart/$year';
+
+  static String addFuelEfficiencyUrl() => '$currentBaseUrl/FuelEfficiency';
+
+  static String updateFuelEfficiencyUrl(int id) =>
+      '$currentBaseUrl/FuelEfficiency/$id';
+
+  static String deleteFuelEfficiencyUrl(int id) =>
+      '$currentBaseUrl/FuelEfficiency/$id';
+
+  static String getMonthlyFuelRecordsUrl(int vehicleId, int year, int month) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/monthly/$year/$month';
+
+  static String getFuelForPeriodUrl(
+          int vehicleId, DateTime startDate, DateTime endDate) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/period?startDate=${startDate.toIso8601String()}&endDate=${endDate.toIso8601String()}';
+
+  static String getAverageFuelPerMonthUrl(int vehicleId, int year) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/average/$year';
 }
