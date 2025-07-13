@@ -11,6 +11,7 @@ import 'package:mobile_app_frontend/presentation/pages/scheduled_reminders.dart'
 import 'package:mobile_app_frontend/presentation/pages/service_history_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/set_reminder_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/edit_vehicledetails_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/documents_page.dart';
 
 class VehicleDetailsPage extends StatelessWidget {
   const VehicleDetailsPage({Key? key}) : super(key: key);
@@ -73,8 +74,12 @@ class VehicleDetailsPage extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   children: [
-                    _iconWithLabel(context, "assets/icons/documents.svg",
-                        "Documents", AppointmentPage()), //Change the page
+                    _iconWithLabel(
+                        context,
+                        "assets/icons/documents.svg",
+                        "Documents",
+                        DocumentsPage(
+                            customerId: 1, vehicleId: 1)), //Change the page
                     _iconWithLabel(context, "assets/icons/appointments.svg",
                         "Appointments", AppointmentPage()),
                     _iconWithLabel(context, "assets/icons/fuel_efficiency.svg",
