@@ -7,6 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_app_frontend/core/theme/app_colors.dart';
+import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
+import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Document {
   final int documentId;
@@ -278,65 +285,60 @@ class _DocumentsPageState extends State<DocumentsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Documents'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: uploadDocument,
-        child: const Icon(Icons.upload),
-        tooltip: 'Upload Document',
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : documents.isEmpty
-              ? const Center(child: Text('No documents found.'))
-              : ListView.builder(
-                  itemCount: documents.length,
-                  itemBuilder: (context, index) {
-                    final doc = documents[index];
-                    final title = getDocumentTitle(doc);
+      appBar: CustomAppBar(title: 'Documents', showTitle: true),
+      backgroundColor: AppColors.neutral400,
+      body: Padding(
+        padding: const EdgeInsets.all(40.0),
+        child: Column(
+          children: [
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : documents.isEmpty
+                    ? const Center(child: Text('No documents found.'))
+                    : Expanded(
+                        child: ListView.builder(
+                          itemCount: documents.length,
+                          itemBuilder: (context, index) {
+                            final doc = documents[index];
+                            final title = getDocumentTitle(doc);
 
-                    return ListTile(
-                      title: Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 40),
+                                tileColor: AppColors.neutral450,
+                                title: Text(title,
+                                    style: AppTextStyles.textSmSemibold
+                                        .copyWith(color: AppColors.neutral100)),
+                                leading: SvgPicture.asset(
+                                  'assets/icons/document_card_icon.svg',
+                                  height: 24,
+                                  width: 24,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.neutral100,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                                onTap: () => previewDocument(doc.fileUrl, title,
+                                    doc.fileName, doc.documentId),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Confirm Delete'),
-                              content: Text(
-                                  'Are you sure you want to delete "$title"?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.of(context).pop();
-                                    await deleteDocument(
-                                        doc.documentId, doc.fileName, title);
-                                  },
-                                  child: const Text('Delete',
-                                      style: TextStyle(color: Colors.red)),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      onTap: () => previewDocument(
-                          doc.fileUrl, title, doc.fileName, doc.documentId),
-                    );
-                  },
-                ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(40, 40, 40, 80),
+        child: CustomButton(
+          label: 'Add New Document',
+          type: ButtonType.primary,
+          size: ButtonSize.medium,
+          onTap: uploadDocument,
+        ),
+      ),
     );
   }
 }
@@ -442,7 +444,10 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('File: ${widget.fileName}'),
+              Text(
+                'File: ${widget.fileName}',
+                style: const TextStyle(color: Colors.white),
+              ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
                 decoration: const InputDecoration(labelText: 'Document Type'),
