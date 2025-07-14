@@ -195,6 +195,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
         'http://localhost:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
 
     final fileExtension = fileName.toLowerCase().split('.').last;
+    final isImage = ['jpg', 'jpeg', 'png'].contains(fileExtension);
     final isSupportedType =
         ['pdf', 'jpg', 'jpeg', 'png', 'txt'].contains(fileExtension);
 
@@ -223,48 +224,95 @@ class _DocumentsPageState extends State<DocumentsPage> {
       return;
     }
 
-    final iframe = html.IFrameElement()
-      ..src = previewUrl
-      ..style.border = 'none'
-      ..style.width = '100%'
-      ..style.height = '100%';
-
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(
-      'iframeElement-$fileUrl',
-      (int viewId) => iframe,
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          height: MediaQuery.of(context).size.height * 0.8,
-          child: HtmlElementView(viewType: 'iframeElement-$fileUrl'),
+    if (isImage) {
+      // Display image using Image.network
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(title),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: Image.network(
+              previewUrl,
+              fit: BoxFit.contain,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return const Center(child: CircularProgressIndicator());
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                    child: Text('Error loading image',
+                        style: TextStyle(color: Colors.red)));
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+                downloadFile(downloadUrl, fileName);
+              },
+              child: const Text('Download'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await deleteDocument(documentId, fileName, title);
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+      );
+    } else {
+      // Existing logic for non-image files (pdf, txt) using iframe
+      final iframe = html.IFrameElement()
+        ..src = previewUrl
+        ..style.border = 'none'
+        ..style.width = '100%'
+        ..style.height = '100%';
+
+      // ignore: undefined_prefixed_name
+      ui.platformViewRegistry.registerViewFactory(
+        'iframeElement-$fileUrl',
+        (int viewId) => iframe,
+      );
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(title),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: HtmlElementView(viewType: 'iframeElement-$fileUrl'),
           ),
-          TextButton(
-            onPressed: () {
-              downloadFile(downloadUrl, fileName);
-            },
-            child: const Text('Download'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await deleteDocument(documentId, fileName, title);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+                downloadFile(downloadUrl, fileName);
+              },
+              child: const Text('Download'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await deleteDocument(documentId, fileName, title);
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   String getDocumentTitle(Document doc) {
