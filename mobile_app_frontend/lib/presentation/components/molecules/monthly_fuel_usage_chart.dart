@@ -19,7 +19,6 @@ class MonthlyFuelUsageChart extends StatefulWidget {
 }
 
 class _MonthlyFuelUsageChartState extends State<MonthlyFuelUsageChart> {
-
   @override
   Widget build(BuildContext context) {
     if (widget.monthlyData.isEmpty) {
