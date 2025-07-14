@@ -133,4 +133,36 @@ class ApiConfig {
 
   static String getAverageFuelPerMonthUrl(int vehicleId, int year) =>
       '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/average/$year';
+
+  // Notification URL builders
+  static String getAllNotificationsUrl() => '$currentBaseUrl/Notifications';
+
+  static String getNotificationByIdUrl(int notificationId) =>
+      '$currentBaseUrl/Notifications/$notificationId';
+
+  static String getCustomerNotificationsUrl(int customerId) =>
+      '$currentBaseUrl/Notifications/Customer/$customerId';
+
+  static String getCustomerUnreadNotificationsUrl(int customerId) =>
+      '$currentBaseUrl/Notifications/Customer/$customerId/Unread';
+
+  static String getNotificationSummaryUrl(int customerId) =>
+      '$currentBaseUrl/Notifications/Summary/$customerId';
+
+  static String getPendingNotificationsUrl() =>
+      '$currentBaseUrl/Notifications/Pending';
+
+  static String createNotificationUrl() => '$currentBaseUrl/Notifications';
+
+  static String markNotificationAsReadUrl(int notificationId) =>
+      '$currentBaseUrl/Notifications/$notificationId/MarkAsRead';
+
+  static String markNotificationAsSentUrl(int notificationId) =>
+      '$currentBaseUrl/Notifications/$notificationId/MarkAsSent';
+
+  static String markAllNotificationsAsReadUrl(int customerId) =>
+      '$currentBaseUrl/Notifications/Customer/$customerId/MarkAllAsRead';
+
+  static String deleteNotificationUrl(int notificationId) =>
+      '$currentBaseUrl/Notifications/$notificationId';
 }

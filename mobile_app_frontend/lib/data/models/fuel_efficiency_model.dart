@@ -76,7 +76,8 @@ class FuelEfficiencyModel {
       'VehicleId': vehicleId, // Required in AddFuelEfficiencyDTO
       'FuelAmount': fuelAmount, // Required in AddFuelEfficiencyDTO
       'Date': _formatDateForBackend(date), // Required in AddFuelEfficiencyDTO
-      'Cost': 0.01, // Required by backend validation (Cost > 0), using minimal value since cost tracking was removed
+      'Cost':
+          0.01, // Required by backend validation (Cost > 0), using minimal value since cost tracking was removed
     };
   }
 

@@ -7,12 +7,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showTitle;
   final VoidCallback?
       onBackPressed; // Optional callback for custom back behavior
+  final List<Widget>? actions; // Actions for the app bar
 
   const CustomAppBar({
     Key? key,
     required this.title,
     this.showTitle = true,
     this.onBackPressed,
+    this.actions,
   }) : super(key: key);
 
   @override
@@ -38,6 +40,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : null,
       centerTitle: true, // Center the title as shown in the image
+      actions: actions, // Add actions support
     );
   }
 
