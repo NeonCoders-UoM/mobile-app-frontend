@@ -494,7 +494,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Upload Document'),
+      backgroundColor: AppColors.neutral400,
+      title: const Text('Upload Document', style: TextStyle(color: AppColors.neutral150)),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -503,15 +504,17 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
             children: [
               Text(
                 'File: ${widget.fileName}',
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.neutral200),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Document Type'),
+                decoration: const InputDecoration(labelText: 'Document Type',
+                labelStyle: TextStyle(color: AppColors.neutral200)),
+                dropdownColor: AppColors.neutral450,
                 items: documentTypes
                     .map((type) => DropdownMenuItem(
                           value: type['value'] as int,
-                          child: Text(type['name'] as String),
+                          child: Text(type['name'] as String, style: TextStyle(color: AppColors.neutral200)),
                         ))
                     .toList(),
                 value: documentType,
@@ -529,8 +532,10 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
               const SizedBox(height: 16),
               if (documentType != null && requiresExpiration(documentType!))
                 TextFormField(
-                  decoration:
-                      const InputDecoration(labelText: 'Expiration Date'),
+                  decoration: InputDecoration(
+                      labelText: 'Expiration Date',
+                      labelStyle: const TextStyle(color: AppColors.neutral200),
+                  ),
                   readOnly: true,
                   controller: TextEditingController(
                     text: expirationDate != null
@@ -554,8 +559,10 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                 ),
               const SizedBox(height: 16),
               TextFormField(
+                style: const TextStyle(color: AppColors.neutral200),
                 decoration:
-                    const InputDecoration(labelText: 'Display Name (Optional)'),
+                    const InputDecoration(labelText: 'Display Name (Optional)',
+                    labelStyle: TextStyle(color: AppColors.neutral200)),
                 onChanged: (value) => displayName = value,
               ),
             ],
