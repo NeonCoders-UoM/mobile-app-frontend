@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_header.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/vehicle_detail_row.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
@@ -11,24 +12,71 @@ import 'package:mobile_app_frontend/presentation/pages/scheduled_reminders.dart'
 import 'package:mobile_app_frontend/presentation/pages/service_history_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/set_reminder_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/edit_vehicledetails_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 
-class VehicleDetailsPage extends StatelessWidget {
-  const VehicleDetailsPage({Key? key}) : super(key: key);
+class VehicleDetailsHomePage extends StatefulWidget {
+  final int customerId;
+  final String token;
+
+  const VehicleDetailsHomePage({
+    Key? key,
+    required this.customerId,
+    required this.token,
+  }) : super(key: key);
+
+  @override
+  State<VehicleDetailsHomePage> createState() => _VehicleDetailsHomePageState();
+}
+
+class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
+  final _authService = AuthService();
+  Map<String, dynamic>? _vehicle;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVehicleDetails();
+  }
+
+  Future<void> _loadVehicleDetails() async {
+    final vehicles = await _authService.getCustomerVehicles(
+      customerId: widget.customerId,
+      token: widget.token,
+    );
+
+    if (vehicles != null && vehicles.isNotEmpty) {
+      setState(() {
+        _vehicle = vehicles[0];
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No vehicles found')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_vehicle == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.neutral400,
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.neutral400,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 72),
-              const VehicleHeader(
-                vehicleName: "Mustang 1977",
-                vehicleId: "AB899395",
+              VehicleHeader(
+                vehicleName:
+                    _vehicle!['registrationNumber'] ?? '', // ✅ lower case
+                vehicleId: _vehicle!['vehicleId'].toString(),
               ),
               const SizedBox(height: 16),
               Padding(
@@ -36,7 +84,6 @@ class VehicleDetailsPage extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Car Image
                     SizedBox(
                       height: 350,
                       width: 180,
@@ -46,17 +93,23 @@ class VehicleDetailsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 36),
-                    // Vehicle Details
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          VehicleDetailRow(label: "Brand", value: "Mustang"),
-                          VehicleDetailRow(label: "Model", value: "Mustang 25"),
+                        children: [
                           VehicleDetailRow(
-                              label: "Chassis Number", value: "1455ADSF"),
-                          VehicleDetailRow(label: "Fuel Type", value: "Petrol"),
-                          VehicleDetailRow(label: "Type", value: "Car"),
+                              label: "Brand", value: _vehicle!['brand'] ?? ''),
+                          VehicleDetailRow(
+                              label: "Model", value: _vehicle!['model'] ?? ''),
+                          VehicleDetailRow(
+                              label: "Chassis Number",
+                              value: _vehicle!['chassisNumber'] ?? ''),
+                          VehicleDetailRow(
+                              label: "Fuel Type",
+                              value: _vehicle!['fuel'] ?? ''),
+                          VehicleDetailRow(
+                              label: "Year",
+                              value: _vehicle!['year'].toString()),
                         ],
                       ),
                     ),
@@ -74,21 +127,30 @@ class VehicleDetailsPage extends StatelessWidget {
                   shrinkWrap: true,
                   children: [
                     _iconWithLabel(context, "assets/icons/documents.svg",
-                        "Documents", AppointmentPage()), //Change the page
+                        "Documents", const AppointmentPage()),
                     _iconWithLabel(context, "assets/icons/appointments.svg",
-                        "Appointments", AppointmentPage()),
+                        "Appointments", const AppointmentPage()),
                     _iconWithLabel(context, "assets/icons/fuel_efficiency.svg",
-                        "Fuel Efficiency", FuelSummaryPage()),
+                        "Fuel Efficiency", const FuelSummaryPage()),
                     _iconWithLabel(context, "assets/icons/service_history.svg",
-                        "Service History", ServiceHistoryPage()),
+                        "Service History", const ServiceHistoryPage()),
                     _iconWithLabel(context, "assets/icons/set_reminders.svg",
-                        "Set Reminders", RemindersPage()),
+                        "Set Reminders", const RemindersPage()),
                     _iconWithLabel(context, "assets/icons/emergency.svg",
-                        "Emergency", AppointmentPage()),
-                    _iconWithLabel(context, "assets/icons/edit.svg", "Edit",
-                        EditVehicledetailsPage()),
+                        "Emergency", const AppointmentPage()),
+                    if (_vehicle != null)
+                      _iconWithLabel(
+                        context,
+                        "assets/icons/edit.svg",
+                        "Edit",
+                        EditVehicledetailsPage(
+                          customerId: widget.customerId,
+                          vehicleId: _vehicle!['vehicleId'],
+                          token: widget.token,
+                        ),
+                      ),
                     _iconWithLabel(context, "assets/icons/delete.svg", "Delete",
-                        DeleteVehiclePage()),
+                        const DeleteVehiclePage()),
                   ],
                 ),
               ),
@@ -103,7 +165,6 @@ class VehicleDetailsPage extends StatelessWidget {
       String label, Widget destinationScreen) {
     return GestureDetector(
       onTap: () {
-        // Navigate to the new screen when tapped
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => destinationScreen),

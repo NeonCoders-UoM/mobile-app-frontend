@@ -5,34 +5,69 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_fi
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
-import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetails_page.dart';
 
 class PersonaldetailsPage extends StatefulWidget {
-  const PersonaldetailsPage({Key? key}) : super(key: key);
+  final String email;
+  final String firstName;
+  final String lastName;
+  final String phoneNumber;
+
+  const PersonaldetailsPage({
+    Key? key,
+    required this.email,
+    required this.firstName,
+    required this.lastName,
+    required this.phoneNumber,
+  }) : super(key: key);
 
   @override
   State<PersonaldetailsPage> createState() => _PersonaldetailsPageState();
 }
 
 class _PersonaldetailsPageState extends State<PersonaldetailsPage> {
-  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nicController = TextEditingController();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _telephoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final _authService = AuthService();
 
-  void _handleNext() {
-    // Handle the next button press
-    print('Proceeding to the next step');
+  bool _isSaving = false;
+
+  void _handleNext() async {
+    try {
+      setState(() => _isSaving = true);
+
+      final customerId = await _authService.updateCustomer(
+        email: widget.email,
+        firstName: widget.firstName,
+        lastName: widget.lastName,
+        phoneNumber: widget.phoneNumber,
+        nic: _nicController.text.trim(),
+        address: _addressController.text.trim(),
+      );
+
+      // ✅ After successful update, navigate to RegisterVehicle page:
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VehicledetailsPage(customerId: customerId),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to update: $e")),
+      );
+    } finally {
+      setState(() => _isSaving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Hi, Welcome',
+        title: 'Complete Your Details',
         showTitle: true,
         onBackPressed: () => Navigator.of(context).pop(),
       ),
@@ -42,74 +77,60 @@ class _PersonaldetailsPageState extends State<PersonaldetailsPage> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 36),
                 InputFieldAtom(
-                  label: 'Email Adress',
-                  placeholder: 'Your Email',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
+                  label: 'First Name',
+                  placeholder: 'First Name',
+                  controller: TextEditingController(text: widget.firstName),
                   state: InputFieldState.defaultState,
+                  enabled: false,
+                ),
+                const SizedBox(height: 20),
+                InputFieldAtom(
+                  label: 'Last Name',
+                  placeholder: 'Last Name',
+                  controller: TextEditingController(text: widget.lastName),
+                  state: InputFieldState.defaultState,
+                  enabled: false,
+                ),
+                const SizedBox(height: 20),
+                InputFieldAtom(
+                  label: 'Email',
+                  placeholder: 'Email',
+                  controller: TextEditingController(text: widget.email),
+                  state: InputFieldState.defaultState,
+                  enabled: false,
+                ),
+                const SizedBox(height: 20),
+                InputFieldAtom(
+                  label: 'Phone Number',
+                  placeholder: 'Phone Number',
+                  controller: TextEditingController(text: widget.phoneNumber),
+                  state: InputFieldState.defaultState,
+                  enabled: false,
                 ),
                 const SizedBox(height: 32),
                 InputFieldAtom(
                   label: 'NIC',
                   placeholder: 'NIC',
                   controller: _nicController,
-                  keyboardType: TextInputType.text,
                   state: InputFieldState.defaultState,
                 ),
                 const SizedBox(height: 32),
                 InputFieldAtom(
-                  label: 'First Name',
-                  placeholder: 'First Name',
-                  controller: _firstNameController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Last Name',
-                  placeholder: 'Last Name',
-                  controller: _lastNameController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Telephone Number',
-                  placeholder: 'Telephone Number',
-                  controller: _telephoneController,
-                  keyboardType: TextInputType.phone,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Adress',
+                  label: 'Address',
                   placeholder: 'Address',
                   controller: _addressController,
-                  keyboardType: TextInputType.streetAddress,
                   state: InputFieldState.defaultState,
                 ),
-                const SizedBox(height: 72),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      SizedBox(
-                        width: 220,
-                        height: 48,
-                        child: CustomButton(
-                          label: 'Next',
-                          type: ButtonType.primary,
-                          size: ButtonSize.medium,
-                          onTap: _handleNext,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    label: _isSaving ? 'Saving...' : 'Next',
+                    type: ButtonType.primary,
+                    size: ButtonSize.medium,
+                    onTap: _handleNext,
                   ),
                 ),
               ],

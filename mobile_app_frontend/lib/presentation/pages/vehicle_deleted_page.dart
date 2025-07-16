@@ -5,6 +5,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/successful-message.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart'; // or next step
 
 class VehicleDeletedPage extends StatelessWidget {
   const VehicleDeletedPage({super.key});
@@ -19,8 +20,7 @@ class VehicleDeletedPage extends StatelessWidget {
           ),
           SuccessfulMessage(
               para1: 'Vehicle Deleted',
-              para2:
-                  'Your Vehicle was successfully deleted.'),
+              para2: 'Your Vehicle was successfully deleted.'),
           SizedBox(
             height: 376,
           ),
@@ -29,7 +29,8 @@ class VehicleDeletedPage extends StatelessWidget {
             type: ButtonType.primary,
             size: ButtonSize.large,
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => VehicleDetailsPage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LoginPage()));
             },
             customWidth: 360.0,
             customHeight: 56.0,
