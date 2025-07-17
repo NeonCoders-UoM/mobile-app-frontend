@@ -87,6 +87,8 @@ class ServiceManagementDemo extends StatelessWidget {
                     vehicleId: 1,
                     vehicleName: 'Mustang 1977',
                     vehicleRegistration: 'AB89B395',
+                    token:
+                        null, // Demo page - would pass real token in production
                   ),
                 ),
               ),

@@ -41,6 +41,7 @@ dependencies:
   google_fonts: ^6.2.1
   shared_preferences: ^2.5.3
   fl_chart: ^0.70.2
+  url_launcher: ^6.1.11
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +80,7 @@ flutter:
     - assets/images/mustang_top.png
     - assets/images/mustang.png
     - assets/images/Mustang.svg
+    - assets/images/emergency.png
     - assets/icons/document_card_icon.svg
     - assets/icons/success_msg.png
     - assets/icons/visa.png

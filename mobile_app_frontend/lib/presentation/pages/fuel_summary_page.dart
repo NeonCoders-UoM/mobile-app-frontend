@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app_frontend/core/config/api_config.dart';
 import 'package:mobile_app_frontend/data/models/fuel_efficiency_model.dart';
 import 'package:mobile_app_frontend/data/repositories/fuel_efficiency_repository.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
@@ -11,7 +10,14 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
 class FuelSummaryPage extends StatefulWidget {
-  const FuelSummaryPage({super.key});
+  final int vehicleId;
+  final String token;
+
+  const FuelSummaryPage({
+    super.key,
+    required this.vehicleId,
+    required this.token,
+  });
 
   @override
   FuelSummaryPageState createState() => FuelSummaryPageState();
@@ -35,7 +41,7 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
   }
 
   Future<void> _testBackendConnection() async {
-    final isConnected = await _repository.testConnection();
+    final isConnected = await _repository.testConnection(token: widget.token);
     setState(() {
       _isBackendConnected = isConnected;
     });
@@ -48,13 +54,17 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
     });
 
     try {
-      // Use default vehicle ID from config
-      final records =
-          await _repository.getFuelRecords(ApiConfig.defaultVehicleId);
-      final summary = await _repository
-          .getFuelSummary(ApiConfig.defaultVehicleId, year: _selectedYear);
+      // Use vehicle ID and token from widget parameters
+      final records = await _repository.getFuelRecords(widget.vehicleId,
+          token: widget.token);
+      final summary = await _repository.getFuelSummary(
+        widget.vehicleId,
+        year: _selectedYear,
+        token: widget.token,
+      );
       final monthlyData = await _repository.getMonthlyChartData(
-          ApiConfig.defaultVehicleId, _selectedYear);
+          widget.vehicleId, _selectedYear,
+          token: widget.token);
 
       setState(() {
         _fuelEntries.clear();
@@ -83,13 +93,14 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
     try {
       // Convert legacy FuelUsage to FuelEfficiencyModel
       final fuelRecord = FuelEfficiencyModel(
-        vehicleId: ApiConfig.defaultVehicleId,
+        vehicleId: widget.vehicleId,
         date: entry.date, // Updated to use 'date' field to match backend DTO
         fuelAmount: entry.amount,
         fuelType: 'Petrol', // Default type, could be made selectable
       );
 
-      final success = await _repository.addFuelRecord(fuelRecord);
+      final success =
+          await _repository.addFuelRecord(fuelRecord, token: widget.token);
 
       if (success) {
         // Add small delay to ensure database commit
@@ -345,12 +356,14 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
 
     try {
       final summary = await _repository.getFuelSummary(
-        ApiConfig.defaultVehicleId,
+        widget.vehicleId,
         year: year,
+        token: widget.token,
       );
       final monthlyData = await _repository.getMonthlyChartData(
-        ApiConfig.defaultVehicleId,
+        widget.vehicleId,
         year,
+        token: widget.token,
       );
 
       setState(() {

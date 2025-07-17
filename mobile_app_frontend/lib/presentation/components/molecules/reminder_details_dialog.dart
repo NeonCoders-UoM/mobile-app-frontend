@@ -18,6 +18,7 @@ class ReminderDetailsDialog extends StatelessWidget {
   final VoidCallback onDelete;
   final Map<String, dynamic> reminder; // Add the full reminder data
   final int index;
+  final String? token; // Add token parameter
 
   const ReminderDetailsDialog({
     Key? key,
@@ -31,6 +32,7 @@ class ReminderDetailsDialog extends StatelessWidget {
     required this.onDelete,
     required this.reminder,
     required this.index,
+    this.token, // Add token to constructor
   }) : super(key: key);
 
   // Helper method to get status text and color
@@ -149,6 +151,7 @@ class ReminderDetailsDialog extends StatelessWidget {
                       builder: (context) => EditReminderPage(
                         reminder: reminder,
                         index: index,
+                        token: token,
                       ),
                     ),
                   );

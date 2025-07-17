@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
+import 'package:mobile_app_frontend/presentation/pages/emergencyservice_page.dart';
 import 'package:mobile_app_frontend/services/auth_service.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_header.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/vehicle_detail_row.dart';
@@ -130,14 +131,35 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                         "Documents", const AppointmentPage()),
                     _iconWithLabel(context, "assets/icons/appointments.svg",
                         "Appointments", const AppointmentPage()),
-                    _iconWithLabel(context, "assets/icons/fuel_efficiency.svg",
-                        "Fuel Efficiency", const FuelSummaryPage()),
-                    _iconWithLabel(context, "assets/icons/service_history.svg",
-                        "Service History", const ServiceHistoryPage()),
-                    _iconWithLabel(context, "assets/icons/set_reminders.svg",
-                        "Set Reminders", const RemindersPage()),
+                    _iconWithLabel(
+                        context,
+                        "assets/icons/fuel_efficiency.svg",
+                        "Fuel Efficiency",
+                        FuelSummaryPage(
+                          vehicleId: _vehicle?['vehicleId'] ?? 1,
+                          token: widget.token,
+                        )),
+                    _iconWithLabel(
+                        context,
+                        "assets/icons/service_history.svg",
+                        "Service History",
+                        ServiceHistoryPage(
+                          vehicleId: _vehicle?['vehicleId'] ?? 1,
+                          vehicleName: _vehicle?['model'] ?? 'Vehicle',
+                          vehicleRegistration:
+                              _vehicle?['registrationNumber'] ?? 'Unknown',
+                          token: widget.token,
+                        )),
+                    _iconWithLabel(
+                        context,
+                        "assets/icons/set_reminders.svg",
+                        "Set Reminders",
+                        RemindersPage(
+                          vehicleId: _vehicle?['vehicleId'] ?? 1,
+                          token: widget.token,
+                        )),
                     _iconWithLabel(context, "assets/icons/emergency.svg",
-                        "Emergency", const AppointmentPage()),
+                        "Emergency", EmergencyservicePage(token: widget.token)),
                     if (_vehicle != null)
                       _iconWithLabel(
                         context,
