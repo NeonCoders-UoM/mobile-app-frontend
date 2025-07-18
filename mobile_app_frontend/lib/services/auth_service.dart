@@ -96,6 +96,89 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>?> getCustomerDetails({
+    required int customerId,
+    required String token,
+  }) async {
+    final url = Uri.parse('$_baseUrl/Customers/$customerId');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('🔑 GET Customer Details for CustomerID: $customerId');
+      print('🔐 Using Token: $token');
+      print('🔍 Response Code: ${response.statusCode}');
+      print('🔍 Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ Customer details fetched: $data');
+        return data;
+      } else {
+        print(
+            '❌ Failed to fetch customer details: ${response.statusCode} ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Error fetching customer details: $e');
+      return null;
+    }
+  }
+
+  Future<bool> updateCustomerProfile({
+    required int customerId,
+    required String token,
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phoneNumber,
+    required String nic,
+    required String address,
+  }) async {
+    final url = Uri.parse('$_baseUrl/Auth/update-customer-details');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "email": email,
+          "firstName": firstName,
+          "lastName": lastName,
+          "phoneNumber": phoneNumber,
+          "nic": nic,
+          "address": address,
+        }),
+      );
+
+      print('🔑 UPDATE Customer Profile for CustomerID: $customerId');
+      print('🔐 Using Token: $token');
+      print('🔍 Response Code: ${response.statusCode}');
+      print('🔍 Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('✅ Customer profile updated successfully');
+        return true;
+      } else {
+        print(
+            '❌ Failed to update customer profile: ${response.statusCode} ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error updating customer profile: $e');
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>?> loginCustomer({
     required String email,
     required String password,
