@@ -7,9 +7,15 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 
 class VehicledetailsPage extends StatefulWidget {
-  const VehicledetailsPage({Key? key}) : super(key: key);
+  final int customerId; // ✅ Pass this in!
+
+  const VehicledetailsPage({Key? key, required this.customerId})
+      : super(key: key);
 
   @override
   State<VehicledetailsPage> createState() => _VehicledetailsPageState();
@@ -23,10 +29,45 @@ class _VehicledetailsPageState extends State<VehicledetailsPage> {
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _modelController = TextEditingController();
   final TextEditingController _fuelTypeController = TextEditingController();
+  final _authService = AuthService();
 
-  void _handleNext() {
-    // Handle the next button press
-    print('Proceeding to the next step');
+  String? _selectedBrand;
+
+  void _handleNext() async {
+    final regNo = _registrationNumberController.text.trim();
+    final chassisNo = _chassisNumberController.text.trim();
+    final category = _categoryController.text.trim();
+    final model = _modelController.text.trim();
+    final fuel = _fuelTypeController.text.trim();
+    final brand = _selectedBrand ?? '';
+
+    if (regNo.isEmpty || chassisNo.isEmpty || model.isEmpty || brand.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill all required fields')),
+      );
+      return;
+    }
+
+    final success = await _authService.registerVehicle(
+      customerId: widget.customerId,
+      registrationNumber: regNo,
+      chassisNumber: chassisNo,
+      category: category,
+      model: model,
+      brand: brand,
+      fuel: fuel,
+    );
+
+    if (success) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => LoginPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vehicle registration failed')),
+      );
+    }
   }
 
   @override
@@ -71,11 +112,13 @@ class _VehicledetailsPageState extends State<VehicledetailsPage> {
                 ),
                 const SizedBox(height: 32),
                 CustomDropdownField(
-                  label: "Vehicle Type",
+                  label: "Vehicle Brand",
                   items: ["Honda", "Benz", "BMW"],
-                  hintText: 'Choose a Type',
+                  hintText: 'Choose a Brand',
                   onChanged: (val) {
-                    print("Selected: $val");
+                    setState(() {
+                      _selectedBrand = val;
+                    });
                   },
                 ),
                 const SizedBox(height: 32),
@@ -97,21 +140,15 @@ class _VehicledetailsPageState extends State<VehicledetailsPage> {
                 const SizedBox(height: 72),
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      SizedBox(
-                        width: 220,
-                        height: 48,
-                        child: CustomButton(
-                          label: 'Confirm',
-                          type: ButtonType.primary,
-                          size: ButtonSize.medium,
-                          onTap: _handleNext,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
+                  child: SizedBox(
+                    width: 220,
+                    height: 48,
+                    child: CustomButton(
+                      label: 'Confirm',
+                      type: ButtonType.primary,
+                      size: ButtonSize.medium,
+                      onTap: _handleNext,
+                    ),
                   ),
                 ),
               ],

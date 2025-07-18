@@ -1,3 +1,5 @@
+// otp_page.dart
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
@@ -8,20 +10,34 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_t
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'package:mobile_app_frontend/presentation/pages/personaldetails_page.dart';
 
 class OtpPage extends StatefulWidget {
-  const OtpPage({super.key});
+  final String email;
+  final String firstName;
+  final String lastName;
+  final String phoneNumber;
+
+  const OtpPage({
+    super.key,
+    required this.email,
+    required this.firstName,
+    required this.lastName,
+    required this.phoneNumber,
+  });
 
   @override
-  State<OtpPage> createState() => _OtpScreenState();
+  State<OtpPage> createState() => _OtpPageState();
 }
 
-class _OtpScreenState extends State<OtpPage> {
+class _OtpPageState extends State<OtpPage> {
   List<String> otpValues = List.filled(6, '');
-  int remainingSeconds = 30;
+  int remainingSeconds = 600;
   OtpStatus status = OtpStatus.initial;
   String message = "OTP expired. Please request a new code.";
   Timer? _timer;
+  final _authService = AuthService();
 
   @override
   void initState() {
@@ -31,7 +47,7 @@ class _OtpScreenState extends State<OtpPage> {
 
   void _startCountdown() {
     setState(() {
-      remainingSeconds = 30;
+      remainingSeconds = 600;
       status = OtpStatus.initial;
     });
 
@@ -64,12 +80,22 @@ class _OtpScreenState extends State<OtpPage> {
     _startCountdown();
   }
 
-  void _submitOtp() {
+  Future<void> _submitOtp() async {
     String enteredOtp = otpValues.join();
-    if (enteredOtp == "123456") {
-      setState(() {
-        status = OtpStatus.success;
-      });
+    final success = await _authService.verifyOtp(widget.email, enteredOtp);
+    if (success) {
+      // ✅ Navigate with data to PersonaldetailsPage
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PersonaldetailsPage(
+            firstName: widget.firstName,
+            lastName: widget.lastName,
+            email: widget.email,
+            phoneNumber: widget.phoneNumber,
+          ),
+        ),
+      );
     } else {
       setState(() {
         status = OtpStatus.error;
@@ -78,7 +104,7 @@ class _OtpScreenState extends State<OtpPage> {
     }
   }
 
-  bool get _hasInput => otpValues.any((e) => e.isNotEmpty);
+  bool get _hasInput => otpValues.every((e) => e.isNotEmpty);
 
   @override
   void dispose() {

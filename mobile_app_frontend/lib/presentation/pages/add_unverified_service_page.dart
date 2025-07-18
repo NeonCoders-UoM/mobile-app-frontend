@@ -13,12 +13,14 @@ class AddUnverifiedServicePage extends StatefulWidget {
   final int vehicleId;
   final String vehicleName;
   final String vehicleRegistration;
+  final String? token; // Add token parameter
 
   const AddUnverifiedServicePage({
     Key? key,
     required this.vehicleId,
     required this.vehicleName,
     required this.vehicleRegistration,
+    this.token, // Add token parameter
   }) : super(key: key);
 
   @override
@@ -152,12 +154,13 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
 
       // Add to repository (will try backend first, fallback to local)
       final success = await _serviceHistoryRepository
-          .addUnverifiedService(unverifiedService);
+          .addUnverifiedService(unverifiedService, token: widget.token);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Service record added! Check console for backend status.'),
+            content:
+                Text('Service record added! Check console for backend status.'),
             backgroundColor: Colors.green,
           ),
         );

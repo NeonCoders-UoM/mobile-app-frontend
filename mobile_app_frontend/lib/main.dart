@@ -3,6 +3,8 @@ import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/costestimate_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/home_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/start_page.dart';
 
 void main() {
   runApp(
@@ -14,12 +16,6 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: VehicleDetailsPage()
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: StartPage());
   }
 }
-
-
-

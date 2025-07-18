@@ -4,8 +4,9 @@ import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 
 class ProfileOptionCard extends StatefulWidget {
   final String text;
+  final VoidCallback? onTap;
 
-  const ProfileOptionCard({super.key, required this.text});
+  const ProfileOptionCard({super.key, required this.text, this.onTap});
 
   @override
   _ProfileOptionCardState createState() => _ProfileOptionCardState();
@@ -21,6 +22,10 @@ class _ProfileOptionCardState extends State<ProfileOptionCard> {
         setState(() {
           _isTapped = !_isTapped;
         });
+        // Call the provided onTap callback if available
+        if (widget.onTap != null) {
+          widget.onTap!();
+        }
       },
       child: Container(
         width: 400,

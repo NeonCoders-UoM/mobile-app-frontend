@@ -14,11 +14,13 @@ import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_he
 class EditReminderPage extends StatefulWidget {
   final Map<String, dynamic> reminder;
   final int index;
+  final String? token;
 
   const EditReminderPage({
     Key? key,
     required this.reminder,
     required this.index,
+    this.token,
   }) : super(key: key);
 
   @override
@@ -226,13 +228,14 @@ class _EditReminderPageState extends State<EditReminderPage> {
           isActive: widget.reminder['isActive'] ?? true,
         );
 
-        print('Created reminder model: ${updatedReminder.toJson()}');
+        print('🔧 Created reminder model: ${updatedReminder.toJson()}');
 
         // Update via repository
-        await _reminderRepository.updateReminder(
-            reminderIdInt, updatedReminder);
+        print('🔑 Using token: ${widget.token != null ? "✅ Yes" : "❌ No"}');
+        await _reminderRepository.updateReminder(reminderIdInt, updatedReminder,
+            token: widget.token);
 
-        print('Successfully updated reminder');
+        print('✅ Successfully updated reminder');
 
         // Return updated reminder data instead of just true
         final updatedData = {

@@ -9,8 +9,9 @@ class ApiConfig {
       'https://staging-api.your-domain.com/api';
   static const String prodBaseUrl = 'https://api.your-domain.com/api';
 
-  // Default vehicle ID (in a real app, this would come from user session)
-  static const int defaultVehicleId = 1; // Changed to int to match backend
+  // Default vehicle ID for legacy/testing purposes only
+  // TODO: Remove this and use dynamic vehicle data from authenticated user
+  static const int defaultVehicleId = 1;
 
   // API timeouts
   static const Duration connectTimeout = Duration(seconds: 30);
@@ -35,6 +36,9 @@ class ApiConfig {
       '/VehicleServiceHistory/{vehicleId}/{serviceHistoryId}';
   static const String deleteVehicleServiceHistoryEndpoint =
       '/VehicleServiceHistory/{vehicleId}/{serviceHistoryId}';
+
+  // Emergency Call Center endpoints
+  static const String emergencyCallCenterEndpoint = '/EmergencyCallCenter';
 
   // Get the current environment's base URL
   static String get currentBaseUrl {
@@ -105,4 +109,38 @@ class ApiConfig {
   static String getVehicleServiceHistoryByIdUrl(
           int vehicleId, int serviceHistoryId) =>
       getServiceHistoryByIdUrl(vehicleId, serviceHistoryId);
+
+  // Fuel Efficiency URL builders
+  static String getFuelEfficienciesByVehicleUrl(int vehicleId) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId';
+
+  static String getFuelEfficiencySummaryUrl(int vehicleId, {int? year}) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/summary${year != null ? '?year=$year' : ''}';
+
+  static String getMonthlyChartDataUrl(int vehicleId, int year) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/chart/$year';
+
+  static String addFuelEfficiencyUrl() => '$currentBaseUrl/FuelEfficiency';
+
+  static String updateFuelEfficiencyUrl(int id) =>
+      '$currentBaseUrl/FuelEfficiency/$id';
+
+  static String deleteFuelEfficiencyUrl(int id) =>
+      '$currentBaseUrl/FuelEfficiency/$id';
+
+  static String getMonthlyFuelRecordsUrl(int vehicleId, int year, int month) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/monthly/$year/$month';
+
+  static String getFuelForPeriodUrl(
+          int vehicleId, DateTime startDate, DateTime endDate) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/period?startDate=${startDate.toIso8601String()}&endDate=${endDate.toIso8601String()}';
+
+  static String getAverageFuelPerMonthUrl(int vehicleId, int year) =>
+      '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/average/$year';
+
+  // Emergency Call Center URL methods
+  static String getAllEmergencyCallCentersUrl() =>
+      '$currentBaseUrl$emergencyCallCenterEndpoint';
+
+  static String testConnectionUrl() => '$currentBaseUrl/test';
 }

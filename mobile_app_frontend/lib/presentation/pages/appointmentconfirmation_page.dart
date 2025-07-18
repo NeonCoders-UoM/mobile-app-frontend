@@ -10,7 +10,6 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_t
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/date_picker.dart';
 
-
 class AppointmentconfirmationPage extends StatefulWidget {
   final DateTime selectedDate;
   final List<String> selectedServices;
@@ -58,7 +57,8 @@ class _AppointmentconfirmationPageState
         title: 'Appointment',
         showTitle: true,
         onBackPressed: () => {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const AppointmentPage()))
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const AppointmentPage()))
         },
       ),
       body: SafeArea(
@@ -166,7 +166,11 @@ class _AppointmentconfirmationPageState
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ServiceCenterPage()),);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ServiceCenterPage()),
+                    );
                   },
                 ),
               ),
