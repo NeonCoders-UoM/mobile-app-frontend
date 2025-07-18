@@ -195,7 +195,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
         'http://localhost:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
 
     final fileExtension = fileName.toLowerCase().split('.').last;
-    final isImage = ['jpg', 'jpeg', 'png'].contains(fileExtension);
     final isSupportedType =
         ['pdf', 'jpg', 'jpeg', 'png', 'txt'].contains(fileExtension);
 
@@ -224,95 +223,24 @@ class _DocumentsPageState extends State<DocumentsPage> {
       return;
     }
 
-    if (isImage) {
-      // Display image using Image.network
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(title),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.height * 0.8,
-            child: Image.network(
-              previewUrl,
-              fit: BoxFit.contain,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const Center(child: CircularProgressIndicator());
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const Center(
-                    child: Text('Error loading image',
-                        style: TextStyle(color: Colors.red)));
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-            TextButton(
-              onPressed: () {
-                downloadFile(downloadUrl, fileName);
-              },
-              child: const Text('Download'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await deleteDocument(documentId, fileName, title);
-              },
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            ),
-          ],
+    // Show full-screen dialog for supported file types
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => FullScreenDocumentPreview(
+          previewUrl: previewUrl,
+          downloadUrl: downloadUrl,
+          fileName: fileName,
+          title: title,
+          documentId: documentId,
+          onDownload: () => downloadFile(downloadUrl, fileName),
+          onDelete: () async {
+            await deleteDocument(documentId, fileName, title);
+            Navigator.of(context).pop();
+          },
         ),
-      );
-    } else {
-      // Existing logic for non-image files (pdf, txt) using iframe
-      final iframe = html.IFrameElement()
-        ..src = previewUrl
-        ..style.border = 'none'
-        ..style.width = '100%'
-        ..style.height = '100%';
-
-      // ignore: undefined_prefixed_name
-      ui.platformViewRegistry.registerViewFactory(
-        'iframeElement-$fileUrl',
-        (int viewId) => iframe,
-      );
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(title),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.height * 0.8,
-            child: HtmlElementView(viewType: 'iframeElement-$fileUrl'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-            TextButton(
-              onPressed: () {
-                downloadFile(downloadUrl, fileName);
-              },
-              child: const Text('Download'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await deleteDocument(documentId, fileName, title);
-              },
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-    }
+      ),
+    );
   }
 
   String getDocumentTitle(Document doc) {
@@ -391,6 +319,87 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 }
 
+class FullScreenDocumentPreview extends StatelessWidget {
+  final String previewUrl;
+  final String downloadUrl;
+  final String fileName;
+  final String title;
+  final int documentId;
+  final VoidCallback onDownload;
+  final VoidCallback onDelete;
+
+  const FullScreenDocumentPreview({
+    Key? key,
+    required this.previewUrl,
+    required this.downloadUrl,
+    required this.fileName,
+    required this.title,
+    required this.documentId,
+    required this.onDownload,
+    required this.onDelete,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final fileExtension = fileName.toLowerCase().split('.').last;
+    final isImage = ['jpg', 'jpeg', 'png'].contains(fileExtension);
+
+    // Register iframe for non-image files
+    if (!isImage) {
+      final iframe = html.IFrameElement()
+        ..src = previewUrl
+        ..style.border = 'none'
+        ..style.width = '100%'
+        ..style.height = '100%';
+
+      // ignore: undefined_prefixed_name
+      ui.platformViewRegistry.registerViewFactory(
+        'iframeElement-$previewUrl',
+        (int viewId) => iframe,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.neutral400,
+      appBar: AppBar(
+        backgroundColor: AppColors.neutral450,
+        title: Text(title, style: AppTextStyles.textSmSemibold.copyWith(color: AppColors.neutral100)),
+        leading: IconButton(
+          icon: const Icon(Icons.close , color: AppColors.neutral100,),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download, color: AppColors.neutral100),
+            onPressed: onDownload,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete,color: AppColors.neutral100),
+            onPressed: onDelete,
+          ),
+        ],
+      ),
+      body: isImage
+          ? Image.network(
+              previewUrl,
+              fit: BoxFit.contain,
+              width: double.infinity,
+              height: double.infinity,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return const Center(child: CircularProgressIndicator());
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                    child: Text('Error loading image',
+                        style: TextStyle(color: Colors.red)));
+              },
+            )
+          : HtmlElementView(viewType: 'iframeElement-$previewUrl'),
+    );
+  }
+}
+
 class UploadDocumentDialog extends StatefulWidget {
   final int customerId;
   final int vehicleId;
@@ -428,7 +437,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
   ];
 
   bool requiresExpiration(int documentType) {
-    return [1, 2, 3, 4, 5].contains(documentType); // Updated to match backend
+    return [1, 2, 3, 4, 5].contains(documentType);
   }
 
   Future<void> submitForm() async {
@@ -485,7 +494,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Upload Document'),
+      backgroundColor: AppColors.neutral400,
+      title: const Text('Upload Document', style: TextStyle(color: AppColors.neutral150)),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -494,15 +504,17 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
             children: [
               Text(
                 'File: ${widget.fileName}',
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.neutral200),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Document Type'),
+                decoration: const InputDecoration(labelText: 'Document Type',
+                labelStyle: TextStyle(color: AppColors.neutral200)),
+                dropdownColor: AppColors.neutral450,
                 items: documentTypes
                     .map((type) => DropdownMenuItem(
                           value: type['value'] as int,
-                          child: Text(type['name'] as String),
+                          child: Text(type['name'] as String, style: TextStyle(color: AppColors.neutral200)),
                         ))
                     .toList(),
                 value: documentType,
@@ -520,8 +532,10 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
               const SizedBox(height: 16),
               if (documentType != null && requiresExpiration(documentType!))
                 TextFormField(
-                  decoration:
-                      const InputDecoration(labelText: 'Expiration Date'),
+                  decoration: InputDecoration(
+                      labelText: 'Expiration Date',
+                      labelStyle: const TextStyle(color: AppColors.neutral200),
+                  ),
                   readOnly: true,
                   controller: TextEditingController(
                     text: expirationDate != null
@@ -545,8 +559,10 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                 ),
               const SizedBox(height: 16),
               TextFormField(
+                style: const TextStyle(color: AppColors.neutral200),
                 decoration:
-                    const InputDecoration(labelText: 'Display Name (Optional)'),
+                    const InputDecoration(labelText: 'Display Name (Optional)',
+                    labelStyle: TextStyle(color: AppColors.neutral200)),
                 onChanged: (value) => displayName = value,
               ),
             ],
