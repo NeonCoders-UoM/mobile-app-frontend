@@ -15,7 +15,10 @@ void main() async {
   // Test 1: Backend Connection
   print('\n1. 🌐 Testing Backend Connection');
   try {
-    final isConnected = await repository.testConnection();
+    final isConnected = await repository.testConnection(
+        token: null,
+        testVehicleId:
+            testVehicleId); // Test without token but with test vehicle ID
     print('✅ Connection Status: ${isConnected ? "Connected" : "Failed"}');
 
     if (!isConnected) {
@@ -39,7 +42,8 @@ void main() async {
   // Test 2: Get Service History for Vehicle
   print('\n2. 📋 Testing Get Service History for Vehicle $testVehicleId');
   try {
-    final services = await repository.getServiceHistory(testVehicleId);
+    final services = await repository.getServiceHistory(testVehicleId,
+        token: null); // Test without token
     print('✅ Retrieved ${services.length} service records');
 
     if (services.isNotEmpty) {
@@ -74,14 +78,17 @@ void main() async {
       notes: 'This is a test unverified service record',
     );
 
-    print('📤 Attempting to add unverified service (should try backend first)...');
-    final success = await repository.addUnverifiedService(testService);
+    print(
+        '📤 Attempting to add unverified service (should try backend first)...');
+    final success = await repository.addUnverifiedService(testService,
+        token: null); // Test without token
     print('✅ Add unverified service result: ${success ? "Success" : "Failed"}');
-    
+
     if (success) {
       // Verify it was added by checking the service history
       print('🔍 Verifying service was added...');
-      final updatedServices = await repository.getServiceHistory(testVehicleId);
+      final updatedServices = await repository.getServiceHistory(testVehicleId,
+          token: null); // Test without token
       final addedService = updatedServices.firstWhere(
         (s) => s.serviceType == 'Test Oil Change',
         orElse: () => throw Exception('Service not found'),
@@ -91,8 +98,9 @@ void main() async {
       print('   ✓ Status: ${addedService.status}');
       print('   ✓ Provider: ${addedService.serviceProvider}');
       print('   ✓ Is Verified: ${addedService.isVerified}');
-      
-      if (addedService.serviceHistoryId != null && addedService.serviceHistoryId! > 0) {
+
+      if (addedService.serviceHistoryId != null &&
+          addedService.serviceHistoryId! > 0) {
         print('   🎉 SUCCESS: Service was sent to backend (has positive ID)');
       } else {
         print('   📱 INFO: Service stored locally only (negative/null ID)');
@@ -116,7 +124,8 @@ void main() async {
       notes: 'This is a test verified service record',
     );
 
-    final success = await repository.addVerifiedService(testVerifiedService);
+    final success = await repository.addVerifiedService(testVerifiedService,
+        token: null); // Test without token
     print('✅ Add verified service via API: ${success ? "Success" : "Failed"}');
 
     if (!success) {
@@ -132,7 +141,8 @@ void main() async {
   // Test 5: Get Service Statistics
   print('\n5. 📊 Testing Service Statistics');
   try {
-    final stats = await repository.getServiceStatistics(testVehicleId);
+    final stats = await repository.getServiceStatistics(testVehicleId,
+        token: null); // Test without token
     print('✅ Service Statistics:');
     print('   Total Services: ${stats['totalServices']}');
     print('   Verified Services: ${stats['verifiedServices']}');

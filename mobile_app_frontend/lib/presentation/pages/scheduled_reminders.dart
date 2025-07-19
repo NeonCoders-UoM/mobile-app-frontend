@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/data/models/reminder_model.dart';
 import 'package:mobile_app_frontend/data/repositories/reminder_repository.dart';
-import 'package:mobile_app_frontend/core/config/api_config.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/add_reminders_button.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/reminder_details_dialog.dart';
@@ -11,7 +10,14 @@ import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_he
 import 'package:mobile_app_frontend/presentation/pages/set_reminder_page.dart';
 
 class RemindersPage extends StatefulWidget {
-  const RemindersPage({Key? key}) : super(key: key);
+  final int vehicleId;
+  final String? token;
+
+  const RemindersPage({
+    Key? key,
+    required this.vehicleId,
+    this.token,
+  }) : super(key: key);
 
   @override
   _RemindersPageState createState() => _RemindersPageState();
@@ -26,8 +32,9 @@ class _RemindersPageState extends State<RemindersPage> {
   // Repository
   final ReminderRepository _reminderRepository = ReminderRepository();
 
-  // Vehicle ID - In a real app, this would come from user session or route parameters
-  final int _vehicleId = ApiConfig.defaultVehicleId;
+  // Get vehicle ID and token from widget
+  int get _vehicleId => widget.vehicleId;
+  String? get _token => widget.token;
 
   @override
   void initState() {
@@ -43,11 +50,13 @@ class _RemindersPageState extends State<RemindersPage> {
     });
 
     try {
-      print('Loading reminders for vehicle $_vehicleId');
+      print('🔍 Loading reminders for vehicle $_vehicleId');
+      print('🔑 Using token: ${_token != null ? "✅ Yes" : "❌ No"}');
       final List<ServiceReminderModel> reminderModels =
-          await _reminderRepository.getVehicleReminders(_vehicleId);
+          await _reminderRepository.getVehicleReminders(_vehicleId,
+              token: _token);
 
-      print('Loaded ${reminderModels.length} reminders from backend');
+      print('✅ Loaded ${reminderModels.length} reminders from backend');
       for (var reminder in reminderModels) {
         print(
             'Reminder: ${reminder.notes ?? reminder.serviceName} - ${reminder.reminderDate} - ID: ${reminder.serviceReminderId}');
@@ -130,7 +139,9 @@ class _RemindersPageState extends State<RemindersPage> {
 
     if (reminderId != null) {
       try {
-        await _reminderRepository.deleteReminder(reminderId);
+        print('🗑️ Deleting reminder $reminderId');
+        print('🔑 Using token: ${_token != null ? "✅ Yes" : "❌ No"}');
+        await _reminderRepository.deleteReminder(reminderId, token: _token);
 
         // Refresh the entire list from backend to ensure consistency
         await _loadReminders();
@@ -296,7 +307,10 @@ class _RemindersPageState extends State<RemindersPage> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const SetReminderPage()),
+                      builder: (context) => SetReminderPage(
+                            vehicleId: _vehicleId,
+                            token: _token,
+                          )),
                 );
 
                 print('Returned from SetReminderPage with result: $result');
@@ -392,6 +406,7 @@ class _RemindersPageState extends State<RemindersPage> {
                             lastServiceDate: 'Not available',
                             reminder: reminderMap, // Pass the map version
                             index: index, // Pass the index
+                            token: _token, // Pass the token for authentication
                             onEdit:
                                 () {}, // Not used anymore, but required by the constructor
                             onDelete: () {

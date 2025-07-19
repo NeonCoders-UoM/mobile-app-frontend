@@ -6,6 +6,8 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'package:mobile_app_frontend/presentation/pages/otp_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -15,6 +17,8 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _authService = AuthService();
+
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -35,26 +39,62 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  void _handleSignup() {
+  Future<void> _handleSignup() async {
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
     final email = _emailController.text.trim();
     final phone = _phoneController.text.trim();
     final password = _passwordController.text;
 
     setState(() {
+      _fnameFieldState = firstName.isEmpty
+          ? InputFieldState.error
+          : InputFieldState.defaultState;
+      _lnameFieldState = lastName.isEmpty
+          ? InputFieldState.error
+          : InputFieldState.defaultState;
       _emailFieldState =
           email.isEmpty ? InputFieldState.error : InputFieldState.defaultState;
-      _phoneFieldState = RegExp(r'^\+?\d{9,15}$').hasMatch(phone)
-          ? InputFieldState.defaultState
-          : InputFieldState.error;
+      _phoneFieldState =
+          phone.isEmpty ? InputFieldState.error : InputFieldState.defaultState;
       _passwordFieldState = password.isEmpty
           ? InputFieldState.error
           : InputFieldState.defaultState;
     });
 
-    if (_emailFieldState == InputFieldState.defaultState &&
-        _phoneFieldState == InputFieldState.defaultState &&
-        _passwordFieldState == InputFieldState.defaultState) {
-      print('Signing up with email: $email');
+    if ([
+      _fnameFieldState,
+      _lnameFieldState,
+      _emailFieldState,
+      _phoneFieldState,
+      _passwordFieldState
+    ].contains(InputFieldState.error)) {
+      return;
+    }
+
+    final success = await _authService.registerCustomer(
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: password,
+      phoneNumber: phone,
+    );
+
+    if (success) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => OtpPage(
+                  email: _emailController.text.trim(),
+                  firstName: _firstNameController.text.trim(),
+                  lastName: _lastNameController.text.trim(),
+                  phoneNumber: _phoneController.text.trim(),
+                )),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to register. Try again.')),
+      );
     }
   }
 

@@ -4,9 +4,10 @@ import 'package:mobile_app_frontend/presentation/components/atoms/appointment_ca
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointmentdateselection_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart'; // or next step
 
 class AppointmentPage extends StatelessWidget {
-  const AppointmentPage( {super.key});
+  const AppointmentPage({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,7 +15,8 @@ class AppointmentPage extends StatelessWidget {
         title: 'Appointments',
         showTitle: true,
         onBackPressed: () => {
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> const VehicleDetailsPage()))
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const LoginPage()))
         },
       ),
       backgroundColor: AppColors.neutral400,
@@ -43,16 +45,18 @@ class AppointmentPage extends StatelessWidget {
               date: "Sat, Feb, 2025",
             ),
           ],
-          
         ),
       ),
       floatingActionButton: FloatingActionButton(
-    onPressed: () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const AppointmentdateselectionPage()));
-    },
-    backgroundColor: AppColors.neutral150, // or your preferred color
-    child: const Icon(Icons.add),
-  ),
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const AppointmentdateselectionPage()));
+        },
+        backgroundColor: AppColors.neutral150, // or your preferred color
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

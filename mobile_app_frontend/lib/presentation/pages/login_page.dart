@@ -5,6 +5,9 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_fi
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -17,6 +20,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  final _authService = AuthService();
+
   InputFieldState _emailFieldState = InputFieldState.defaultState;
   InputFieldState _passwordFieldState = InputFieldState.defaultState;
 
@@ -26,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -42,7 +47,36 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    print('Logging in with email: $email and password: $password');
+    final result = await _authService.loginCustomer(
+      email: email,
+      password: password,
+    );
+
+    if (result != null) {
+      final token = result['token'];
+      final customerId = result['customerId'];
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VehicleDetailsHomePage(
+            customerId: customerId,
+            token: token,
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Invalid credentials or email not verified')),
+      );
+    }
+  }
+
+  void _navigateToRegister() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const RegisterPage()),
+    );
   }
 
   @override
@@ -111,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
                 const Center(
                   child: Text(
-                    'Or Signup with',
+                    'Or Sign in with',
                     style: TextStyle(color: Colors.white70),
                   ),
                 ),
@@ -141,9 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                           side: const BorderSide(color: Colors.white54),
                           foregroundColor: Colors.white,
                         ),
-                        onPressed: () {
-                          // TODO: Apple sign in
-                        },
+                        onPressed: () {},
                         icon: const Icon(Icons.apple, size: 28),
                         label: const Text('Apple'),
                       ),
@@ -160,9 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       GestureDetector(
-                        onTap: () {
-                          // Navigate to Signup Page
-                        },
+                        onTap: _navigateToRegister,
                         child: const Text(
                           'Get Started',
                           style: TextStyle(

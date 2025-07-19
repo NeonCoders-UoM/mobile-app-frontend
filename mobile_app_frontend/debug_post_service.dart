@@ -15,7 +15,10 @@ void main() async {
   try {
     final response = await http.get(
       Uri.parse(ApiConfig.getVehicleServiceHistoryUrl(testVehicleId)),
-      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
     ).timeout(const Duration(seconds: 10));
 
     print('✅ Backend Status: ${response.statusCode}');
@@ -51,7 +54,7 @@ void main() async {
   final createJson = testService.toCreateJson();
   print('✅ Create JSON:');
   print(jsonEncode(createJson));
-  
+
   // Remove null values to match typical DTO expectations
   final cleanJson = Map<String, dynamic>.from(createJson);
   cleanJson.removeWhere((key, value) => value == null);
@@ -63,15 +66,17 @@ void main() async {
   try {
     final url = ApiConfig.createVehicleServiceHistoryUrl(testVehicleId);
     print('URL: $url');
-    
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(cleanJson),
-    ).timeout(const Duration(seconds: 30));
+
+    final response = await http
+        .post(
+          Uri.parse(url),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode(cleanJson),
+        )
+        .timeout(const Duration(seconds: 30));
 
     print('Response Status: ${response.statusCode}');
     print('Response Headers: ${response.headers}');
@@ -79,7 +84,7 @@ void main() async {
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       print('✅ POST Request SUCCESS!');
-      
+
       // Try to parse the response
       try {
         final responseData = jsonDecode(response.body);
@@ -92,7 +97,7 @@ void main() async {
       print('❌ POST Request FAILED!');
       print('   Status Code: ${response.statusCode}');
       print('   Error: ${response.body}');
-      
+
       // Try to parse error response
       try {
         final errorData = jsonDecode(response.body);

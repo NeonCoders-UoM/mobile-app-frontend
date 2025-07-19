@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app_frontend/core/config/api_config.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/data/models/reminder_model.dart';
@@ -13,7 +12,14 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_header.dart';
 
 class SetReminderPage extends StatefulWidget {
-  const SetReminderPage({Key? key}) : super(key: key);
+  final int vehicleId;
+  final String? token;
+
+  const SetReminderPage({
+    Key? key,
+    required this.vehicleId,
+    this.token,
+  }) : super(key: key);
 
   @override
   _SetReminderPageState createState() => _SetReminderPageState();
@@ -34,8 +40,9 @@ class _SetReminderPageState extends State<SetReminderPage> {
   // Repository
   final ReminderRepository _reminderRepository = ReminderRepository();
 
-  // Vehicle ID - In a real app, this would come from user session or route parameters
-  final int _vehicleId = ApiConfig.defaultVehicleId;
+  // Get vehicle ID and token from widget
+  int get _vehicleId => widget.vehicleId;
+  String? get _token => widget.token;
 
   // Service ID - In a real app, this would be selected from a dropdown of available services
   final int _serviceId = 1; // Default service ID
@@ -118,11 +125,12 @@ class _SetReminderPageState extends State<SetReminderPage> {
       );
 
       // Save to backend
-      print('Creating reminder: ${newReminder.toJson()}');
+      print('🔧 Creating reminder: ${newReminder.toJson()}');
+      print('🔑 Using token: ${_token != null ? "✅ Yes" : "❌ No"}');
       final createdReminder =
-          await _reminderRepository.createReminder(newReminder);
+          await _reminderRepository.createReminder(newReminder, token: _token);
       print(
-          'Reminder created successfully with ID: ${createdReminder.serviceReminderId}');
+          '✅ Reminder created successfully with ID: ${createdReminder.serviceReminderId}');
 
       // Return success indicator and navigate back (don't show message here as it will be shown in parent)
       print('Navigating back with success result');

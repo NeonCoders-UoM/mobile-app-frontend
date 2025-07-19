@@ -12,12 +12,14 @@ class ServiceHistoryPage extends StatefulWidget {
   final int vehicleId;
   final String vehicleName;
   final String vehicleRegistration;
+  final String? token; // Add token parameter
 
   const ServiceHistoryPage({
     Key? key,
     this.vehicleId = 1, // Default vehicle ID
     this.vehicleName = 'Mustang 1977',
     this.vehicleRegistration = 'AB89B395',
+    this.token, // Add token parameter
   }) : super(key: key);
 
   @override
@@ -42,8 +44,8 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
         _isLoading = true;
       });
 
-      final serviceHistory =
-          await _serviceHistoryRepository.getServiceHistory(widget.vehicleId);
+      final serviceHistory = await _serviceHistoryRepository
+          .getServiceHistory(widget.vehicleId, token: widget.token);
 
       setState(() {
         _serviceHistory = serviceHistory;
@@ -65,6 +67,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
           vehicleId: widget.vehicleId,
           vehicleName: widget.vehicleName,
           vehicleRegistration: widget.vehicleRegistration,
+          token: widget.token,
         ),
       ),
     );

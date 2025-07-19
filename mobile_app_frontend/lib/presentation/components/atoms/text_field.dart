@@ -19,6 +19,7 @@ class InputFieldAtom extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final TextInputType keyboardType;
   final bool obscureText;
+  final bool enabled;
 
   const InputFieldAtom({
     super.key,
@@ -37,6 +38,7 @@ class InputFieldAtom extends StatefulWidget {
     this.onChanged,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
+    this.enabled = false,
   });
 
   @override
