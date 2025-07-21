@@ -43,6 +43,11 @@ dependencies:
   fl_chart: ^0.70.2
   url_launcher: ^6.1.11
 
+  #Document upload
+  file_picker: ^6.1.1
+  path_provider: ^2.1.1
+  url_launcher: ^6.1.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
