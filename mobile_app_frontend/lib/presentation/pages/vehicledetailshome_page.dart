@@ -12,9 +12,11 @@ import 'package:mobile_app_frontend/presentation/pages/fuel_summary_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/scheduled_reminders.dart';
 import 'package:mobile_app_frontend/presentation/pages/service_history_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/edit_vehicledetails_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/documents_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/personal_details_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/notifications_page.dart';
+
 
 class VehicleDetailsHomePage extends StatefulWidget {
   final int customerId;
@@ -333,12 +335,12 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                       decoration: BoxDecoration(
                         color: AppColors.neutral300.withOpacity(0.8),
                         shape: BoxShape.circle,
-                      ),
+                      ),                    
                       child: const Icon(
                         Icons.person,
                         color: AppColors.neutral100,
                         size: 24,
-                      ),
+                              ),
                     ),
                   ),
                 ],
