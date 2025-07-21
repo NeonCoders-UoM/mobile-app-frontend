@@ -193,8 +193,12 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       children: [
-                        _iconWithLabel(context, "assets/icons/documents.svg",
-                            "Documents", const AppointmentPage()),
+                        _iconWithLabel(
+                        context,
+                        "assets/icons/documents.svg",
+                        "Documents",
+                        DocumentsPage(
+                            customerId: 1, vehicleId: 1)),
                         _iconWithLabel(context, "assets/icons/appointments.svg",
                             "Appointments", const AppointmentPage()),
                         _iconWithLabel(
@@ -328,43 +332,6 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                         size: 24,
                       ),
                     ),
-
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: GridView.count(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 4,
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  children: [
-                    _iconWithLabel(
-                        context,
-                        "assets/icons/documents.svg",
-                        "Documents",
-                        DocumentsPage(
-                            customerId: 1, vehicleId: 1)), //Change the page
-                    _iconWithLabel(context, "assets/icons/appointments.svg",
-                        "Appointments", AppointmentPage()),
-                    _iconWithLabel(context, "assets/icons/fuel_efficiency.svg",
-                        "Fuel Efficiency", FuelSummaryPage()),
-                    _iconWithLabel(context, "assets/icons/service_history.svg",
-                        "Service History", ServiceHistoryPage()),
-                    _iconWithLabel(context, "assets/icons/set_reminders.svg",
-                        "Set Reminders", RemindersPage()),
-                    _iconWithLabel(context, "assets/icons/emergency.svg",
-                        "Emergency", AppointmentPage()),
-                    _iconWithLabel(context, "assets/icons/edit.svg", "Edit",
-                        EditVehicledetailsPage()),
-                    _iconWithLabel(context, "assets/icons/delete.svg", "Delete",
-                        DeleteVehiclePage()),
-                  ],
-                ),
-                
               ),
             ),
           ],
