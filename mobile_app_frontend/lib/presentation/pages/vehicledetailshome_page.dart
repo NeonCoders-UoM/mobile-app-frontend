@@ -108,7 +108,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
   void _performLogout() {
     // Clear any stored tokens or session data
     // TODO: Implement actual logout logic (clear SharedPreferences, etc.)
-    
+
     // Navigate to login page and clear navigation stack
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -191,10 +191,24 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       children: [
-                        _iconWithLabel(context, "assets/icons/documents.svg",
-                            "Documents", const AppointmentPage()),
-                        _iconWithLabel(context, "assets/icons/appointments.svg",
-                            "Appointments", const AppointmentPage()),
+                        _iconWithLabel(
+                            context,
+                            "assets/icons/documents.svg",
+                            "Documents",
+                            AppointmentPage(
+                              customerId: widget.customerId,
+                              vehicleId: _vehicle?['vehicleId'] ?? 1,
+                              token: widget.token,
+                            )),
+                        _iconWithLabel(
+                            context,
+                            "assets/icons/appointments.svg",
+                            "Appointments",
+                            AppointmentPage(
+                              customerId: widget.customerId,
+                              vehicleId: _vehicle?['vehicleId'] ?? 1,
+                              token: widget.token,
+                            )),
                         _iconWithLabel(
                             context,
                             "assets/icons/fuel_efficiency.svg",

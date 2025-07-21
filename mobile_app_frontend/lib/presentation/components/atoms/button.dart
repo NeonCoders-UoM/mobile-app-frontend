@@ -9,7 +9,8 @@ class CustomButton extends StatefulWidget {
   final String label; // Button text
   final ButtonType type; // Primary, Secondary, or Text
   final ButtonSize size; // Small, Medium, or Large
-  final VoidCallback onTap; // Callback for when the button is tapped
+  final VoidCallback?
+      onTap; // Callback for when the button is tapped (nullable)
   final double? customWidth; // Optional custom width
   final double? customHeight; // Optional custom height
   final IconData? leadingIcon; // Optional leading icon
@@ -22,7 +23,7 @@ class CustomButton extends StatefulWidget {
     required this.label,
     required this.type,
     required this.size,
-    required this.onTap,
+    this.onTap,
     this.customWidth,
     this.customHeight,
     this.leadingIcon,
@@ -182,7 +183,7 @@ class _CustomButtonState extends State<CustomButton> {
           setState(() {
             _currentState = ButtonState.active; // Active state on tap
           });
-          widget.onTap(); // Trigger the callback
+          widget.onTap?.call(); // Trigger the callback
         },
         splashColor: _getSplashColor(), // Ripple effect color
         borderRadius:

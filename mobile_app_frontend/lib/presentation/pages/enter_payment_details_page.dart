@@ -5,7 +5,16 @@ import 'package:mobile_app_frontend/presentation/components/molecules/payment_de
 import 'package:mobile_app_frontend/presentation/pages/payment_successful_message_page.dart';
 
 class EnterPaymentDetailsPage extends StatelessWidget {
-  const EnterPaymentDetailsPage({Key? key}) : super(key: key);
+  final int customerId;
+  final int vehicleId;
+  final String token;
+
+  const EnterPaymentDetailsPage({
+    Key? key,
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +53,16 @@ class EnterPaymentDetailsPage extends StatelessWidget {
             },
             onPayNowTap: () {
               print("Pay Now tapped with details: ");
-              print("Card Holder: ${cardHolderController.text}");
-              print("Card Number: ${cardNumberController.text}");
-              print("Label: ${labelController.text}");
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccessfulMessagePage()));
+              print("Card Holder: " + cardHolderController.text);
+              print("Card Number: " + cardNumberController.text);
+              print("Label: " + labelController.text);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => PaymentSuccessfulMessagePage(
+                          customerId: customerId,
+                          vehicleId: vehicleId,
+                          token: token)));
               // Add payment processing logic here
             },
           ),

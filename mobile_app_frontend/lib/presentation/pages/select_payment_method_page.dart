@@ -5,7 +5,16 @@ import 'package:mobile_app_frontend/presentation/components/molecules/payment_me
 import 'package:mobile_app_frontend/presentation/pages/enter_payment_details_page.dart';
 
 class SelectPaymentMethodPage extends StatelessWidget {
-  const SelectPaymentMethodPage({Key? key}) : super(key: key);
+  final int customerId;
+  final int vehicleId;
+  final String token;
+
+  const SelectPaymentMethodPage({
+    Key? key,
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +52,11 @@ class SelectPaymentMethodPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const EnterPaymentDetailsPage(),
+                    builder: (context) => EnterPaymentDetailsPage(
+                      customerId: customerId,
+                      vehicleId: vehicleId,
+                      token: token,
+                    ),
                   ),
                 );
               },
@@ -56,7 +69,11 @@ class SelectPaymentMethodPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const EnterPaymentDetailsPage(),
+                    builder: (context) => EnterPaymentDetailsPage(
+                      customerId: customerId,
+                      vehicleId: vehicleId,
+                      token: token,
+                    ),
                   ),
                 );
               },
@@ -69,7 +86,11 @@ class SelectPaymentMethodPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const EnterPaymentDetailsPage(),
+                    builder: (context) => EnterPaymentDetailsPage(
+                      customerId: customerId,
+                      vehicleId: vehicleId,
+                      token: token,
+                    ),
                   ),
                 );
               },
@@ -82,7 +103,11 @@ class SelectPaymentMethodPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const EnterPaymentDetailsPage(),
+                    builder: (context) => EnterPaymentDetailsPage(
+                      customerId: customerId,
+                      vehicleId: vehicleId,
+                      token: token,
+                    ),
                   ),
                 );
               },

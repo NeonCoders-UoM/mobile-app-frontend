@@ -9,15 +9,25 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/date_picker.dart';
+import 'package:mobile_app_frontend/data/repositories/appointment_repository.dart';
+import 'package:mobile_app_frontend/data/models/appointment_model.dart';
+import 'package:mobile_app_frontend/data/models/service_model.dart';
+import 'package:dio/dio.dart';
 
 class AppointmentconfirmationPage extends StatefulWidget {
   final DateTime selectedDate;
   final List<String> selectedServices;
+  final int customerId;
+  final int vehicleId;
+  final String token;
 
   const AppointmentconfirmationPage({
     Key? key,
     required this.selectedDate,
     required this.selectedServices,
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
   }) : super(key: key);
 
   @override
@@ -28,6 +38,8 @@ class AppointmentconfirmationPage extends StatefulWidget {
 class _AppointmentconfirmationPageState
     extends State<AppointmentconfirmationPage> {
   late DateTime selectedDate;
+  bool isLoading = false;
+  String? errorMessage;
 
   @override
   void initState() {
@@ -49,6 +61,57 @@ class _AppointmentconfirmationPageState
     }
   }
 
+  Future<void> _createAppointment() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+    try {
+      // TODO: Map selectedServices (names) to serviceIds (int) as required by backend
+      // For now, use dummy IDs [1,2,3,...]
+      final serviceIds =
+          List<int>.generate(widget.selectedServices.length, (i) => i + 1);
+      final appointment = AppointmentCreate(
+        customerId: widget.customerId,
+        vehicleId: widget.vehicleId,
+        stationId: 1, // TODO: Replace with actual selected stationId
+        appointmentDate: selectedDate,
+        serviceIds: serviceIds,
+      );
+      await AppointmentRepository(Dio())
+          .createAppointment(appointment, widget.token);
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ServiceCenterPage(
+            selectedServices: widget.selectedServices
+                .map((s) => Service(
+                      serviceId: 0, // TODO: Map real serviceId
+                      serviceName: s,
+                      description: '',
+                      basePrice: 0.0,
+                      category: '',
+                    ))
+                .toList(),
+            selectedDate: selectedDate,
+            customerId: widget.customerId,
+            vehicleId: widget.vehicleId,
+            token: widget.token,
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,9 +119,17 @@ class _AppointmentconfirmationPageState
       appBar: CustomAppBar(
         title: 'Appointment',
         showTitle: true,
-        onBackPressed: () => {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const AppointmentPage()))
+        onBackPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppointmentPage(
+                customerId: widget.customerId,
+                vehicleId: widget.vehicleId,
+                token: widget.token,
+              ),
+            ),
+          );
         },
       ),
       body: SafeArea(
@@ -121,11 +192,8 @@ class _AppointmentconfirmationPageState
                                       Checkbox(
                                           value: true,
                                           onChanged: (_) {},
-                                          checkColor:
-                                              Colors.white, // Tick color
-                                          activeColor: AppColors
-                                              .primary200 // Box fill color when checked
-                                          )
+                                          checkColor: Colors.white,
+                                          activeColor: AppColors.primary200)
                                     ],
                                   ),
                                 );
@@ -140,6 +208,9 @@ class _AppointmentconfirmationPageState
                             MaterialPageRoute(
                               builder: (context) => ServiceselectionPage(
                                 selectedDate: selectedDate,
+                                customerId: widget.customerId,
+                                vehicleId: widget.vehicleId,
+                                token: widget.token,
                               ),
                             ),
                           );
@@ -159,19 +230,25 @@ class _AppointmentconfirmationPageState
                 ),
               ),
               const SizedBox(height: 24),
+              if (errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
               SizedBox(
                 width: double.infinity,
                 child: CustomButton(
-                  label: 'Apply',
+                  label: isLoading ? 'Applying...' : 'Apply',
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ServiceCenterPage()),
-                    );
-                  },
+                  onTap: !isLoading
+                      ? () {
+                          _createAppointment();
+                        }
+                      : null,
                 ),
               ),
             ],

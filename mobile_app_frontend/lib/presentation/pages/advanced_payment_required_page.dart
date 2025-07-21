@@ -8,15 +8,26 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/pages/costestimate_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/select_payment_method_page.dart';
 
-
 class AdvancedPaymentRequiredPage extends StatelessWidget {
-  const AdvancedPaymentRequiredPage({super.key});
+  final int customerId;
+  final int vehicleId;
+  final String token;
+
+  const AdvancedPaymentRequiredPage({
+    Key? key,
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutral400,
-      appBar: CustomAppBar(title: '',onBackPressed: () => Navigator.of(context).pop(),),
+      appBar: CustomAppBar(
+        title: '',
+        onBackPressed: () => Navigator.of(context).pop(),
+      ),
       body: Center(
         child: SizedBox(
           width: 380,
@@ -104,7 +115,13 @@ class AdvancedPaymentRequiredPage extends StatelessWidget {
                 type: ButtonType.primary,
                 size: ButtonSize.large,
                 onTap: () => {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SelectPaymentMethodPage())),
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SelectPaymentMethodPage(
+                              customerId: customerId,
+                              vehicleId: vehicleId,
+                              token: token))),
                 },
                 customHeight: 56,
                 customWidth: 380,
@@ -119,7 +136,16 @@ class AdvancedPaymentRequiredPage extends StatelessWidget {
                 onTap: () => {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CostEstimatePage()),
+                    MaterialPageRoute(
+                      builder: (context) => CostEstimatePage(
+                        customerId: customerId,
+                        vehicleId: vehicleId,
+                        token: token,
+                        serviceCenterId:
+                            0, // TODO: Pass real selected center ID
+                        selectedServices: const [], // TODO: Pass real selected services
+                      ),
+                    ),
                   )
                 },
                 customHeight: 56,
