@@ -326,6 +326,9 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                         color: AppColors.neutral300.withOpacity(0.8),
                         shape: BoxShape.circle,
                       ),
+                       ),
+                  ),
+                ],
                       child: const Icon(
                         Icons.person,
                         color: AppColors.neutral100,
