@@ -7,9 +7,16 @@ import 'package:mobile_app_frontend/presentation/components/atoms/text_field.dar
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_field_state.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'dart:convert'; // Added for jsonEncode
+import 'package:http/http.dart' as http; // Added for http
+import 'package:mobile_app_frontend/presentation/pages/password_changed_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 
 class ChangePasswordPage extends StatefulWidget {
-  const ChangePasswordPage({super.key});
+  final int customerId;
+  final String token;
+  const ChangePasswordPage({super.key, required this.customerId, required this.token});
 
   @override
   State<ChangePasswordPage> createState() => _ChangePasswordPageState();
@@ -83,7 +90,53 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 label: 'Change password',
                 type: ButtonType.primary,
                 size: ButtonSize.large,
-                onTap: () => {},
+                onTap: () async {
+                  final currentPassword = _currentPasswordController.text;
+                  final newPassword = _newPasswordController.text;
+                  final retypeNewPassword = _retypeNewPasswordController.text;
+                  setState(() {
+                    _currentPasswordFieldState = InputFieldState.defaultState;
+                    _newPasswordFieldState = InputFieldState.defaultState;
+                    _retypeNewPasswordFieldState = InputFieldState.defaultState;
+                  });
+                  if (newPassword != retypeNewPassword) {
+                    setState(() {
+                      _retypeNewPasswordFieldState = InputFieldState.error;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('New passwords do not match'), backgroundColor: Colors.red),
+                    );
+                    return;
+                  }
+                  if (newPassword.length < 6) {
+                    setState(() {
+                      _newPasswordFieldState = InputFieldState.error;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Password must be at least 6 characters'), backgroundColor: Colors.red),
+                    );
+                    return;
+                  }
+                  // Call AuthService
+                  final success = await AuthService().changePassword(
+                    customerId: widget.customerId,
+                    token: widget.token,
+                    oldPassword: currentPassword,
+                    newPassword: newPassword,
+                  );
+                  if (success) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const PasswordChangedPage(),
+                      ),
+                      (route) => false,
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Failed to change password'), backgroundColor: Colors.red),
+                    );
+                  }
+                },
                 customHeight: 56,
                 customWidth: 360,
               ),
@@ -93,4 +146,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       ),
     );
   }
+
+  
 }
