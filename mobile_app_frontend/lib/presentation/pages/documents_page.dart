@@ -57,7 +57,10 @@ class DocumentsPage extends StatefulWidget {
 
 class _DocumentsPageState extends State<DocumentsPage> {
   List<Document> documents = [];
+  String searchQuery = '';
   bool isLoading = true;
+  String? vehicleModel;
+  String? chassisNumber;
 
   final documentTypes = [
     {'name': 'Vehicle Registration Certificate', 'value': 0},
@@ -68,10 +71,40 @@ class _DocumentsPageState extends State<DocumentsPage> {
     {'name': 'Warranty Document', 'value': 5},
   ];
 
+  // Controller for expiration date input
+  final TextEditingController expirationDateController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+    fetchVehicleDetails(); // fetch model and chassis number
     fetchDocuments();
+  }
+
+  @override
+  void dispose() {
+    expirationDateController.dispose();
+    super.dispose();
+  }
+
+  Future<void> fetchVehicleDetails() async {
+    final url = 'http://localhost:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final vehicleInfo = VehicleInfo.fromJson(data);
+        setState(() {
+          vehicleModel = vehicleInfo.model;
+          chassisNumber = vehicleInfo.chassisNumber;
+        });
+      } else {
+        print('Failed to load vehicle data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching vehicle data: $e');
+    }
   }
 
   Future<void> fetchDocuments() async {
@@ -260,6 +293,15 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredDocuments = documents.where((doc) {
+      final title = getDocumentTitle(doc).toLowerCase();
+      return title.contains(searchQuery);
+    }).toList();
+
+    // Update expiration date controller text on build
+    // (only if dialog is open; this is safe here because controller is in state)
+    // Note: This is just to keep the expiration date text synced when needed.
+
     return Scaffold(
       appBar: CustomAppBar(title: 'Documents', showTitle: true),
       backgroundColor: AppColors.neutral400,
@@ -267,42 +309,95 @@ class _DocumentsPageState extends State<DocumentsPage> {
         padding: const EdgeInsets.all(40.0),
         child: Column(
           children: [
+            if (vehicleModel != null && chassisNumber != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Model: $vehicleModel',
+                      style:  AppTextStyles.displaySmSemibold.copyWith(color: AppColors.neutral100),  
+                    ),
+                    Text(
+                      'Chassis Number: $chassisNumber',
+                      style:  AppTextStyles.textMdRegular.copyWith(color: AppColors.neutral100)
+                    ),
+                    SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Search documents...',
+                prefixIcon: Icon(Icons.search),
+                filled: true,
+                fillColor: AppColors.neutral450,
+                hintStyle: TextStyle(color: AppColors.neutral200),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              style: TextStyle(color: AppColors.neutral100),
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value.toLowerCase();
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            // Show loading, empty message, or list
             isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : documents.isEmpty
-                    ? const Center(child: Text('No documents found.'))
-                    : Expanded(
-                        child: ListView.builder(
-                          itemCount: documents.length,
-                          itemBuilder: (context, index) {
-                            final doc = documents[index];
-                            final title = getDocumentTitle(doc);
+                : Expanded(
+                    child: filteredDocuments.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No documents found matching your search.',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: filteredDocuments.length,
+                            itemBuilder: (context, index) {
+                              final doc = filteredDocuments[index];
+                              final title = getDocumentTitle(doc);
 
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 40),
-                                tileColor: AppColors.neutral450,
-                                title: Text(title,
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 40),
+                                  tileColor: AppColors.neutral450,
+                                  title: Text(
+                                    title,
                                     style: AppTextStyles.textSmSemibold
-                                        .copyWith(color: AppColors.neutral100)),
-                                leading: SvgPicture.asset(
-                                  'assets/icons/document_card_icon.svg',
-                                  height: 24,
-                                  width: 24,
-                                  colorFilter: const ColorFilter.mode(
-                                    AppColors.neutral100,
-                                    BlendMode.srcIn,
+                                        .copyWith(color: AppColors.neutral100),
+                                  ),
+                                  leading: SvgPicture.asset(
+                                    'assets/icons/document_card_icon.svg',
+                                    height: 24,
+                                    width: 24,
+                                    colorFilter: const ColorFilter.mode(
+                                      AppColors.neutral100,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                  onTap: () => previewDocument(
+                                    doc.fileUrl,
+                                    title,
+                                    doc.fileName,
+                                    doc.documentId,
                                   ),
                                 ),
-                                onTap: () => previewDocument(doc.fileUrl, title,
-                                    doc.fileName, doc.documentId),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                              );
+                            },
+                          ),
+                  ),
           ],
         ),
       ),
@@ -363,9 +458,14 @@ class FullScreenDocumentPreview extends StatelessWidget {
       backgroundColor: AppColors.neutral400,
       appBar: AppBar(
         backgroundColor: AppColors.neutral450,
-        title: Text(title, style: AppTextStyles.textSmSemibold.copyWith(color: AppColors.neutral100)),
+        title: Text(title,
+            style:
+                AppTextStyles.textSmSemibold.copyWith(color: AppColors.neutral100)),
         leading: IconButton(
-          icon: const Icon(Icons.close , color: AppColors.neutral100,),
+          icon: const Icon(
+            Icons.close,
+            color: AppColors.neutral100,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -374,7 +474,7 @@ class FullScreenDocumentPreview extends StatelessWidget {
             onPressed: onDownload,
           ),
           IconButton(
-            icon: const Icon(Icons.delete,color: AppColors.neutral100),
+            icon: const Icon(Icons.delete, color: AppColors.neutral100),
             onPressed: onDelete,
           ),
         ],
@@ -440,6 +540,15 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
     return [1, 2, 3, 4, 5].contains(documentType);
   }
 
+  // Controller for expiration date input
+  final TextEditingController expirationDateController = TextEditingController();
+
+  @override
+  void dispose() {
+    expirationDateController.dispose();
+    super.dispose();
+  }
+
   Future<void> submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -478,7 +587,9 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
         final responseBody = await response.stream.bytesToString();
         print('Upload failed for ${widget.fileName}: $responseBody');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload document: $responseBody')),
+          SnackBar(
+              content: Text(
+                  'Failed to upload document: ${response.statusCode} $responseBody')),
         );
       }
     } catch (e) {
@@ -487,100 +598,118 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
         SnackBar(content: Text('Error uploading document: $e')),
       );
     } finally {
-      setState(() => isUploading = false);
+      if (mounted) {
+        setState(() => isUploading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final requiresExp = documentType != null && requiresExpiration(documentType!);
+
+    if (requiresExp && expirationDate != null) {
+      expirationDateController.text = DateFormat('yyyy-MM-dd').format(expirationDate!);
+    } else if (!requiresExp) {
+      expirationDateController.text = '';
+      expirationDate = null;
+    }
+
     return AlertDialog(
-      backgroundColor: AppColors.neutral400,
-      title: const Text('Upload Document', style: TextStyle(color: AppColors.neutral150)),
+      title: const Text('Upload Document'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'File: ${widget.fileName}',
-                style: const TextStyle(color: AppColors.neutral200),
-              ),
-              const SizedBox(height: 16),
               DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Document Type',
-                labelStyle: TextStyle(color: AppColors.neutral200)),
-                dropdownColor: AppColors.neutral450,
+                decoration: const InputDecoration(labelText: 'Document Type'),
                 items: documentTypes
-                    .map((type) => DropdownMenuItem(
-                          value: type['value'] as int,
-                          child: Text(type['name'] as String, style: TextStyle(color: AppColors.neutral200)),
-                        ))
+                    .map(
+                      (type) => DropdownMenuItem<int>(
+                        value: type['value'] as int,
+                        child: Text(type['name'] as String),
+                      ),
+                    )
                     .toList(),
-                value: documentType,
                 onChanged: (value) {
                   setState(() {
                     documentType = value;
-                    if (!requiresExpiration(value!)) {
-                      expirationDate = null;
-                    }
+                    // Clear expiration date when document type changes
+                    expirationDate = null;
+                    expirationDateController.text = '';
                   });
                 },
                 validator: (value) =>
                     value == null ? 'Please select a document type' : null,
               ),
               const SizedBox(height: 16),
-              if (documentType != null && requiresExpiration(documentType!))
-                TextFormField(
-                  decoration: InputDecoration(
-                      labelText: 'Expiration Date',
-                      labelStyle: const TextStyle(color: AppColors.neutral200),
-                  ),
-                  readOnly: true,
-                  controller: TextEditingController(
-                    text: expirationDate != null
-                        ? DateFormat('yyyy-MM-dd').format(expirationDate!)
-                        : '',
-                  ),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: expirationDate ?? DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      setState(() => expirationDate = picked);
-                    }
-                  },
-                  validator: (value) => expirationDate == null
-                      ? 'Expiration date is required'
-                      : null,
-                ),
-              const SizedBox(height: 16),
               TextFormField(
-                style: const TextStyle(color: AppColors.neutral200),
-                decoration:
-                    const InputDecoration(labelText: 'Display Name (Optional)',
-                    labelStyle: TextStyle(color: AppColors.neutral200)),
+                decoration: const InputDecoration(
+                  labelText: 'Display Name (Optional)',
+                ),
                 onChanged: (value) => displayName = value,
               ),
+              if (requiresExp) ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: expirationDateController,
+                  decoration: const InputDecoration(
+                    labelText: 'Expiration Date',
+                    hintText: 'Select expiration date',
+                  ),
+                  readOnly: true,
+                  onTap: () async {
+                    final selectedDate = await showDatePicker(
+                      context: context,
+                      initialDate: expirationDate ?? DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (selectedDate != null) {
+                      setState(() {
+                        expirationDate = selectedDate;
+                        expirationDateController.text =
+                            DateFormat('yyyy-MM-dd').format(selectedDate);
+                      });
+                    }
+                  },
+                  validator: (value) {
+                    if (requiresExp && (value == null || value.isEmpty)) {
+                      return 'Expiration date is required';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+              const SizedBox(height: 16),
+              isUploading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: submitForm,
+                      child: const Text('Upload'),
+                    ),
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: isUploading ? null : submitForm,
-          child: isUploading
-              ? const CircularProgressIndicator()
-              : const Text('Upload'),
-        ),
-      ],
     );
   }
 }
+
+class VehicleInfo {
+  final String model;
+  final String chassisNumber;
+
+  VehicleInfo({required this.model, required this.chassisNumber});
+
+  factory VehicleInfo.fromJson(Map<String, dynamic> json) {
+    return VehicleInfo(
+      model: json['model'] ?? '',
+      chassisNumber: json['chassisNumber'] ?? '',
+    );
+  }
+}
+
+
+ 
