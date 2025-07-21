@@ -9,7 +9,16 @@ import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/serviceselection_page.dart';
 
 class AppointmentdateselectionPage extends StatefulWidget {
-  const AppointmentdateselectionPage({super.key});
+  final int customerId;
+  final int vehicleId;
+  final String token;
+
+  const AppointmentdateselectionPage({
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<AppointmentdateselectionPage> createState() =>
@@ -18,7 +27,7 @@ class AppointmentdateselectionPage extends StatefulWidget {
 
 class _AppointmentdateselectionPageState
     extends State<AppointmentdateselectionPage> {
-  DateTime selectedDate = DateTime.now(); // initialize to today by default
+  DateTime selectedDate = DateTime.now();
 
   void _handleDateChange(DateTime date) {
     setState(() {
@@ -41,7 +50,6 @@ class _AppointmentdateselectionPageState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Assuming your DatePicker accepts a callback like onDateChanged
               DatePicker(
                 initialDate: selectedDate,
                 onDateChanged: _handleDateChange,
@@ -83,6 +91,9 @@ class _AppointmentdateselectionPageState
                           MaterialPageRoute(
                             builder: (context) => ServiceselectionPage(
                               selectedDate: selectedDate,
+                              customerId: widget.customerId,
+                              vehicleId: widget.vehicleId,
+                              token: widget.token,
                             ),
                           ),
                         );
@@ -111,11 +122,16 @@ class _AppointmentdateselectionPageState
                   size: ButtonSize.medium,
                   onTap: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ServiceselectionPage(
-                                  selectedDate: DateTime.now(),
-                                )));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ServiceselectionPage(
+                          selectedDate: selectedDate,
+                          customerId: widget.customerId,
+                          vehicleId: widget.vehicleId,
+                          token: widget.token,
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),

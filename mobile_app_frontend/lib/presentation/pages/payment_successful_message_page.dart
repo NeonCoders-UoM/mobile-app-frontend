@@ -8,7 +8,17 @@ import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.d
 import 'package:mobile_app_frontend/presentation/pages/login_page.dart'; // or next step
 
 class PaymentSuccessfulMessagePage extends StatelessWidget {
-  const PaymentSuccessfulMessagePage({super.key});
+  final int customerId;
+  final int vehicleId;
+  final String token;
+
+  const PaymentSuccessfulMessagePage({
+    Key? key,
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,8 +38,11 @@ class PaymentSuccessfulMessagePage extends StatelessWidget {
             type: ButtonType.primary,
             size: ButtonSize.large,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => VehicleDetailsHomePage(
+                          customerId: customerId, token: token)));
             },
             customWidth: 360.0,
             customHeight: 56.0,

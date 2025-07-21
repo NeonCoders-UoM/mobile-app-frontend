@@ -12,6 +12,7 @@ class ServiceCenterCard extends StatelessWidget {
   final String distance;
   final String loyaltyPoints;
   final String estimatedCost;
+  final VoidCallback? onTap;
 
   const ServiceCenterCard({
     super.key,
@@ -20,6 +21,7 @@ class ServiceCenterCard extends StatelessWidget {
     required this.distance,
     required this.loyaltyPoints,
     required this.estimatedCost,
+    this.onTap,
   });
 
   /*void _handleview() {
@@ -95,9 +97,7 @@ class ServiceCenterCard extends StatelessWidget {
                   label: 'View',
                   type: ButtonType.primary,
                   size: ButtonSize.small,
-                  onTap: () => {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CostEstimatePage()))
-                  },
+                  onTap: onTap,
                 ),
               ),
             ),
