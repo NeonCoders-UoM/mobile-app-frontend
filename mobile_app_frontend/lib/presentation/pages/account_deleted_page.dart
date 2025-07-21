@@ -4,6 +4,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/successful-message.dart';
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 
 class AccountDeletedPage extends StatelessWidget {
   const AccountDeletedPage({super.key});
@@ -28,7 +29,10 @@ class AccountDeletedPage extends StatelessWidget {
             type: ButtonType.primary,
             size: ButtonSize.large,
             onTap: () {
-              // Handle document addition logic here
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+                (route) => false,
+              );
             },
             customWidth: 360.0,
             customHeight: 56.0,

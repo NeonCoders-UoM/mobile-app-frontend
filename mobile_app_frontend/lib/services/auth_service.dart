@@ -304,6 +304,25 @@ class AuthService {
 
     return response.statusCode == 200;
   }
+  Future<bool> deleteAccount({
+    required int customerId,
+    required String token,
+    required String password,
+  }) async {
+    final url = Uri.parse('$_baseUrl/Auth/delete-account');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'customerId': customerId,
+        'password': password,
+      }),
+    );
+    return response.statusCode == 200;
+  }
 
   Future<bool> deleteVehicle({
     required int customerId,
@@ -327,6 +346,32 @@ class AuthService {
     } else {
       print(
           '❌ Failed to delete vehicle: ${response.statusCode} ${response.body}');
+      return false;
+    }
+  }
+
+  Future<bool> changePassword({
+    required int customerId,
+    required String token,
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final url = Uri.parse('$_baseUrl/Auth/change-password');
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'customerId': customerId,
+          'oldPassword': oldPassword,
+          'newPassword': newPassword,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
       return false;
     }
   }
