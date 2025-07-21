@@ -195,13 +195,10 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                       children: [
                         _iconWithLabel(
                             context,
-                            "assets/icons/documents.svg",
-                            "Documents",
-                            AppointmentPage(
-                              customerId: widget.customerId,
-                              vehicleId: _vehicle?['vehicleId'] ?? 1,
-                              token: widget.token,
-                            )),
+                        "assets/icons/documents.svg",
+                        "Documents",
+                        DocumentsPage(
+                            customerId: 1, vehicleId: 1)),
                         _iconWithLabel(
                             context,
                             "assets/icons/appointments.svg",
