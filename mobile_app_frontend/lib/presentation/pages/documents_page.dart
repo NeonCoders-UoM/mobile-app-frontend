@@ -363,9 +363,14 @@ class FullScreenDocumentPreview extends StatelessWidget {
       backgroundColor: AppColors.neutral400,
       appBar: AppBar(
         backgroundColor: AppColors.neutral450,
-        title: Text(title, style: AppTextStyles.textSmSemibold.copyWith(color: AppColors.neutral100)),
+        title: Text(title,
+            style: AppTextStyles.textSmSemibold
+                .copyWith(color: AppColors.neutral100)),
         leading: IconButton(
-          icon: const Icon(Icons.close , color: AppColors.neutral100,),
+          icon: const Icon(
+            Icons.close,
+            color: AppColors.neutral100,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -374,7 +379,7 @@ class FullScreenDocumentPreview extends StatelessWidget {
             onPressed: onDownload,
           ),
           IconButton(
-            icon: const Icon(Icons.delete,color: AppColors.neutral100),
+            icon: const Icon(Icons.delete, color: AppColors.neutral100),
             onPressed: onDelete,
           ),
         ],
@@ -495,7 +500,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.neutral400,
-      title: const Text('Upload Document', style: TextStyle(color: AppColors.neutral150)),
+      title: const Text('Upload Document',
+          style: TextStyle(color: AppColors.neutral150)),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -508,13 +514,15 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Document Type',
-                labelStyle: TextStyle(color: AppColors.neutral200)),
+                decoration: const InputDecoration(
+                    labelText: 'Document Type',
+                    labelStyle: TextStyle(color: AppColors.neutral200)),
                 dropdownColor: AppColors.neutral450,
                 items: documentTypes
                     .map((type) => DropdownMenuItem(
                           value: type['value'] as int,
-                          child: Text(type['name'] as String, style: TextStyle(color: AppColors.neutral200)),
+                          child: Text(type['name'] as String,
+                              style: TextStyle(color: AppColors.neutral200)),
                         ))
                     .toList(),
                 value: documentType,
@@ -533,8 +541,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
               if (documentType != null && requiresExpiration(documentType!))
                 TextFormField(
                   decoration: InputDecoration(
-                      labelText: 'Expiration Date',
-                      labelStyle: const TextStyle(color: AppColors.neutral200),
+                    labelText: 'Expiration Date',
+                    labelStyle: const TextStyle(color: AppColors.neutral200),
                   ),
                   readOnly: true,
                   controller: TextEditingController(
@@ -560,8 +568,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 style: const TextStyle(color: AppColors.neutral200),
-                decoration:
-                    const InputDecoration(labelText: 'Display Name (Optional)',
+                decoration: const InputDecoration(
+                    labelText: 'Display Name (Optional)',
                     labelStyle: TextStyle(color: AppColors.neutral200)),
                 onChanged: (value) => displayName = value,
               ),
