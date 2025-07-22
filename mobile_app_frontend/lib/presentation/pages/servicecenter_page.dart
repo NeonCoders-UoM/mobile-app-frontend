@@ -8,6 +8,7 @@ import 'package:mobile_app_frontend/data/models/service_model.dart';
 import 'package:mobile_app_frontend/data/models/service_center_model.dart';
 import 'package:mobile_app_frontend/data/repositories/service_center_repository.dart';
 import 'package:dio/dio.dart';
+import 'package:geolocator/geolocator.dart';
 
 class ServiceCenterPage extends StatefulWidget {
   final List<Service> selectedServices;
@@ -35,46 +36,98 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
   bool isLoading = true;
   String? errorMessage;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchCentersAndCosts();
-  }
 
-  Future<void> _fetchCentersAndCosts() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
-    try {
-      final repo = ServiceCenterRepository(Dio());
-      final data = await repo.getAllServiceCenters(token: widget.token);
-      final Map<int, double> costs = {};
-      for (final center in data) {
-        final services = await repo.getServicesForCenter(
-            centerId: center.stationId, token: widget.token);
-        double total = 0.0;
-        for (final selected in widget.selectedServices) {
-          final svc =
-              services.where((s) => s.serviceId == selected.serviceId).toList();
-          if (svc.isNotEmpty) {
-            total += svc.first.basePrice;
-          }
-        }
-        costs[center.stationId] = total;
-      }
-      setState(() {
-        centers = data;
-        costEstimates = costs;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        errorMessage = e.toString();
-        isLoading = false;
-      });
+@override
+void initState() {
+  super.initState();
+  _fetchNearbyCentersAndCosts();
+}
+
+Future<void> _fetchNearbyCentersAndCosts() async {
+  setState(() {
+    isLoading = true;
+    errorMessage = null;
+  });
+
+  try {
+    // Step 1: Get current location
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception("Location services are disabled.");
     }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception("Location permission denied.");
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception("Location permission permanently denied.");
+    }
+
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    final lat = position.latitude;
+    final lng = position.longitude;
+
+    // Step 2: Call nearby API using Dio
+    final dio = Dio();
+    final response = await dio.get(
+      'http://localhost:5039/api/servicecenters/nearby',
+      queryParameters: {
+        'lat': lat,
+        'lng': lng,
+      },
+      options: Options(headers: {
+        'Authorization': 'Bearer ${widget.token}',
+      }),
+    );
+
+    final List<dynamic> responseData = response.data;
+    final List<ServiceCenterModel> data = responseData.map((json) => ServiceCenterModel.fromJson(json)).toList();
+
+    // Step 3: Estimate costs
+    final repo = ServiceCenterRepository(dio);
+    final Map<int, double> costs = {};
+    for (final center in data) {
+      final services = await repo.getServicesForCenter(
+        centerId: center.stationId,
+        token: widget.token,
+      );
+      double total = 0.0;
+      for (final selected in widget.selectedServices) {
+        final svc = services.firstWhere(
+  (s) => s.serviceId == selected.serviceId,
+  orElse: () => Service(
+    serviceId: 0,
+    serviceName: '',
+    description: '',
+    basePrice: 0.0,
+    category: '',
+  ),
+);
+        total += svc.basePrice;
+      }
+      costs[center.stationId] = total;
+    }
+
+    setState(() {
+      centers = data;
+      costEstimates = costs;
+      isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      errorMessage = e.toString();
+      isLoading = false;
+    });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
