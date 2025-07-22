@@ -1,12 +1,11 @@
 import 'dart:convert';
-import 'dart:html' as html;
-import 'dart:ui' as ui;
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
@@ -14,6 +13,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:io';
 
 class Document {
   final int documentId;
@@ -71,13 +71,12 @@ class _DocumentsPageState extends State<DocumentsPage> {
     {'name': 'Warranty Document', 'value': 5},
   ];
 
-  // Controller for expiration date input
   final TextEditingController expirationDateController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    fetchVehicleDetails(); // fetch model and chassis number
+    fetchVehicleDetails();
     fetchDocuments();
   }
 
@@ -88,7 +87,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 
   Future<void> fetchVehicleDetails() async {
-    final url = 'http://localhost:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
+    final url = 'http://192.168.1.11:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -109,7 +108,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> fetchDocuments() async {
     final url =
-        'http://localhost:5039/api/documents/listByVehicle/${widget.customerId}/${widget.vehicleId}';
+        'http://192.168.1.11:5039/api/documents/listByVehicle/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -133,14 +132,35 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> downloadFile(String downloadUrl, String fileName) async {
     try {
+      // Request storage permission for Android
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.request();
+        if (!status.isGranted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Storage permission denied')),
+          );
+          return;
+        }
+      }
+
       final response = await http.get(Uri.parse(downloadUrl));
       if (response.statusCode == 200) {
-        final blob = html.Blob([response.bodyBytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', fileName)
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        // Get the downloads directory
+        final directory = await getDownloadsDirectory();
+        if (directory == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unable to access downloads directory')),
+          );
+          return;
+        }
+
+        final filePath = '${directory.path}/$fileName';
+        final file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('File downloaded to $filePath')),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -158,7 +178,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Future<void> deleteDocument(
       int documentId, String fileName, String title) async {
     final url =
-        'http://localhost:5039/api/documents/delete?documentId=$documentId';
+        'http://192.168.1.11:5039/api/documents/delete?documentId=$documentId';
     try {
       final response = await http.delete(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -223,9 +243,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
   void previewDocument(
       String fileUrl, String title, String fileName, int documentId) {
     final previewUrl =
-        'http://localhost:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
+        'http://192.168.1.11:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
     final downloadUrl =
-        'http://localhost:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
+        'http://192.168.1.11:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
 
     final fileExtension = fileName.toLowerCase().split('.').last;
     final isSupportedType =
@@ -256,7 +276,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
       return;
     }
 
-    // Show full-screen dialog for supported file types
     Navigator.of(context).push(
       MaterialPageRoute(
         fullscreenDialog: true,
@@ -278,7 +297,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   String getDocumentTitle(Document doc) {
     if (doc.documentType == 5) {
-      // WarrantyDocument
       return (doc.displayName != null && doc.displayName!.isNotEmpty)
           ? doc.displayName!
           : doc.fileName;
@@ -298,10 +316,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
       return title.contains(searchQuery);
     }).toList();
 
-    // Update expiration date controller text on build
-    // (only if dialog is open; this is safe here because controller is in state)
-    // Note: This is just to keep the expiration date text synced when needed.
-
     return Scaffold(
       appBar: CustomAppBar(title: 'Documents', showTitle: true),
       backgroundColor: AppColors.neutral400,
@@ -317,29 +331,31 @@ class _DocumentsPageState extends State<DocumentsPage> {
                   children: [
                     Text(
                       'Model: $vehicleModel',
-                      style:  AppTextStyles.displaySmSemibold.copyWith(color: AppColors.neutral100),  
+                      style: AppTextStyles.displaySmSemibold
+                          .copyWith(color: AppColors.neutral100),
                     ),
                     Text(
                       'Chassis Number: $chassisNumber',
-                      style:  AppTextStyles.textMdRegular.copyWith(color: AppColors.neutral100)
+                      style: AppTextStyles.textMdRegular
+                          .copyWith(color: AppColors.neutral100),
                     ),
-                    SizedBox(height: 40),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
             TextField(
               decoration: InputDecoration(
                 hintText: 'Search documents...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: AppColors.neutral450,
-                hintStyle: TextStyle(color: AppColors.neutral200),
+                hintStyle: const TextStyle(color: AppColors.neutral200),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
                 ),
               ),
-              style: TextStyle(color: AppColors.neutral100),
+              style: const TextStyle(color: AppColors.neutral100),
               onChanged: (value) {
                 setState(() {
                   searchQuery = value.toLowerCase();
@@ -347,7 +363,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
               },
             ),
             const SizedBox(height: 16),
-            // Show loading, empty message, or list
             isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Expanded(
@@ -439,28 +454,15 @@ class FullScreenDocumentPreview extends StatelessWidget {
     final fileExtension = fileName.toLowerCase().split('.').last;
     final isImage = ['jpg', 'jpeg', 'png'].contains(fileExtension);
 
-    // Register iframe for non-image files
-    if (!isImage) {
-      final iframe = html.IFrameElement()
-        ..src = previewUrl
-        ..style.border = 'none'
-        ..style.width = '100%'
-        ..style.height = '100%';
-
-      // ignore: undefined_prefixed_name
-      ui.platformViewRegistry.registerViewFactory(
-        'iframeElement-$previewUrl',
-        (int viewId) => iframe,
-      );
-    }
-
     return Scaffold(
       backgroundColor: AppColors.neutral400,
       appBar: AppBar(
         backgroundColor: AppColors.neutral450,
-        title: Text(title,
-            style: AppTextStyles.textSmSemibold
-                .copyWith(color: AppColors.neutral100)),
+        title: Text(
+          title,
+          style: AppTextStyles.textSmSemibold
+              .copyWith(color: AppColors.neutral100),
+        ),
         leading: IconButton(
           icon: const Icon(
             Icons.close,
@@ -495,7 +497,23 @@ class FullScreenDocumentPreview extends StatelessWidget {
                         style: TextStyle(color: Colors.red)));
               },
             )
-          : HtmlElementView(viewType: 'iframeElement-$previewUrl'),
+          : Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Preview not available for this file type on mobile.',
+                    style: TextStyle(color: AppColors.neutral100, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: onDownload,
+                    child: const Text('Download File'),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
@@ -540,7 +558,6 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
     return [1, 2, 3, 4, 5].contains(documentType);
   }
 
-  // Controller for expiration date input
   final TextEditingController expirationDateController = TextEditingController();
 
   @override
@@ -554,7 +571,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
 
     setState(() => isUploading = true);
 
-    final url = 'http://localhost:5039/api/documents/upload';
+    final url = 'http://192.168.1.11:5039/api/documents/upload';
     final request = http.MultipartRequest('POST', Uri.parse(url));
 
     request.fields['customerId'] = widget.customerId.toString();
@@ -609,7 +626,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
     final requiresExp = documentType != null && requiresExpiration(documentType!);
 
     if (requiresExp && expirationDate != null) {
-      expirationDateController.text = DateFormat('yyyy-MM-dd').format(expirationDate!);
+      expirationDateController.text =
+          DateFormat('yyyy-MM-dd').format(expirationDate!);
     } else if (!requiresExp) {
       expirationDateController.text = '';
       expirationDate = null;
@@ -633,13 +651,12 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                     .map((type) => DropdownMenuItem(
                           value: type['value'] as int,
                           child: Text(type['name'] as String,
-                              style: TextStyle(color: AppColors.neutral200)),
+                              style: const TextStyle(color: AppColors.neutral200)),
                         ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
                     documentType = value;
-                    // Clear expiration date when document type changes
                     expirationDate = null;
                     expirationDateController.text = '';
                   });
@@ -661,7 +678,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                   decoration: const InputDecoration(
                     labelText: 'Expiration Date',
                     hintText: 'Select expiration date',
-                    labelStyle: const TextStyle(color: AppColors.neutral200),
+                    labelStyle: TextStyle(color: AppColors.neutral200),
                   ),
                   readOnly: true,
                   onTap: () async {
@@ -702,7 +719,6 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
   }
 }
 
-
 class VehicleInfo {
   final String model;
   final String chassisNumber;
@@ -716,8 +732,3 @@ class VehicleInfo {
     );
   }
 }
-
-
- 
-
-

@@ -9,7 +9,7 @@ void main() async {
 }
 
 Future<void> testSimpleDateFormat() async {
-  final baseUrl = 'http://localhost:5039/api';
+  final baseUrl = 'http:// 192.168.1.11:5039/api';
 
   // Test with the most basic date format .NET should accept
   final simpleRecord = {

@@ -79,7 +79,7 @@ print('serviceIds: ${widget.selectedServices.map((s) => s.serviceId).toList()}')
     // Step 2: Call nearby API using Dio
     final dio = Dio();
     final response = await dio.get(
-      'http://localhost:5039/api/servicecenters/nearby',
+      'http://192.168.1.11:5039/api/servicecenters/nearby',
       queryParameters: {
         'lat': lat,
         'lng': lng,

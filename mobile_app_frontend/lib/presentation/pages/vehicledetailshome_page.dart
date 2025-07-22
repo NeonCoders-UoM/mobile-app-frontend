@@ -222,11 +222,8 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             "assets/icons/service_history.svg",
                             "Service History",
                             ServiceHistoryPage(
+                              customerId: widget.customerId,
                               vehicleId: _vehicle?['vehicleId'] ?? 1,
-                              vehicleName: _vehicle?['model'] ?? 'Vehicle',
-                              vehicleRegistration:
-                                  _vehicle?['registrationNumber'] ?? 'Unknown',
-                              token: widget.token,
                             )),
                         _iconWithLabel(
                             context,
