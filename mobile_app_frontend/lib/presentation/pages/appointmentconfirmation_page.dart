@@ -16,18 +16,18 @@ import 'package:dio/dio.dart';
 
 class AppointmentconfirmationPage extends StatefulWidget {
   final DateTime selectedDate;
-  final List<String> selectedServices;
+  final List<Service> selectedServices;
   final int customerId;
   final int vehicleId;
   final String token;
 
   const AppointmentconfirmationPage({
     Key? key,
-    required this.selectedDate,
-    required this.selectedServices,
-    required this.customerId,
-    required this.vehicleId,
-    required this.token,
+  required this.selectedDate,
+  required this.selectedServices, // full Service list
+  required this.customerId,
+  required this.vehicleId,
+  required this.token,
   }) : super(key: key);
 
   @override
@@ -67,10 +67,8 @@ class _AppointmentconfirmationPageState
       errorMessage = null;
     });
     try {
-      // TODO: Map selectedServices (names) to serviceIds (int) as required by backend
-      // For now, use dummy IDs [1,2,3,...]
-      final serviceIds =
-          List<int>.generate(widget.selectedServices.length, (i) => i + 1);
+      // Map selectedServices to their real serviceId property
+      final serviceIds = widget.selectedServices.map((s) => s.serviceId).toList();
       final appointment = AppointmentCreate(
         customerId: widget.customerId,
         vehicleId: widget.vehicleId,
@@ -85,15 +83,7 @@ class _AppointmentconfirmationPageState
         context,
         MaterialPageRoute(
           builder: (context) => ServiceCenterPage(
-            selectedServices: widget.selectedServices
-                .map((s) => Service(
-                      serviceId: 0, // TODO: Map real serviceId
-                      serviceName: s,
-                      description: '',
-                      basePrice: 0.0,
-                      category: '',
-                    ))
-                .toList(),
+            selectedServices: widget.selectedServices,
             selectedDate: selectedDate,
             customerId: widget.customerId,
             vehicleId: widget.vehicleId,
@@ -183,7 +173,7 @@ class _AppointmentconfirmationPageState
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        widget.selectedServices[index],
+                                        widget.selectedServices[index].serviceName,
                                         style: AppTextStyles.textLgRegular
                                             .copyWith(
                                           color: AppColors.neutral200,

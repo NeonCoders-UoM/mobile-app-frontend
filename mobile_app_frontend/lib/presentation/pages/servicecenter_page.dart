@@ -73,6 +73,8 @@ Future<void> _fetchNearbyCentersAndCosts() async {
 
     final lat = position.latitude;
     final lng = position.longitude;
+    print('lat: $lat, lng: $lng');
+print('serviceIds: ${widget.selectedServices.map((s) => s.serviceId).toList()}');
 
     // Step 2: Call nearby API using Dio
     final dio = Dio();
@@ -81,15 +83,21 @@ Future<void> _fetchNearbyCentersAndCosts() async {
       queryParameters: {
         'lat': lat,
         'lng': lng,
+        'serviceIds': widget.selectedServices.map((s) => s.serviceId).toList(),
       },
       options: Options(headers: {
         'Authorization': 'Bearer ${widget.token}',
       }),
     );
 
+
     final List<dynamic> responseData = response.data;
     final List<ServiceCenterModel> data = responseData.map((json) => ServiceCenterModel.fromJson(json)).toList();
 
+  print('Received ${data.length} centers');
+for (var c in data) {
+  print('Center: ${c.stationName}, lat: ${c.latitude}, lng: ${c.longitude}');
+}
     // Step 3: Estimate costs
     final repo = ServiceCenterRepository(dio);
     final Map<int, double> costs = {};
@@ -103,7 +111,7 @@ Future<void> _fetchNearbyCentersAndCosts() async {
         final svc = services.firstWhere(
   (s) => s.serviceId == selected.serviceId,
   orElse: () => Service(
-    serviceId: 0,
+    serviceId: selected.serviceId,
     serviceName: '',
     description: '',
     basePrice: 0.0,
