@@ -139,20 +139,18 @@ class _ServiceselectionPageState extends State<ServiceselectionPage> {
                             size: ButtonSize.medium,
                             onTap: () {
                               Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      AppointmentconfirmationPage(
-                                    selectedServices: selectedServices
-                                        .map((s) => s.serviceName)
-                                        .toList(),
-                                    selectedDate: widget.selectedDate,
-                                    customerId: widget.customerId,
-                                    vehicleId: widget.vehicleId,
-                                    token: widget.token,
-                                  ),
-                                ),
-                              );
+  context,
+  MaterialPageRoute(
+    builder: (context) => AppointmentconfirmationPage(
+      selectedServices: selectedServices, // Passing full Service objects
+      selectedDate: widget.selectedDate,
+      customerId: widget.customerId,
+      vehicleId: widget.vehicleId,
+      token: widget.token,
+    ),
+  ),
+);
+
                             },
                           ),
                         ),

@@ -5,6 +5,8 @@ class ServiceCenterModel {
   final String email;
   final String telephone;
   final String stationStatus;
+  final double latitude;
+  final double longitude;
 
   ServiceCenterModel({
     required this.stationId,
@@ -13,6 +15,8 @@ class ServiceCenterModel {
     required this.email,
     required this.telephone,
     required this.stationStatus,
+     required this.latitude,
+    required this.longitude,
   });
 
   factory ServiceCenterModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,8 @@ class ServiceCenterModel {
       email: json['email'] ?? '',
       telephone: json['telephone'] ?? '',
       stationStatus: json['station_status'] ?? '',
+      latitude: (json['latitude'] ?? 0).toDouble(),
+      longitude: (json['longitude'] ?? 0).toDouble(),
     );
   }
 }
