@@ -304,6 +304,7 @@ class AuthService {
 
     return response.statusCode == 200;
   }
+
   Future<bool> deleteAccount({
     required int customerId,
     required String token,
@@ -373,6 +374,40 @@ class AuthService {
       return response.statusCode == 200;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getVehicleById({
+    required int customerId,
+    required int vehicleId,
+    required String token,
+  }) async {
+    final url =
+        Uri.parse('$_baseUrl/Customers/$customerId/vehicles/$vehicleId');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      print('🔑 GET Vehicle by ID: $vehicleId for CustomerID: $customerId');
+      print('🔐 Using Token: $token');
+      print('🔍 Response Code: ${response.statusCode}');
+      print('🔍 Response Body: ${response.body}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ Vehicle details fetched: $data');
+        return data;
+      } else {
+        print(
+            '❌ Failed to fetch vehicle details: ${response.statusCode} ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Error fetching vehicle details: $e');
+      return null;
     }
   }
 
