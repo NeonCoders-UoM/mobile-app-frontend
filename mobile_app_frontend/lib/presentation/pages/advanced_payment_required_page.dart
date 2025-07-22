@@ -141,9 +141,7 @@ class AdvancedPaymentRequiredPage extends StatelessWidget {
                         customerId: customerId,
                         vehicleId: vehicleId,
                         token: token,
-                        serviceCenterId:
-                            0, // TODO: Pass real selected center ID
-                        selectedServices: const [], // TODO: Pass real selected services
+                        appointmentId: 0, // TODO: Pass real appointmentId
                       ),
                     ),
                   )
