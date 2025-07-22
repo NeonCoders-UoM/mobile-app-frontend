@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/data/models/service_history_model.dart';
@@ -7,6 +8,10 @@ import 'package:mobile_app_frontend/presentation/components/molecules/backend_co
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/service_history_card.dart';
 import 'package:mobile_app_frontend/presentation/pages/add_unverified_service_page.dart';
+import 'dart:typed_data';
+import 'dart:html' as html;
+import 'package:url_launcher/url_launcher.dart';
+import 'pdf_view_page.dart';
 
 class ServiceHistoryPage extends StatefulWidget {
   final int vehicleId;
@@ -78,6 +83,42 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
     }
   }
 
+  Future<void> _downloadServiceHistoryPdf() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final pdfBytes =
+          await _serviceHistoryRepository.downloadServiceHistoryPdf(
+        widget.vehicleId,
+        token: widget.token,
+      );
+      if (kIsWeb) {
+        final blob = html.Blob([pdfBytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'service_history_${widget.vehicleId}.pdf')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+      } else {
+        // For mobile, you can use path_provider and open_file/share_plus to save and open the file
+        // For now, just show a snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('PDF downloaded (handle file saving on mobile).')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to download PDF: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   String _formatDate(DateTime date) {
     const months = [
       'Jan',
@@ -126,6 +167,42 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
                 icon: const Icon(Icons.add, color: Colors.white),
                 label: Text(
                   'Add Service Record',
+                  style: AppTextStyles.textMdSemibold.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary200,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // View PDF Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PdfViewPage(
+                              vehicleId: widget.vehicleId,
+                              token: widget.token,
+                            ),
+                          ),
+                        );
+                      },
+                icon: const Icon(Icons.visibility, color: Colors.white),
+                label: Text(
+                  'View Service History PDF',
                   style: AppTextStyles.textMdSemibold.copyWith(
                     color: Colors.white,
                   ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mobile_app_frontend/core/config/api_config.dart';
 import 'package:mobile_app_frontend/data/models/service_history_model.dart';
+import 'dart:typed_data'; // Added for Uint8List
 
 class ServiceHistoryRepository {
   // Local storage for unverified services (in real app, use shared preferences or local DB)
@@ -434,5 +435,27 @@ class ServiceHistoryRepository {
     final url = ApiConfig.getVehicleServiceHistoryUrl(vehicleId);
     print('🔧 Service History URL for vehicle $vehicleId: $url');
     return url;
+  }
+
+  // Get the preview URL for service history PDF
+  String getServiceHistoryPdfPreviewUrl(int vehicleId) {
+    return ApiConfig.getServiceHistoryPdfPreviewUrl(vehicleId);
+  }
+
+  // Download service history PDF for a vehicle (updated to use new endpoint)
+  Future<Uint8List> downloadServiceHistoryPdf(int vehicleId,
+      {String? token}) async {
+    final url = ApiConfig.getServiceHistoryPdfDownloadUrl(vehicleId);
+    print('📄 Downloading service history PDF from: $url');
+    final response = await http.get(
+      Uri.parse(url),
+      headers: _getHeaders(token: token),
+    );
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    } else {
+      print('❌ Failed to download PDF: ${response.statusCode}');
+      throw Exception('Failed to download PDF');
+    }
   }
 }

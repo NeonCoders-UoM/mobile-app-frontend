@@ -110,6 +110,16 @@ class ApiConfig {
           int vehicleId, int serviceHistoryId) =>
       getServiceHistoryByIdUrl(vehicleId, serviceHistoryId);
 
+  // Add this method for PDF download endpoint
+  static String getServiceHistoryPdfUrl(int vehicleId) =>
+      '$currentBaseUrl/VehicleServiceHistory/Vehicle/$vehicleId/pdf';
+
+  static String getServiceHistoryPdfPreviewUrl(int vehicleId) =>
+      '$currentBaseUrl/pdf/vehicle-service-history/$vehicleId/preview';
+
+  static String getServiceHistoryPdfDownloadUrl(int vehicleId) =>
+      '$currentBaseUrl/pdf/vehicle-service-history/$vehicleId';
+
   // Fuel Efficiency URL builders
   static String getFuelEfficienciesByVehicleUrl(int vehicleId) =>
       '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId';
