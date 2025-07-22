@@ -3,6 +3,8 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/profile_option_card.dart';
 import 'package:mobile_app_frontend/presentation/pages/edit_personaldetails_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/change_password_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/delete_account_page.dart';
 
 class ProfileOptionPage extends StatelessWidget {
   final int customerId;
@@ -59,11 +61,49 @@ class ProfileOptionPage extends StatelessWidget {
             SizedBox(
               height: 4,
             ),
-            ProfileOptionCard(text: 'Delete Account'),
+            ProfileOptionCard(
+              text: 'Delete Account',
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DeleteAccountPage(
+                      customerId: customerId,
+                      token: token,
+                    ),
+                  ),
+                );
+                if (result == true) {
+                  // Optionally handle post-delete logic here
+                }
+              },
+            ),
             SizedBox(
               height: 4,
             ),
-            ProfileOptionCard(text: 'Change Password'),
+            ProfileOptionCard(
+              text: 'Change Password',
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChangePasswordPage(
+                      customerId: customerId,
+                      token: token,
+                    ),
+                  ),
+                );
+                if (result == true) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Password changed successfully!'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+            ),
             SizedBox(
               height: 4,
             ),

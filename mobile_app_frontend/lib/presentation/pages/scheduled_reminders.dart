@@ -8,15 +8,18 @@ import 'package:mobile_app_frontend/presentation/components/molecules/reminder_d
 import 'package:mobile_app_frontend/presentation/components/molecules/service_reminder_card.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_header.dart';
 import 'package:mobile_app_frontend/presentation/pages/set_reminder_page.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
 
 class RemindersPage extends StatefulWidget {
   final int vehicleId;
   final String? token;
+  final int customerId; // Added customerId parameter
 
   const RemindersPage({
     Key? key,
     required this.vehicleId,
     this.token,
+    required this.customerId, // Added customerId to constructor
   }) : super(key: key);
 
   @override
@@ -31,15 +34,44 @@ class _RemindersPageState extends State<RemindersPage> {
 
   // Repository
   final ReminderRepository _reminderRepository = ReminderRepository();
+  final AuthService _authService = AuthService();
+  Map<String, dynamic>? _vehicle;
+  bool _vehicleLoading = true;
+  String? _vehicleError;
 
   // Get vehicle ID and token from widget
   int get _vehicleId => widget.vehicleId;
   String? get _token => widget.token;
+  int get _customerId => widget.customerId; // Get customerId from widget
 
   @override
   void initState() {
     super.initState();
+    _fetchVehicleDetails();
     _loadReminders();
+  }
+
+  Future<void> _fetchVehicleDetails() async {
+    setState(() {
+      _vehicleLoading = true;
+      _vehicleError = null;
+    });
+    try {
+      final vehicle = await _authService.getVehicleById(
+        customerId: _customerId,
+        vehicleId: _vehicleId,
+        token: _token ?? '',
+      );
+      setState(() {
+        _vehicle = vehicle;
+        _vehicleLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _vehicleError = 'Failed to load vehicle details: $e';
+        _vehicleLoading = false;
+      });
+    }
   }
 
   Future<void> _loadReminders() async {
@@ -289,14 +321,20 @@ class _RemindersPageState extends State<RemindersPage> {
   }
 
   Widget _buildRemindersList() {
+    if (_vehicleLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_vehicleError != null) {
+      return Center(child: Text(_vehicleError!));
+    }
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 32.0),
-          const VehicleHeader(
-            vehicleName: 'Mustang 1977',
-            vehicleId: 'AB89B395',
+          VehicleHeader(
+            vehicleName: _vehicle?['model'] ?? '',
+            vehicleId: _vehicle?['registrationNumber'] ?? '',
           ),
           const SizedBox(height: 48.0),
           Padding(
@@ -309,6 +347,7 @@ class _RemindersPageState extends State<RemindersPage> {
                   MaterialPageRoute(
                       builder: (context) => SetReminderPage(
                             vehicleId: _vehicleId,
+                            customerId: _customerId,
                             token: _token,
                           )),
                 );
@@ -324,17 +363,6 @@ class _RemindersPageState extends State<RemindersPage> {
 
                   await _loadReminders(); // Refresh the entire list from backend
                   print('List refreshed after adding reminder');
-
-                  // Show success message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Reminder added successfully!'),
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                } else {
-                  print('No result returned or reminder creation failed');
                 }
               },
             ),

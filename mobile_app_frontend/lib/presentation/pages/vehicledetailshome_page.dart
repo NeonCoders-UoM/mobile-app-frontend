@@ -17,7 +17,6 @@ import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/personal_details_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/notifications_page.dart';
 
-
 class VehicleDetailsHomePage extends StatefulWidget {
   final int customerId;
   final String token;
@@ -195,10 +194,12 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                       children: [
                         _iconWithLabel(
                             context,
-                        "assets/icons/documents.svg",
-                        "Documents",
-                        DocumentsPage(
-                            customerId: widget.customerId, vehicleId:_vehicle!['vehicleId'] )),
+                            "assets/icons/documents.svg",
+                            "Documents",
+                            DocumentsPage(
+                              customerId: widget.customerId,
+                              vehicleId: _vehicle?['vehicleId'],
+                            )),
                         _iconWithLabel(
                             context,
                             "assets/icons/appointments.svg",
@@ -234,6 +235,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             RemindersPage(
                               vehicleId: _vehicle?['vehicleId'] ?? 1,
                               token: widget.token,
+                              customerId: widget.customerId,
                             )),
                         _iconWithLabel(
                             context,
@@ -332,12 +334,12 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                       decoration: BoxDecoration(
                         color: AppColors.neutral300.withOpacity(0.8),
                         shape: BoxShape.circle,
-                      ),                    
+                      ),
                       child: const Icon(
                         Icons.person,
                         color: AppColors.neutral100,
                         size: 24,
-                              ),
+                      ),
                     ),
                   ),
                 ],

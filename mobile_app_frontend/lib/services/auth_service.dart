@@ -305,6 +305,26 @@ class AuthService {
     return response.statusCode == 200;
   }
 
+  Future<bool> deleteAccount({
+    required int customerId,
+    required String token,
+    required String password,
+  }) async {
+    final url = Uri.parse('$_baseUrl/Auth/delete-account');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'customerId': customerId,
+        'password': password,
+      }),
+    );
+    return response.statusCode == 200;
+  }
+
   Future<bool> deleteVehicle({
     required int customerId,
     required int vehicleId,
@@ -328,6 +348,66 @@ class AuthService {
       print(
           '❌ Failed to delete vehicle: ${response.statusCode} ${response.body}');
       return false;
+    }
+  }
+
+  Future<bool> changePassword({
+    required int customerId,
+    required String token,
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final url = Uri.parse('$_baseUrl/Auth/change-password');
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'customerId': customerId,
+          'oldPassword': oldPassword,
+          'newPassword': newPassword,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getVehicleById({
+    required int customerId,
+    required int vehicleId,
+    required String token,
+  }) async {
+    final url =
+        Uri.parse('$_baseUrl/Customers/$customerId/vehicles/$vehicleId');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      print('🔑 GET Vehicle by ID: $vehicleId for CustomerID: $customerId');
+      print('🔐 Using Token: $token');
+      print('🔍 Response Code: ${response.statusCode}');
+      print('🔍 Response Body: ${response.body}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ Vehicle details fetched: $data');
+        return data;
+      } else {
+        print(
+            '❌ Failed to fetch vehicle details: ${response.statusCode} ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Error fetching vehicle details: $e');
+      return null;
     }
   }
 

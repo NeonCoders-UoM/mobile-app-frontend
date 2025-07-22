@@ -7,9 +7,16 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/account_deleted_page.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
 
 class DeleteAccountPage extends StatefulWidget {
-  const DeleteAccountPage({super.key});
+  final int customerId;
+  final String token;
+  const DeleteAccountPage({super.key, required this.customerId, required this.token});
   @override
   State<DeleteAccountPage> createState() => _DeleteAccountPageState();
 }
@@ -24,6 +31,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
     super.dispose();
   }
 
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,7 +77,24 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 label: 'Delete Account',
                 type: ButtonType.danger,
                 size: ButtonSize.medium,
-                onTap: () => {},
+                onTap: () async {
+                  final password = _passwordController.text;
+                  final success = await AuthService().deleteAccount(
+                    customerId: widget.customerId,
+                    token: widget.token,
+                    password: password,
+                  );
+                  if (success) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const AccountDeletedPage()),
+                      (route) => false,
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Failed to delete account'), backgroundColor: Colors.red),
+                    );
+                  }
+                },
                 customWidth: 388.0,
                 customHeight: 56.0,
               ),
@@ -80,7 +105,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 label: 'Go Back',
                 type: ButtonType.primary,
                 size: ButtonSize.medium,
-                onTap: () => {},
+                onTap: () => Navigator.of(context).pop(),
                 customWidth: 388.0,
                 customHeight: 56.0,
               ),

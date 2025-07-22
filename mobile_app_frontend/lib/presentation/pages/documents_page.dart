@@ -459,8 +459,8 @@ class FullScreenDocumentPreview extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.neutral450,
         title: Text(title,
-            style:
-                AppTextStyles.textSmSemibold.copyWith(color: AppColors.neutral100)),
+            style: AppTextStyles.textSmSemibold
+                .copyWith(color: AppColors.neutral100)),
         leading: IconButton(
           icon: const Icon(
             Icons.close,
@@ -616,21 +616,25 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
     }
 
     return AlertDialog(
-      title: const Text('Upload Document'),
+      backgroundColor: AppColors.neutral400,
+      title: const Text('Upload Document',
+          style: TextStyle(color: AppColors.neutral150)),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
           child: Column(
             children: [
               DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Document Type'),
+                decoration: const InputDecoration(
+                    labelText: 'Document Type',
+                    labelStyle: TextStyle(color: AppColors.neutral200)),
+                dropdownColor: AppColors.neutral450,
                 items: documentTypes
-                    .map(
-                      (type) => DropdownMenuItem<int>(
-                        value: type['value'] as int,
-                        child: Text(type['name'] as String),
-                      ),
-                    )
+                    .map((type) => DropdownMenuItem(
+                          value: type['value'] as int,
+                          child: Text(type['name'] as String,
+                              style: TextStyle(color: AppColors.neutral200)),
+                        ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
@@ -657,6 +661,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                   decoration: const InputDecoration(
                     labelText: 'Expiration Date',
                     hintText: 'Select expiration date',
+                    labelStyle: const TextStyle(color: AppColors.neutral200),
                   ),
                   readOnly: true,
                   onTap: () async {
@@ -697,6 +702,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
   }
 }
 
+
 class VehicleInfo {
   final String model;
   final String chassisNumber;
@@ -713,3 +719,5 @@ class VehicleInfo {
 
 
  
+
+
