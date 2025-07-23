@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/emergencyservice_page.dart';
@@ -16,6 +17,10 @@ import 'package:mobile_app_frontend/presentation/pages/documents_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/personal_details_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/notifications_page.dart';
+import 'package:mobile_app_frontend/presentation/components/vehicle_switcher.dart';
+import 'package:mobile_app_frontend/state/providers/vehicle_provider.dart';
+import 'package:mobile_app_frontend/data/repositories/vehicle_repository.dart';
+import 'package:mobile_app_frontend/core/models/vehicle.dart';
 
 class VehicleDetailsHomePage extends StatefulWidget {
   final int customerId;
@@ -33,29 +38,15 @@ class VehicleDetailsHomePage extends StatefulWidget {
 
 class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
   final _authService = AuthService();
-  Map<String, dynamic>? _vehicle;
 
   @override
   void initState() {
     super.initState();
-    _loadVehicleDetails();
-  }
-
-  Future<void> _loadVehicleDetails() async {
-    final vehicles = await _authService.getCustomerVehicles(
-      customerId: widget.customerId,
-      token: widget.token,
-    );
-
-    if (vehicles != null && vehicles.isNotEmpty) {
-      setState(() {
-        _vehicle = vehicles[0];
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No vehicles found')),
-      );
-    }
+    // Load vehicles using provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<VehicleProvider>(context, listen: false)
+          .loadVehicles(widget.customerId, widget.token);
+    });
   }
 
   void _showLogoutDialog() {
@@ -119,28 +110,124 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_vehicle == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.neutral400,
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: AppColors.neutral400,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
+    return Consumer<VehicleProvider>(
+      builder: (context, vehicleProvider, child) {
+        final selectedVehicle = vehicleProvider.selectedVehicle;
+        if (vehicleProvider.vehicles.isEmpty) {
+          return const Scaffold(
+            backgroundColor: AppColors.neutral400,
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        if (selectedVehicle == null) {
+          return const Scaffold(
+            backgroundColor: AppColors.neutral400,
+            body: Center(
+              child: Text('No vehicles found. Please add a vehicle.'),
+            ),
+          );
+        }
+        return Scaffold(
+          backgroundColor: AppColors.neutral400,
+          body: SafeArea(
+            child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const SizedBox(height: 72),
+                  // --- Modern AppBar Section ---
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Logout icon
+                        GestureDetector(
+                          onTap: _showLogoutDialog,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.neutral300.withOpacity(0.8),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.logout,
+                              color: AppColors.neutral100,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                        // Vehicle Switcher
+                        VehicleSwitcher(
+                          customerId: widget.customerId,
+                          token: widget.token,
+                        ),
+                        Row(
+                          children: [
+                            // Notification bell icon
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => NotificationsPage(
+                                      customerId: widget.customerId,
+                                      token: widget.token,
+                                      vehicleId: selectedVehicle.vehicleId,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.neutral300.withOpacity(0.8),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.notifications,
+                                  color: AppColors.neutral100,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Profile icon
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PersonalDetailsPage(
+                                      customerId: widget.customerId,
+                                      token: widget.token,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.neutral300.withOpacity(0.8),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: AppColors.neutral100,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // --- Main Content ---
                   VehicleHeader(
-                    vehicleName:
-                        _vehicle!['registrationNumber'] ?? '', // ✅ lower case
-                    vehicleId: _vehicle!['vehicleId'].toString(),
+                    vehicleName: selectedVehicle.registrationNumber,
+                    vehicleId: selectedVehicle.vehicleId.toString(),
                   ),
                   const SizedBox(height: 16),
                   Padding(
@@ -163,19 +250,19 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             children: [
                               VehicleDetailRow(
                                   label: "Brand",
-                                  value: _vehicle!['brand'] ?? ''),
+                                  value: selectedVehicle.brand),
                               VehicleDetailRow(
                                   label: "Model",
-                                  value: _vehicle!['model'] ?? ''),
+                                  value: selectedVehicle.model),
                               VehicleDetailRow(
                                   label: "Chassis Number",
-                                  value: _vehicle!['chassisNumber'] ?? ''),
+                                  value: selectedVehicle.chassisNumber),
                               VehicleDetailRow(
                                   label: "Fuel Type",
-                                  value: _vehicle!['fuel'] ?? ''),
+                                  value: selectedVehicle.fuel),
                               VehicleDetailRow(
                                   label: "Year",
-                                  value: _vehicle!['year'].toString()),
+                                  value: selectedVehicle.year.toString()),
                             ],
                           ),
                         ),
@@ -198,7 +285,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             "Documents",
                             DocumentsPage(
                               customerId: widget.customerId,
-                              vehicleId: _vehicle?['vehicleId'],
+                              vehicleId: selectedVehicle.vehicleId,
                             )),
                         _iconWithLabel(
                             context,
@@ -206,7 +293,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             "Appointments",
                             AppointmentPage(
                               customerId: widget.customerId,
-                              vehicleId: _vehicle?['vehicleId'] ?? 1,
+                              vehicleId: selectedVehicle.vehicleId,
                               token: widget.token,
                             )),
                         _iconWithLabel(
@@ -214,7 +301,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             "assets/icons/fuel_efficiency.svg",
                             "Fuel Efficiency",
                             FuelSummaryPage(
-                              vehicleId: _vehicle?['vehicleId'] ?? 1,
+                              vehicleId: selectedVehicle.vehicleId,
                               token: widget.token,
                             )),
                         _iconWithLabel(
@@ -222,10 +309,10 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             "assets/icons/service_history.svg",
                             "Service History",
                             ServiceHistoryPage(
-                              vehicleId: _vehicle?['vehicleId'] ?? 1,
-                              vehicleName: _vehicle?['model'] ?? 'Vehicle',
+                              vehicleId: selectedVehicle.vehicleId,
+                              vehicleName: selectedVehicle.model,
                               vehicleRegistration:
-                                  _vehicle?['registrationNumber'] ?? 'Unknown',
+                                  selectedVehicle.registrationNumber,
                               token: widget.token,
                             )),
                         _iconWithLabel(
@@ -233,7 +320,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             "assets/icons/set_reminders.svg",
                             "Set Reminders",
                             RemindersPage(
-                              vehicleId: _vehicle?['vehicleId'] ?? 1,
+                              vehicleId: selectedVehicle.vehicleId,
                               token: widget.token,
                               customerId: widget.customerId,
                             )),
@@ -242,17 +329,16 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             "assets/icons/emergency.svg",
                             "Emergency",
                             EmergencyservicePage(token: widget.token)),
-                        if (_vehicle != null)
-                          _iconWithLabel(
-                            context,
-                            "assets/icons/edit.svg",
-                            "Edit",
-                            EditVehicledetailsPage(
-                              customerId: widget.customerId,
-                              vehicleId: _vehicle!['vehicleId'],
-                              token: widget.token,
-                            ),
+                        _iconWithLabel(
+                          context,
+                          "assets/icons/edit.svg",
+                          "Edit",
+                          EditVehicledetailsPage(
+                            customerId: widget.customerId,
+                            vehicleId: selectedVehicle.vehicleId,
+                            token: widget.token,
                           ),
+                        ),
                         _iconWithLabel(context, "assets/icons/delete.svg",
                             "Delete", const DeleteVehiclePage()),
                       ],
@@ -261,93 +347,9 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                 ],
               ),
             ),
-            // Logout icon positioned in top left corner
-            Positioned(
-              top: 16,
-              left: 16,
-              child: GestureDetector(
-                onTap: _showLogoutDialog,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.neutral300.withOpacity(0.8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.logout,
-                    color: AppColors.neutral100,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-            // Notification and Profile icons positioned in top right corner
-            Positioned(
-              top: 16,
-              right: 16,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Notification bell icon
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NotificationsPage(
-                            customerId: widget.customerId,
-                            token: widget.token,
-                            vehicleId: _vehicle?['vehicleId'],
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.neutral300.withOpacity(0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.notifications,
-                        color: AppColors.neutral100,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Profile icon
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PersonalDetailsPage(
-                            customerId: widget.customerId,
-                            token: widget.token,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.neutral300.withOpacity(0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        color: AppColors.neutral100,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

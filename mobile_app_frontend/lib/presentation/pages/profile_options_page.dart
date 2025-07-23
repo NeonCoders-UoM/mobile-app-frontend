@@ -107,7 +107,6 @@ class ProfileOptionPage extends StatelessWidget {
             SizedBox(
               height: 4,
             ),
-            ProfileOptionCard(text: 'Add New Vehicle')
           ],
         ),
       ),
