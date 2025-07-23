@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
+import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 
 class NotificationDetailPage extends StatefulWidget {
   final Map<String, dynamic> notification;
@@ -200,6 +201,26 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
     final actionable = _notification['actionable'] as bool;
     final detailedInfo = _getDetailedInfo();
 
+    // Build a more meaningful description
+    final dueDateStr = _notification['description']?.contains('on') == true
+      ? '' // Already included in description
+      : (_notification['dueDate'] ?? '');
+    final vehicleInfo = [
+      if (_notification['vehicleBrand'] != null && _notification['vehicleModel'] != null)
+        '${_notification['vehicleBrand']} ${_notification['vehicleModel']}',
+      if (_notification['vehicleRegistrationNumber'] != null)
+        '(${_notification['vehicleRegistrationNumber']})',
+    ].join(' ');
+    final notes = (_notification['notes'] != null && _notification['notes'].toString().isNotEmpty)
+        ? '\nNotes: ${_notification['notes']}'
+        : '';
+    final description = [
+      _notification['description'] ?? '',
+      if (vehicleInfo.trim().isNotEmpty) 'Vehicle: $vehicleInfo',
+      if (dueDateStr.isNotEmpty) 'Due Date: $dueDateStr',
+      notes
+    ].where((s) => s.trim().isNotEmpty).join('\n');
+
     return Scaffold(
       backgroundColor: AppColors.neutral400,
       appBar: AppBar(
@@ -230,26 +251,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                 case 'delete':
                   _deleteNotification();
                   break;
-                case 'share':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Share feature coming soon!'),
-                    ),
-                  );
-                  break;
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'share',
-                child: Row(
-                  children: [
-                    Icon(Icons.share),
-                    SizedBox(width: 8),
-                    Text('Share'),
-                  ],
-                ),
-              ),
               const PopupMenuItem(
                 value: 'delete',
                 child: Row(
@@ -364,7 +368,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
               'Description',
               Icons.description,
               Text(
-                _notification['description'],
+                description,
                 style: AppTextStyles.textMdRegular.copyWith(
                   color: AppColors.neutral100,
                   height: 1.5,
@@ -376,25 +380,24 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
 
             // Detailed Information Section
             _buildSection(
-              'Details & Recommendations',
+              'Details',
               Icons.info_outline,
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDetailRow('Next Action', detailedInfo['nextAction']!),
-                  _buildDetailRow(
-                      'Estimated Cost', detailedInfo['estimatedCost']!),
-                  _buildDetailRow(
-                      'Time Required', detailedInfo['timeRequired']!),
-                  _buildDetailRow('Urgency', detailedInfo['urgency']!),
-                  _buildDetailRow('Consequences', detailedInfo['consequences']!,
-                      isLast: true),
+                  _buildDetailRow('Service', _notification['title'] ?? '-'),
+                  if (vehicleInfo.trim().isNotEmpty)
+                    _buildDetailRow('Vehicle', vehicleInfo),
+                  _buildDetailRow('Due Date', dueDateStr.isNotEmpty ? dueDateStr : (_notification['time'] ?? '-')),
+                  _buildDetailRow('Status', _notification['time'] ?? '-'),
+                  if (notes.trim().isNotEmpty)
+                    _buildDetailRow('Notes', notes.replaceFirst('\nNotes: ', '')),
                 ],
               ),
             ),
 
             if (actionable) ...[
               const SizedBox(height: 24),
-
               // Action Buttons
               _buildSection(
                 'Available Actions',
@@ -405,12 +408,16 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // TODO: Navigate to appointment booking
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Booking appointment feature coming soon!'),
-                              backgroundColor: Colors.blue,
+                          // Navigate to AppointmentPage
+                          final vehicleId = int.tryParse(_notification['vehicleId']?.toString() ?? '') ?? widget.vehicleId ?? 1;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AppointmentPage(
+                                customerId: widget.customerId,
+                                vehicleId: vehicleId,
+                                token: widget.token,
+                              ),
                             ),
                           );
                         },
@@ -448,27 +455,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                             label: const Text('Snooze'),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Find service centers feature coming soon!'),
-                                  backgroundColor: Colors.blue,
-                                ),
-                              );
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.neutral100,
-                              side: BorderSide(color: AppColors.neutral200),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            icon: const Icon(Icons.location_on),
-                            label: const Text('Find Centers'),
-                          ),
-                        ),
+                        // Removed Find Centers button
                       ],
                     ),
                   ],
