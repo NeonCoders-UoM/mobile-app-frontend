@@ -16,6 +16,70 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
+
+class DocumentActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color iconColor;
+
+  const DocumentActionButton({
+    Key? key,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.backgroundColor = AppColors.neutral450,
+    this.textColor = AppColors.neutral100,
+    this.iconColor = AppColors.neutral100,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: AppTextStyles.textSmMedium.copyWith(
+              color: textColor,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class Document {
   final int documentId;
@@ -65,6 +129,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
   String? chassisNumber;
   bool _isDownloading = false;
   final TextEditingController expirationDateController = TextEditingController();
+  CameraController? _cameraController;
+  List<CameraDescription>? _cameras;
 
   final documentTypes = [
     {'name': 'Vehicle Registration Certificate', 'value': 0},
@@ -80,11 +146,62 @@ class _DocumentsPageState extends State<DocumentsPage> {
     super.initState();
     fetchVehicleDetails();
     fetchDocuments();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    try {
+      final cameraStatus = await Permission.camera.request();
+      print('Camera permission status: $cameraStatus');
+      if (cameraStatus.isPermanentlyDenied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Camera permission is permanently denied. Please enable it in settings.'),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
+        );
+        return;
+      } else if (cameraStatus != PermissionStatus.granted) {
+        print('Camera permission not granted');
+        return;
+      }
+
+      print('Fetching available cameras...');
+      _cameras = await availableCameras();
+      print('Available cameras: ${_cameras?.length ?? 0}');
+      if (_cameras != null && _cameras!.isNotEmpty) {
+        print('Initializing camera controller...');
+        _cameraController = CameraController(
+          _cameras![0],
+          ResolutionPreset.high,
+          enableAudio: false,
+        );
+        await _cameraController!.initialize();
+        print('Camera initialized: ${_cameraController!.value.isInitialized}');
+        if (mounted) {
+          setState(() {});
+        }
+      } else {
+        print('No cameras available');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No cameras available on this device.')),
+        );
+      }
+    } catch (e) {
+      print('Error initializing camera: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error initializing camera: $e')),
+      );
+    }
   }
 
   @override
   void dispose() {
     expirationDateController.dispose();
+    _cameraController?.dispose();
     super.dispose();
   }
 
@@ -156,7 +273,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
           print('Storage permission status: $status');
         }
 
-        // Compatibility with older permission_handler versions
         if (status != PermissionStatus.granted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -242,8 +358,72 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
   }
 
-  Future<void> uploadDocument() async {
-    // Request permissions
+  Future<void> uploadDocument({bool fromCamera = false}) async {
+    if (fromCamera) {
+      await _uploadFromCamera();
+    } else {
+      await _uploadFromFilePicker();
+    }
+  }
+
+  Future<void> _uploadFromCamera() async {
+    final cameraStatus = await Permission.camera.request();
+    print('Camera permission status: $cameraStatus');
+
+    if (cameraStatus.isPermanentlyDenied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Camera permission is permanently denied. Please enable it in settings.'),
+          action: SnackBarAction(
+            label: 'Settings',
+            onPressed: () => openAppSettings(),
+          ),
+        ),
+      );
+      return;
+    } else if (cameraStatus != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Camera permission denied')),
+      );
+      return;
+    }
+
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Camera not available')),
+      );
+      return;
+    }
+
+    final XFile? image = await Navigator.of(context).push<XFile>(
+      MaterialPageRoute(
+        builder: (context) => CameraPreviewScreen(
+          controller: _cameraController!,
+          onPictureTaken: (XFile image) {
+            Navigator.of(context).pop(image);
+          },
+        ),
+      ),
+    );
+
+    if (image != null) {
+      final fileBytes = await File(image.path).readAsBytes();
+      final fileName = 'scanned_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      await showDialog(
+        context: context,
+        builder: (context) => UploadDocumentDialog(
+          customerId: widget.customerId,
+          vehicleId: widget.vehicleId,
+          fileName: fileName,
+          fileBytes: fileBytes,
+          onUploadSuccess: fetchDocuments,
+        ),
+      );
+    }
+  }
+
+  Future<void> _uploadFromFilePicker() async {
     if (Platform.isAndroid) {
       var photoStatus = await Permission.photos.request();
       print('Photo permission status: $photoStatus');
@@ -277,7 +457,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
     print('File bytes: ${file.bytes != null ? "Available" : "Null"}');
     print('File size: ${file.size} bytes');
 
-    // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('File size exceeds 10MB limit')),
@@ -397,118 +576,232 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Widget build(BuildContext context) {
     final filteredDocuments = documents.where((doc) {
       final title = getDocumentTitle(doc).toLowerCase();
-      return searchQuery.isEmpty || title.startsWith(searchQuery);
+      return searchQuery.isEmpty || title.contains(searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
       appBar: CustomAppBar(title: 'Documents', showTitle: true),
       backgroundColor: AppColors.neutral400,
-      body: Padding(
-        padding: const EdgeInsets.all(40.0),
-        child: Column(
-          children: [
-            if (vehicleModel != null && chassisNumber != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Model: $vehicleModel',
-                      style: AppTextStyles.displaySmSemibold
-                          .copyWith(color: AppColors.neutral100),
+      body: Column(
+        children: [
+          // Fixed header section
+          Container(
+            padding: const EdgeInsets.all(20.0),
+            color: AppColors.neutral400,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (vehicleModel != null && chassisNumber != null)
+                  Column(
+                    children: [
+                      Text(
+                        'Model: $vehicleModel',
+                        style: AppTextStyles.displaySmSemibold
+                            .copyWith(color: AppColors.neutral100),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'Chassis Number: $chassisNumber',
+                        style: AppTextStyles.textMdRegular
+                            .copyWith(color: AppColors.neutral100),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search documents...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: AppColors.neutral450,
+                    hintStyle: const TextStyle(color: AppColors.neutral200),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
                     ),
-                    Text(
-                      'Chassis Number: $chassisNumber',
-                      style: AppTextStyles.textMdRegular
-                          .copyWith(color: AppColors.neutral100),
-                    ),
-                    const SizedBox(height: 40),
-                  ],
+                  ),
+                  style: const TextStyle(color: AppColors.neutral100),
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value.toLowerCase();
+                    });
+                  },
                 ),
-              ),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search documents...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: AppColors.neutral450,
-                hintStyle: const TextStyle(color: AppColors.neutral200),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: const TextStyle(color: AppColors.neutral100),
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value.toLowerCase();
-                });
-              },
+                const SizedBox(height: 16),
+              ],
             ),
-            const SizedBox(height: 16),
-            isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Expanded(
-                    child: filteredDocuments.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'No documents found matching your search.',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredDocuments.length,
-                            itemBuilder: (context, index) {
-                              final doc = filteredDocuments[index];
-                              final title = getDocumentTitle(doc);
-
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 40),
-                                  tileColor: AppColors.neutral450,
-                                  title: Text(
-                                    title,
-                                    style: AppTextStyles.textSmSemibold
-                                        .copyWith(color: AppColors.neutral100),
-                                  ),
-                                  leading: SvgPicture.asset(
-                                    'assets/icons/document_card_icon.svg',
-                                    height: 24,
-                                    width: 24,
-                                    colorFilter: const ColorFilter.mode(
-                                      AppColors.neutral100,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                  onTap: () => previewDocument(
-                                    doc.fileUrl,
-                                    title,
-                                    doc.fileName,
-                                    doc.documentId,
+          ),
+          // Scrollable document list
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(40.0, 0, 40.0, 80.0),
+                  sliver: isLoading
+                      ? const SliverToBoxAdapter(
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : filteredDocuments.isEmpty
+                          ? const SliverToBoxAdapter(
+                              child: Center(
+                                child: Text(
+                                  'No documents found matching your search.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+                            )
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final doc = filteredDocuments[index];
+                                  final title = getDocumentTitle(doc);
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: ListTile(
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          vertical: 4, horizontal: 24),
+                                      tileColor: AppColors.neutral450,
+                                      title: Text(
+                                        title,
+                                        style: AppTextStyles.textSmSemibold
+                                            .copyWith(
+                                                color: AppColors.neutral100),
+                                      ),
+                                      leading: SvgPicture.asset(
+                                        'assets/icons/document_card_icon.svg',
+                                        height: 24,
+                                        width: 24,
+                                        colorFilter: const ColorFilter.mode(
+                                          AppColors.neutral100,
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      onTap: () => previewDocument(
+                                        doc.fileUrl,
+                                        title,
+                                        doc.fileName,
+                                        doc.documentId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                childCount: filteredDocuments.length,
+                              ),
+                            ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(40, 20, 40, 20),
+          decoration: BoxDecoration(
+            color: AppColors.neutral400,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              DocumentActionButton(
+                label: 'Smart Scan',
+                icon: Icons.document_scanner_outlined,
+                onTap: (_cameraController != null &&
+                        _cameraController!.value.isInitialized)
+                    ? () => uploadDocument(fromCamera: true)
+                    : () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Camera not available. Please check permissions or device capabilities.'),
                           ),
+                        );
+                      },
+                backgroundColor: AppColors.neutral450,
+                textColor: AppColors.neutral100,
+                iconColor: AppColors.neutral100,
+              ),
+              DocumentActionButton(
+                label: 'Import Files',
+                icon: Icons.folder_open,
+                onTap: () => uploadDocument(fromCamera: false),
+                backgroundColor: AppColors.neutral450,
+                textColor: AppColors.neutral100,
+                iconColor: AppColors.neutral100,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CameraPreviewScreen extends StatefulWidget {
+  final CameraController controller;
+  final Function(XFile) onPictureTaken;
+
+  const CameraPreviewScreen({
+    Key? key,
+    required this.controller,
+    required this.onPictureTaken,
+  }) : super(key: key);
+
+  @override
+  _CameraPreviewScreenState createState() => _CameraPreviewScreenState();
+}
+
+class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scan Document'),
+        backgroundColor: AppColors.neutral450,
+      ),
+      body: widget.controller.value.isInitialized
+          ? Stack(
+              children: [
+                CameraPreview(widget.controller),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: FloatingActionButton(
+                      onPressed: () async {
+                        try {
+                          final image = await widget.controller.takePicture();
+                          widget.onPictureTaken(image);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error capturing image: $e')),
+                          );
+                        }
+                      },
+                      child: const Icon(Icons.camera),
+                    ),
                   ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(40, 40, 40, 80),
-        child: CustomButton(
-          label: 'Add New Document',
-          type: ButtonType.primary,
-          size: ButtonSize.medium,
-          onTap: uploadDocument,
-        ),
-      ),
+                ),
+              ],
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }
@@ -534,7 +827,8 @@ class FullScreenDocumentPreview extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _FullScreenDocumentPreviewState createState() => _FullScreenDocumentPreviewState();
+  _FullScreenDocumentPreviewState createState() =>
+      _FullScreenDocumentPreviewState();
 }
 
 class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
@@ -554,18 +848,16 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
 
     if (!isPdf) {
       setState(() {
-        _isLoading = false; // No need to download for images or other types
+        _isLoading = false;
       });
       return;
     }
 
     try {
-      // Download the PDF from previewUrl
       print('Fetching PDF from: ${widget.previewUrl}');
       final response = await http.get(Uri.parse(widget.previewUrl));
       print('Response status: ${response.statusCode}');
       if (response.statusCode == 200) {
-        // Save to temporary directory
         final tempDir = await getTemporaryDirectory();
         final filePath = '${tempDir.path}/${widget.fileName}';
         print('Saving PDF to: $filePath');
@@ -591,6 +883,71 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
     }
   }
 
+  Future<void> _shareFile() async {
+    try {
+      final fileExtension = widget.fileName.toLowerCase().split('.').last;
+      final isSupportedType =
+          ['pdf', 'jpg', 'jpeg', 'png', 'txt'].contains(fileExtension);
+
+      if (!isSupportedType) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('File type (.$fileExtension) is not supported for sharing')),
+        );
+        return;
+      }
+
+      String filePath;
+      if (_localFilePath != null && await File(_localFilePath!).exists()) {
+        filePath = _localFilePath!;
+      } else {
+        final response = await http.get(Uri.parse(widget.previewUrl));
+        if (response.statusCode == 200) {
+          final tempDir = await getTemporaryDirectory();
+          filePath = '${tempDir.path}/${widget.fileName}';
+          final file = File(filePath);
+          await file.writeAsBytes(response.bodyBytes);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('Failed to download file for sharing: ${response.statusCode}')),
+          );
+          return;
+        }
+      }
+
+      final file = XFile(filePath, mimeType: _getMimeType(fileExtension));
+      await Share.shareXFiles(
+        [file],
+        text: 'Sharing document: ${widget.title}',
+        subject: 'Document: ${widget.title}',
+      );
+    } catch (e) {
+      print('Error sharing file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sharing file: $e')),
+      );
+    }
+  }
+
+  String _getMimeType(String extension) {
+    switch (extension) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'txt':
+        return 'text/plain';
+      default:
+        return 'application/octet-stream';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final fileExtension = widget.fileName.toLowerCase().split('.').last;
@@ -610,6 +967,10 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: AppColors.neutral100),
+            onPressed: _shareFile,
+          ),
           IconButton(
             icon: const Icon(Icons.download, color: AppColors.neutral100),
             onPressed: widget.onDownload,
@@ -688,7 +1049,6 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
 
   @override
   void dispose() {
-    // Clean up temporary file if it exists
     if (_localFilePath != null) {
       File(_localFilePath!).delete().catchError((e) {
         print('Error deleting temporary file: $e');
