@@ -1,3 +1,4 @@
+// ignore: avoid_web_libraries_in_flutter
 import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:ui' as ui;
@@ -14,6 +15,8 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_html/flutter_html.dart';
 
 class Document {
   final int documentId;
@@ -72,7 +75,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
   ];
 
   // Controller for expiration date input
-  final TextEditingController expirationDateController = TextEditingController();
+  final TextEditingController expirationDateController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -88,7 +92,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 
   Future<void> fetchVehicleDetails() async {
-    final url = 'http://localhost:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
+    final url =
+        'http://localhost:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -317,12 +322,12 @@ class _DocumentsPageState extends State<DocumentsPage> {
                   children: [
                     Text(
                       'Model: $vehicleModel',
-                      style:  AppTextStyles.displaySmSemibold.copyWith(color: AppColors.neutral100),  
+                      style: AppTextStyles.displaySmSemibold
+                          .copyWith(color: AppColors.neutral100),
                     ),
-                    Text(
-                      'Chassis Number: $chassisNumber',
-                      style:  AppTextStyles.textMdRegular.copyWith(color: AppColors.neutral100)
-                    ),
+                    Text('Chassis Number: $chassisNumber',
+                        style: AppTextStyles.textMdRegular
+                            .copyWith(color: AppColors.neutral100)),
                     SizedBox(height: 40),
                   ],
                 ),
@@ -438,64 +443,19 @@ class FullScreenDocumentPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final fileExtension = fileName.toLowerCase().split('.').last;
     final isImage = ['jpg', 'jpeg', 'png'].contains(fileExtension);
-
-    // Register iframe for non-image files
-    if (!isImage) {
-      final iframe = html.IFrameElement()
-        ..src = previewUrl
-        ..style.border = 'none'
-        ..style.width = '100%'
-        ..style.height = '100%';
-
-      // ignore: undefined_prefixed_name
-      ui.platformViewRegistry.registerViewFactory(
-        'iframeElement-$previewUrl',
-        (int viewId) => iframe,
-      );
-    }
-
     return Scaffold(
-      backgroundColor: AppColors.neutral400,
       appBar: AppBar(
-        backgroundColor: AppColors.neutral450,
-        title: Text(title,
-            style: AppTextStyles.textSmSemibold
-                .copyWith(color: AppColors.neutral100)),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.close,
-            color: AppColors.neutral100,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        title: Text(title),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.download, color: AppColors.neutral100),
-            onPressed: onDownload,
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: AppColors.neutral100),
-            onPressed: onDelete,
-          ),
+          IconButton(icon: Icon(Icons.download), onPressed: onDownload),
+          IconButton(icon: Icon(Icons.delete), onPressed: onDelete),
         ],
       ),
       body: isImage
-          ? Image.network(
-              previewUrl,
-              fit: BoxFit.contain,
-              width: double.infinity,
-              height: double.infinity,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const Center(child: CircularProgressIndicator());
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const Center(
-                    child: Text('Error loading image',
-                        style: TextStyle(color: Colors.red)));
-              },
-            )
-          : HtmlElementView(viewType: 'iframeElement-$previewUrl'),
+          ? Image.network(previewUrl)
+          : Html(
+              data: '<iframe src="$previewUrl" width="100%" height="600px" style="border:none;"></iframe>',
+            ),
     );
   }
 }
@@ -541,7 +501,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
   }
 
   // Controller for expiration date input
-  final TextEditingController expirationDateController = TextEditingController();
+  final TextEditingController expirationDateController =
+      TextEditingController();
 
   @override
   void dispose() {
@@ -606,10 +567,12 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final requiresExp = documentType != null && requiresExpiration(documentType!);
+    final requiresExp =
+        documentType != null && requiresExpiration(documentType!);
 
     if (requiresExp && expirationDate != null) {
-      expirationDateController.text = DateFormat('yyyy-MM-dd').format(expirationDate!);
+      expirationDateController.text =
+          DateFormat('yyyy-MM-dd').format(expirationDate!);
     } else if (!requiresExp) {
       expirationDateController.text = '';
       expirationDate = null;
@@ -702,7 +665,6 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
   }
 }
 
-
 class VehicleInfo {
   final String model;
   final String chassisNumber;
@@ -716,8 +678,3 @@ class VehicleInfo {
     );
   }
 }
-
-
- 
-
-

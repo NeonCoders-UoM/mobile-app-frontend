@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/notification_detail_page.dart';
+import 'package:mobile_app_frontend/data/repositories/reminder_repository.dart';
+import 'package:mobile_app_frontend/data/models/reminder_model.dart';
+import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 
 class NotificationsPage extends StatefulWidget {
   final int customerId;
@@ -22,6 +25,7 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   List<Map<String, dynamic>> _notifications = [];
   bool _isLoading = true;
+  final ReminderRepository _reminderRepository = ReminderRepository();
 
   @override
   void initState() {
@@ -33,80 +37,73 @@ class _NotificationsPageState extends State<NotificationsPage> {
     setState(() {
       _isLoading = true;
     });
-
-    // TODO: Replace with actual API call to fetch service reminders
-    // For now, using enhanced mock data with service reminders
-    await Future.delayed(const Duration(seconds: 1));
-
+    try {
+      List<ServiceReminderModel> reminders;
+      if (widget.vehicleId != null) {
+        reminders = await _reminderRepository.getVehicleReminders(widget.vehicleId!, token: widget.token);
+      } else {
+        reminders = await _reminderRepository.getAllReminders(token: widget.token);
+      }
+      // Map reminders to notification format, only include those within notify period
+      _notifications = reminders.where((reminder) {
+        final now = DateTime.now();
+        final daysUntilDue = reminder.reminderDate.difference(now).inDays;
+        return daysUntilDue <= reminder.notifyBeforeDays;
+      }).map((reminder) {
+        final now = DateTime.now();
+        final daysUntilDue = reminder.reminderDate.difference(now).inDays;
+        final dueDateStr = '${reminder.reminderDate.day.toString().padLeft(2, '0')}/${reminder.reminderDate.month.toString().padLeft(2, '0')}/${reminder.reminderDate.year}';
+        String time;
+        if (daysUntilDue < 0) {
+          time = 'Overdue by ${-daysUntilDue} days';
+        } else if (daysUntilDue == 0) {
+          time = 'Due today';
+        } else {
+          time = 'Due in $daysUntilDue days';
+        }
+        String priority;
+        if (daysUntilDue < 0) {
+          priority = 'high';
+        } else if (daysUntilDue <= reminder.notifyBeforeDays) {
+          priority = 'medium';
+        } else {
+          priority = 'low';
+        }
+        final vehicleInfo = [
+          if (reminder.vehicleBrand != null && reminder.vehicleModel != null)
+            '${reminder.vehicleBrand} ${reminder.vehicleModel}',
+          if (reminder.vehicleRegistrationNumber != null)
+            '(${reminder.vehicleRegistrationNumber})',
+        ].join(' ');
+        final serviceName = reminder.serviceName ?? 'Service Reminder';
+        final notes = (reminder.notes != null && reminder.notes!.isNotEmpty)
+            ? '\nNotes: ${reminder.notes}'
+            : '';
+        final description = [
+          '$serviceName is ${daysUntilDue < 0 ? 'overdue' : 'due'} for your $vehicleInfo on $dueDateStr.',
+          time + '.',
+          if (notes.isNotEmpty) notes
+        ].join('\n');
+        return {
+          'id': reminder.serviceReminderId ?? reminder.hashCode,
+          'title': serviceName,
+          'description': description,
+          'time': time,
+          'type': 'service_reminder',
+          'priority': priority,
+          'isRead': reminder.isActive ? false : true,
+          'actionable': reminder.isActive,
+          'vehicleId': reminder.vehicleId,
+        };
+      }).toList();
+    } catch (e) {
+      // On error, show empty or fallback
+      _notifications = [];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load notifications: $e')),
+      );
+    }
     setState(() {
-      _notifications = [
-        {
-          'id': 1,
-          'title': 'Oil Change Due',
-          'description':
-              'Your vehicle has reached 5,000 km since last oil change. Schedule service to maintain engine performance.',
-          'time': '2 hours ago',
-          'type': 'service_reminder',
-          'priority': 'high',
-          'isRead': false,
-          'actionable': true,
-        },
-        {
-          'id': 2,
-          'title': 'Brake Inspection Reminder',
-          'description':
-              'Brake inspection is recommended after 40,000 km for safety.',
-          'time': '1 day ago',
-          'type': 'safety_reminder',
-          'priority': 'high',
-          'isRead': false,
-          'actionable': true,
-        },
-        {
-          'id': 3,
-          'title': 'Air Filter Replacement',
-          'description':
-              'Ensures clean air enters the engine for better performance.',
-          'time': '2 days ago',
-          'type': 'maintenance_reminder',
-          'priority': 'medium',
-          'isRead': true,
-          'actionable': true,
-        },
-        {
-          'id': 4,
-          'title': 'Coolant Level Check',
-          'description':
-              'Regular coolant check helps prevent engine overheating.',
-          'time': '3 days ago',
-          'type': 'maintenance_reminder',
-          'priority': 'medium',
-          'isRead': true,
-          'actionable': false,
-        },
-        {
-          'id': 5,
-          'title': 'Tire Pressure Check',
-          'description':
-              'Monthly tire pressure check ensures optimal fuel efficiency and safety.',
-          'time': '1 week ago',
-          'type': 'maintenance_reminder',
-          'priority': 'low',
-          'isRead': true,
-          'actionable': false,
-        },
-        {
-          'id': 6,
-          'title': 'Engine Oil Filter Replacement',
-          'description':
-              'Removes dirt and debris from the oil to keep engine clean.',
-          'time': '2 weeks ago',
-          'type': 'service_reminder',
-          'priority': 'medium',
-          'isRead': true,
-          'actionable': true,
-        },
-      ];
       _isLoading = false;
     });
   }
@@ -399,12 +396,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          // TODO: Navigate to appointment booking
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Booking appointment feature coming soon!'),
-                              backgroundColor: Colors.blue,
+                          // Navigate to AppointmentPage
+                          final vehicleId = int.tryParse(notification['vehicleId']?.toString() ?? '') ?? widget.vehicleId ?? 1;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AppointmentPage(
+                                customerId: widget.customerId,
+                                vehicleId: vehicleId,
+                                token: widget.token,
+                              ),
                             ),
                           );
                         },
