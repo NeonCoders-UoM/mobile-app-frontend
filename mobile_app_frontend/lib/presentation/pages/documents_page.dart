@@ -397,7 +397,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Widget build(BuildContext context) {
     final filteredDocuments = documents.where((doc) {
       final title = getDocumentTitle(doc).toLowerCase();
-      return title.contains(searchQuery);
+      return searchQuery.isEmpty || title.startsWith(searchQuery);
     }).toList();
 
     return Scaffold(
