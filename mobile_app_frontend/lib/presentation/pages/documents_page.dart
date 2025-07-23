@@ -16,6 +16,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Document {
   final int documentId;
@@ -65,6 +68,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
   String? chassisNumber;
   bool _isDownloading = false;
   final TextEditingController expirationDateController = TextEditingController();
+  CameraController? _cameraController;
+  List<CameraDescription>? _cameras;
 
   final documentTypes = [
     {'name': 'Vehicle Registration Certificate', 'value': 0},
@@ -80,11 +85,63 @@ class _DocumentsPageState extends State<DocumentsPage> {
     super.initState();
     fetchVehicleDetails();
     fetchDocuments();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    try {
+      // Request camera permission
+      final cameraStatus = await Permission.camera.request();
+      print('Camera permission status: $cameraStatus');
+      if (cameraStatus.isPermanentlyDenied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Camera permission is permanently denied. Please enable it in settings.'),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
+        );
+        return;
+      } else if (cameraStatus != PermissionStatus.granted) {
+        print('Camera permission not granted');
+        return;
+      }
+
+      print('Fetching available cameras...');
+      _cameras = await availableCameras();
+      print('Available cameras: ${_cameras?.length ?? 0}');
+      if (_cameras != null && _cameras!.isNotEmpty) {
+        print('Initializing camera controller...');
+        _cameraController = CameraController(
+          _cameras![0],
+          ResolutionPreset.high,
+          enableAudio: false,
+        );
+        await _cameraController!.initialize();
+        print('Camera initialized: ${_cameraController!.value.isInitialized}');
+        if (mounted) {
+          setState(() {});
+        }
+      } else {
+        print('No cameras available');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No cameras available on this device.')),
+        );
+      }
+    } catch (e) {
+      print('Error initializing camera: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error initializing camera: $e')),
+      );
+    }
   }
 
   @override
   void dispose() {
     expirationDateController.dispose();
+    _cameraController?.dispose();
     super.dispose();
   }
 
@@ -156,7 +213,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
           print('Storage permission status: $status');
         }
 
-        // Compatibility with older permission_handler versions
         if (status != PermissionStatus.granted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -242,8 +298,72 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
   }
 
-  Future<void> uploadDocument() async {
-    // Request permissions
+  Future<void> uploadDocument({bool fromCamera = false}) async {
+    if (fromCamera) {
+      await _uploadFromCamera();
+    } else {
+      await _uploadFromFilePicker();
+    }
+  }
+
+  Future<void> _uploadFromCamera() async {
+    final cameraStatus = await Permission.camera.request();
+    print('Camera permission status: $cameraStatus');
+
+    if (cameraStatus.isPermanentlyDenied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Camera permission is permanently denied. Please enable it in settings.'),
+          action: SnackBarAction(
+            label: 'Settings',
+            onPressed: () => openAppSettings(),
+          ),
+        ),
+      );
+      return;
+    } else if (cameraStatus != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Camera permission denied')),
+      );
+      return;
+    }
+
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Camera not available')),
+      );
+      return;
+    }
+
+    final XFile? image = await Navigator.of(context).push<XFile>(
+      MaterialPageRoute(
+        builder: (context) => CameraPreviewScreen(
+          controller: _cameraController!,
+          onPictureTaken: (XFile image) {
+            Navigator.of(context).pop(image);
+          },
+        ),
+      ),
+    );
+
+    if (image != null) {
+      final fileBytes = await File(image.path).readAsBytes();
+      final fileName = 'scanned_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      await showDialog(
+        context: context,
+        builder: (context) => UploadDocumentDialog(
+          customerId: widget.customerId,
+          vehicleId: widget.vehicleId,
+          fileName: fileName,
+          fileBytes: fileBytes,
+          onUploadSuccess: fetchDocuments,
+        ),
+      );
+    }
+  }
+
+  Future<void> _uploadFromFilePicker() async {
     if (Platform.isAndroid) {
       var photoStatus = await Permission.photos.request();
       print('Photo permission status: $photoStatus');
@@ -277,7 +397,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
     print('File bytes: ${file.bytes != null ? "Available" : "Null"}');
     print('File size: ${file.size} bytes');
 
-    // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('File size exceeds 10MB limit')),
@@ -397,7 +516,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Widget build(BuildContext context) {
     final filteredDocuments = documents.where((doc) {
       final title = getDocumentTitle(doc).toLowerCase();
-      return searchQuery.isEmpty || title.startsWith(searchQuery);
+        return searchQuery.isEmpty || title.contains(searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
@@ -502,13 +621,88 @@ class _DocumentsPageState extends State<DocumentsPage> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(40, 40, 40, 80),
-        child: CustomButton(
-          label: 'Add New Document',
-          type: ButtonType.primary,
-          size: ButtonSize.medium,
-          onTap: uploadDocument,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomButton(
+              label: 'Add New Document',
+              type: ButtonType.primary,
+              size: ButtonSize.medium,
+              onTap: () => uploadDocument(fromCamera: false),
+            ),
+            const SizedBox(height: 16),
+            CustomButton(
+              label: 'Scan Document',
+              type: ButtonType.secondary,
+              size: ButtonSize.medium,
+              onTap: (_cameraController != null && _cameraController!.value.isInitialized)
+                  ? () => uploadDocument(fromCamera: true)
+                  : () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Camera not available. Please check permissions or device capabilities.')),
+                      );
+                    },
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class CameraPreviewScreen extends StatefulWidget {
+  final CameraController controller;
+  final Function(XFile) onPictureTaken;
+
+  const CameraPreviewScreen({
+    Key? key,
+    required this.controller,
+    required this.onPictureTaken,
+  }) : super(key: key);
+
+  @override
+  _CameraPreviewScreenState createState() => _CameraPreviewScreenState();
+}
+
+class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scan Document'),
+        backgroundColor: AppColors.neutral450,
+      ),
+      body: widget.controller.value.isInitialized
+          ? Stack(
+              children: [
+                CameraPreview(widget.controller),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: FloatingActionButton(
+                      onPressed: () async {
+                        try {
+                          final image = await widget.controller.takePicture();
+                          widget.onPictureTaken(image);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error capturing image: $e')),
+                          );
+                        }
+                      },
+                      child: const Icon(Icons.camera),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }
@@ -554,18 +748,16 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
 
     if (!isPdf) {
       setState(() {
-        _isLoading = false; // No need to download for images or other types
+        _isLoading = false;
       });
       return;
     }
 
     try {
-      // Download the PDF from previewUrl
       print('Fetching PDF from: ${widget.previewUrl}');
       final response = await http.get(Uri.parse(widget.previewUrl));
       print('Response status: ${response.statusCode}');
       if (response.statusCode == 200) {
-        // Save to temporary directory
         final tempDir = await getTemporaryDirectory();
         final filePath = '${tempDir.path}/${widget.fileName}';
         print('Saving PDF to: $filePath');
@@ -591,6 +783,66 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
     }
   }
 
+  Future<void> _shareFile() async {
+    try {
+      final fileExtension = widget.fileName.toLowerCase().split('.').last;
+      final isSupportedType = ['pdf', 'jpg', 'jpeg', 'png', 'txt'].contains(fileExtension);
+
+      if (!isSupportedType) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('File type (.$fileExtension) is not supported for sharing')),
+        );
+        return;
+      }
+
+      String filePath;
+      if (_localFilePath != null && await File(_localFilePath!).exists()) {
+        filePath = _localFilePath!;
+      } else {
+        final response = await http.get(Uri.parse(widget.previewUrl));
+        if (response.statusCode == 200) {
+          final tempDir = await getTemporaryDirectory();
+          filePath = '${tempDir.path}/${widget.fileName}';
+          final file = File(filePath);
+          await file.writeAsBytes(response.bodyBytes);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to download file for sharing: ${response.statusCode}')),
+          );
+          return;
+        }
+      }
+
+      final file = XFile(filePath, mimeType: _getMimeType(fileExtension));
+      await Share.shareXFiles(
+        [file],
+        text: 'Sharing document: ${widget.title}',
+        subject: 'Document: ${widget.title}',
+      );
+    } catch (e) {
+      print('Error sharing file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sharing file: $e')),
+      );
+    }
+  }
+
+  String _getMimeType(String extension) {
+    switch (extension) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'txt':
+        return 'text/plain';
+      default:
+        return 'application/octet-stream';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final fileExtension = widget.fileName.toLowerCase().split('.').last;
@@ -610,6 +862,10 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: AppColors.neutral100),
+            onPressed: _shareFile,
+          ),
           IconButton(
             icon: const Icon(Icons.download, color: AppColors.neutral100),
             onPressed: widget.onDownload,
@@ -688,7 +944,6 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
 
   @override
   void dispose() {
-    // Clean up temporary file if it exists
     if (_localFilePath != null) {
       File(_localFilePath!).delete().catchError((e) {
         print('Error deleting temporary file: $e');
