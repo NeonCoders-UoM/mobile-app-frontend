@@ -15,6 +15,7 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 
 class Document {
   final int documentId;
@@ -512,7 +513,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 }
 
-class FullScreenDocumentPreview extends StatelessWidget {
+class FullScreenDocumentPreview extends StatefulWidget {
   final String previewUrl;
   final String downloadUrl;
   final String fileName;
@@ -533,71 +534,167 @@ class FullScreenDocumentPreview extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _FullScreenDocumentPreviewState createState() => _FullScreenDocumentPreviewState();
+}
+
+class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
+  String? _localFilePath;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFile();
+  }
+
+  Future<void> _loadFile() async {
+    final fileExtension = widget.fileName.toLowerCase().split('.').last;
+    final isPdf = fileExtension == 'pdf';
+
+    if (!isPdf) {
+      setState(() {
+        _isLoading = false; // No need to download for images or other types
+      });
+      return;
+    }
+
+    try {
+      // Download the PDF from previewUrl
+      print('Fetching PDF from: ${widget.previewUrl}');
+      final response = await http.get(Uri.parse(widget.previewUrl));
+      print('Response status: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        // Save to temporary directory
+        final tempDir = await getTemporaryDirectory();
+        final filePath = '${tempDir.path}/${widget.fileName}';
+        print('Saving PDF to: $filePath');
+        final file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+        print('File saved: ${await file.exists()}');
+        setState(() {
+          _localFilePath = filePath;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = 'Failed to load PDF: ${response.statusCode}';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading PDF: $e');
+      setState(() {
+        _error = 'Error loading PDF: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final fileExtension = fileName.toLowerCase().split('.').last;
+    final fileExtension = widget.fileName.toLowerCase().split('.').last;
     final isImage = ['jpg', 'jpeg', 'png'].contains(fileExtension);
+    final isPdf = fileExtension == 'pdf';
 
     return Scaffold(
       backgroundColor: AppColors.neutral400,
       appBar: AppBar(
         backgroundColor: AppColors.neutral450,
         title: Text(
-          title,
-          style: AppTextStyles.textSmSemibold
-              .copyWith(color: AppColors.neutral100),
+          widget.title,
+          style: AppTextStyles.textSmSemibold.copyWith(color: AppColors.neutral100),
         ),
         leading: IconButton(
-          icon: const Icon(
-            Icons.close,
-            color: AppColors.neutral100,
-          ),
+          icon: const Icon(Icons.close, color: AppColors.neutral100),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.download, color: AppColors.neutral100),
-            onPressed: onDownload,
+            onPressed: widget.onDownload,
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: AppColors.neutral100),
-            onPressed: onDelete,
+            onPressed: widget.onDelete,
           ),
         ],
       ),
-      body: isImage
-          ? Image.network(
-              previewUrl,
-              fit: BoxFit.contain,
-              width: double.infinity,
-              height: double.infinity,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const Center(child: CircularProgressIndicator());
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const Center(
-                    child: Text('Error loading image',
-                        style: TextStyle(color: Colors.red)));
-              },
-            )
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Preview not available for this file type on mobile.',
-                    style: TextStyle(color: AppColors.neutral100, fontSize: 16),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: onDownload,
-                    child: const Text('Download File'),
-                  ),
-                ],
-              ),
-            ),
+                )
+              : isImage
+                  ? Image.network(
+                      widget.previewUrl,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'Error loading image',
+                            style: TextStyle(color: Colors.red, fontSize: 16),
+                          ),
+                        );
+                      },
+                    )
+                  : isPdf && _localFilePath != null
+                      ? PDFView(
+                          filePath: _localFilePath!,
+                          onError: (error) {
+                            setState(() {
+                              _error = 'Error loading PDF: $error';
+                            });
+                          },
+                          onPageError: (page, error) {
+                            setState(() {
+                              _error = 'Error on page $page: $error';
+                            });
+                          },
+                        )
+                      : Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Preview not available for ${fileExtension.toUpperCase()} files on mobile.',
+                                style: const TextStyle(
+                                  color: AppColors.neutral100,
+                                  fontSize: 16,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: widget.onDownload,
+                                child: const Text('Download File'),
+                              ),
+                            ],
+                          ),
+                        ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Clean up temporary file if it exists
+    if (_localFilePath != null) {
+      File(_localFilePath!).delete().catchError((e) {
+        print('Error deleting temporary file: $e');
+      });
+    }
+    super.dispose();
   }
 }
 
