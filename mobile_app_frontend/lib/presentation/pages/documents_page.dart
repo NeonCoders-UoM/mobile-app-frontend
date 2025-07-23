@@ -14,6 +14,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_t
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
+ import 'package:device_info_plus/device_info_plus.dart';
 
 class Document {
   final int documentId;
@@ -130,51 +131,80 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
   }
 
-  Future<void> downloadFile(String downloadUrl, String fileName) async {
-    try {
-      // Request storage permission for Android
-      if (Platform.isAndroid) {
-        var status = await Permission.storage.request();
-        if (!status.isGranted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Storage permission denied')),
-          );
-          return;
-        }
+ 
+
+Future<void> downloadFile(String downloadUrl, String fileName) async {
+  try {
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      print('Android SDK: ${androidInfo.version.sdkInt}');
+
+      var status;
+      if (androidInfo.version.sdkInt >= 33) {
+        status = await Permission.photos.request();
+        print('Photo permission status: $status');
+      } else {
+        status = await Permission.storage.request();
+        print('Storage permission status: $status');
       }
 
-      final response = await http.get(Uri.parse(downloadUrl));
-      if (response.statusCode == 200) {
-        // Get the downloads directory
-        final directory = await getDownloadsDirectory();
-        if (directory == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Unable to access downloads directory')),
-          );
-          return;
-        }
-
-        final filePath = '${directory.path}/$fileName';
-        final file = File(filePath);
-        await file.writeAsBytes(response.bodyBytes);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File downloaded to $filePath')),
-        );
-      } else {
+      if (status.isPermanentlyDenied) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Failed to download file: ${response.statusCode}')),
+            content: const Text(
+                'Storage permission is permanently denied. Please enable it in settings.'),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
         );
+        return;
       }
-    } catch (e) {
-      print('Error downloading file: $e');
+
+      if (!status.isGranted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Storage or photo permission denied')),
+        );
+        return;
+      }
+    }
+
+    print('Downloading from: $downloadUrl');
+    final response = await http.get(Uri.parse(downloadUrl));
+    print('Response status: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      final directory = await getDownloadsDirectory();
+      print('Downloads directory: $directory');
+      if (directory == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to access downloads directory')),
+        );
+        return;
+      }
+
+      final filePath = '${directory.path}/$fileName';
+      print('Saving file to: $filePath');
+      final file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error downloading file: $e')),
+        SnackBar(content: Text('File downloaded to $filePath')),
+      );
+    } else {
+      print('Response body: ${response.body}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Failed to download file: ${response.statusCode}')),
       );
     }
+  } catch (e) {
+    print('Error downloading file: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error downloading file: $e')),
+    );
   }
-
+}
   Future<void> deleteDocument(
       int documentId, String fileName, String title) async {
     final url =
@@ -205,40 +235,86 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 
   Future<void> uploadDocument() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'txt'],
-    );
-
-    if (result == null || result.files.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No file selected')),
-      );
-      return;
+  // Request permissions
+  if (Platform.isAndroid) {
+    var photoStatus = await Permission.photos.request();
+    print('Photo permission status: $photoStatus');
+    if (!photoStatus.isGranted) {
+      var storageStatus = await Permission.storage.request();
+      print('Storage permission status: $storageStatus');
+      if (!storageStatus.isGranted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Storage or photo permission denied')),
+        );
+        return;
+      }
     }
-
-    final file = result.files.single;
-    final fileName = file.name;
-    final fileBytes = file.bytes;
-
-    if (fileBytes == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to read file')),
-      );
-      return;
-    }
-
-    await showDialog(
-      context: context,
-      builder: (context) => UploadDocumentDialog(
-        customerId: widget.customerId,
-        vehicleId: widget.vehicleId,
-        fileName: fileName,
-        fileBytes: fileBytes,
-        onUploadSuccess: fetchDocuments,
-      ),
-    );
   }
+
+  final result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'txt'],
+  );
+
+  if (result == null || result.files.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No file selected')),
+    );
+    return;
+  }
+
+  final file = result.files.single;
+  print('File name: ${file.name}');
+  print('File path: ${file.path}');
+  print('File bytes: ${file.bytes != null ? "Available" : "Null"}');
+  print('File size: ${file.size} bytes');
+
+  // Check file size (10MB limit)
+  if (file.size > 10 * 1024 * 1024) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('File size exceeds 10MB limit')),
+    );
+    return;
+  }
+
+  Uint8List fileBytes;
+  if (file.path != null) {
+    try {
+      final fileFromPath = File(file.path!);
+      if (await fileFromPath.exists()) {
+        fileBytes = await fileFromPath.readAsBytes();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Selected file does not exist')),
+        );
+        return;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to read file: $e')),
+      );
+      return;
+    }
+  } else if (file.bytes != null) {
+    fileBytes = file.bytes!;
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to read file')),
+    );
+    return;
+  }
+
+  await showDialog(
+    context: context,
+    builder: (context) => UploadDocumentDialog(
+      customerId: widget.customerId,
+      vehicleId: widget.vehicleId,
+      fileName: file.name,
+      fileBytes: fileBytes,
+      onUploadSuccess: fetchDocuments,
+    ),
+  );
+}
 
   void previewDocument(
       String fileUrl, String title, String fileName, int documentId) {
