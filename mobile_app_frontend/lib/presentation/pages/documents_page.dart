@@ -20,6 +20,67 @@ import 'package:share_plus/share_plus.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 
+class DocumentActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color iconColor;
+
+  const DocumentActionButton({
+    Key? key,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.backgroundColor = AppColors.neutral450,
+    this.textColor = AppColors.neutral100,
+    this.iconColor = AppColors.neutral100,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: AppTextStyles.textSmMedium.copyWith(
+              color: textColor,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class Document {
   final int documentId;
   final String fileName;
@@ -90,7 +151,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> _initializeCamera() async {
     try {
-      // Request camera permission
       final cameraStatus = await Permission.camera.request();
       print('Camera permission status: $cameraStatus');
       if (cameraStatus.isPermanentlyDenied) {
@@ -516,134 +576,173 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Widget build(BuildContext context) {
     final filteredDocuments = documents.where((doc) {
       final title = getDocumentTitle(doc).toLowerCase();
-        return searchQuery.isEmpty || title.contains(searchQuery.toLowerCase());
+      return searchQuery.isEmpty || title.contains(searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
       appBar: CustomAppBar(title: 'Documents', showTitle: true),
       backgroundColor: AppColors.neutral400,
-      body: Padding(
-        padding: const EdgeInsets.all(40.0),
-        child: Column(
-          children: [
-            if (vehicleModel != null && chassisNumber != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Model: $vehicleModel',
-                      style: AppTextStyles.displaySmSemibold
-                          .copyWith(color: AppColors.neutral100),
+      body: Column(
+        children: [
+          // Fixed header section
+          Container(
+            padding: const EdgeInsets.all(20.0),
+            color: AppColors.neutral400,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (vehicleModel != null && chassisNumber != null)
+                  Column(
+                    children: [
+                      Text(
+                        'Model: $vehicleModel',
+                        style: AppTextStyles.displaySmSemibold
+                            .copyWith(color: AppColors.neutral100),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'Chassis Number: $chassisNumber',
+                        style: AppTextStyles.textMdRegular
+                            .copyWith(color: AppColors.neutral100),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search documents...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: AppColors.neutral450,
+                    hintStyle: const TextStyle(color: AppColors.neutral200),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
                     ),
-                    Text(
-                      'Chassis Number: $chassisNumber',
-                      style: AppTextStyles.textMdRegular
-                          .copyWith(color: AppColors.neutral100),
-                    ),
-                    const SizedBox(height: 40),
-                  ],
+                  ),
+                  style: const TextStyle(color: AppColors.neutral100),
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value.toLowerCase();
+                    });
+                  },
                 ),
-              ),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search documents...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: AppColors.neutral450,
-                hintStyle: const TextStyle(color: AppColors.neutral200),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: const TextStyle(color: AppColors.neutral100),
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value.toLowerCase();
-                });
-              },
+                const SizedBox(height: 16),
+              ],
             ),
-            const SizedBox(height: 16),
-            isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Expanded(
-                    child: filteredDocuments.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'No documents found matching your search.',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredDocuments.length,
-                            itemBuilder: (context, index) {
-                              final doc = filteredDocuments[index];
-                              final title = getDocumentTitle(doc);
-
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 40),
-                                  tileColor: AppColors.neutral450,
-                                  title: Text(
-                                    title,
-                                    style: AppTextStyles.textSmSemibold
-                                        .copyWith(color: AppColors.neutral100),
-                                  ),
-                                  leading: SvgPicture.asset(
-                                    'assets/icons/document_card_icon.svg',
-                                    height: 24,
-                                    width: 24,
-                                    colorFilter: const ColorFilter.mode(
-                                      AppColors.neutral100,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                  onTap: () => previewDocument(
-                                    doc.fileUrl,
-                                    title,
-                                    doc.fileName,
-                                    doc.documentId,
+          ),
+          // Scrollable document list
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(40.0, 0, 40.0, 80.0),
+                  sliver: isLoading
+                      ? const SliverToBoxAdapter(
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : filteredDocuments.isEmpty
+                          ? const SliverToBoxAdapter(
+                              child: Center(
+                                child: Text(
+                                  'No documents found matching your search.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                  ),
-          ],
-        ),
+                              ),
+                            )
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final doc = filteredDocuments[index];
+                                  final title = getDocumentTitle(doc);
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: ListTile(
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          vertical: 4, horizontal: 24),
+                                      tileColor: AppColors.neutral450,
+                                      title: Text(
+                                        title,
+                                        style: AppTextStyles.textSmSemibold
+                                            .copyWith(
+                                                color: AppColors.neutral100),
+                                      ),
+                                      leading: SvgPicture.asset(
+                                        'assets/icons/document_card_icon.svg',
+                                        height: 24,
+                                        width: 24,
+                                        colorFilter: const ColorFilter.mode(
+                                          AppColors.neutral100,
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      onTap: () => previewDocument(
+                                        doc.fileUrl,
+                                        title,
+                                        doc.fileName,
+                                        doc.documentId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                childCount: filteredDocuments.length,
+                              ),
+                            ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(40, 40, 40, 80),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CustomButton(
-              label: 'Add New Document',
-              type: ButtonType.primary,
-              size: ButtonSize.medium,
-              onTap: () => uploadDocument(fromCamera: false),
-            ),
-            const SizedBox(height: 16),
-            CustomButton(
-              label: 'Scan Document',
-              type: ButtonType.secondary,
-              size: ButtonSize.medium,
-              onTap: (_cameraController != null && _cameraController!.value.isInitialized)
-                  ? () => uploadDocument(fromCamera: true)
-                  : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Camera not available. Please check permissions or device capabilities.')),
-                      );
-                    },
-            ),
-          ],
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(40, 20, 40, 20),
+          decoration: BoxDecoration(
+            color: AppColors.neutral400,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              DocumentActionButton(
+                label: 'Smart Scan',
+                icon: Icons.document_scanner_outlined,
+                onTap: (_cameraController != null &&
+                        _cameraController!.value.isInitialized)
+                    ? () => uploadDocument(fromCamera: true)
+                    : () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Camera not available. Please check permissions or device capabilities.'),
+                          ),
+                        );
+                      },
+                backgroundColor: AppColors.neutral450,
+                textColor: AppColors.neutral100,
+                iconColor: AppColors.neutral100,
+              ),
+              DocumentActionButton(
+                label: 'Import Files',
+                icon: Icons.folder_open,
+                onTap: () => uploadDocument(fromCamera: false),
+                backgroundColor: AppColors.neutral450,
+                textColor: AppColors.neutral100,
+                iconColor: AppColors.neutral100,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -728,7 +827,8 @@ class FullScreenDocumentPreview extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _FullScreenDocumentPreviewState createState() => _FullScreenDocumentPreviewState();
+  _FullScreenDocumentPreviewState createState() =>
+      _FullScreenDocumentPreviewState();
 }
 
 class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
@@ -786,11 +886,14 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
   Future<void> _shareFile() async {
     try {
       final fileExtension = widget.fileName.toLowerCase().split('.').last;
-      final isSupportedType = ['pdf', 'jpg', 'jpeg', 'png', 'txt'].contains(fileExtension);
+      final isSupportedType =
+          ['pdf', 'jpg', 'jpeg', 'png', 'txt'].contains(fileExtension);
 
       if (!isSupportedType) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File type (.$fileExtension) is not supported for sharing')),
+          SnackBar(
+              content:
+                  Text('File type (.$fileExtension) is not supported for sharing')),
         );
         return;
       }
@@ -807,7 +910,9 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
           await file.writeAsBytes(response.bodyBytes);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to download file for sharing: ${response.statusCode}')),
+            SnackBar(
+                content:
+                    Text('Failed to download file for sharing: ${response.statusCode}')),
           );
           return;
         }
