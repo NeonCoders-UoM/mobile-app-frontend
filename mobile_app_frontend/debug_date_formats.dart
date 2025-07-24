@@ -9,7 +9,7 @@ void main() async {
 }
 
 Future<void> testDifferentDateFormats() async {
-  final baseUrl = 'http://localhost:5039/api';
+  final baseUrl = 'http://192.168.1.11:5039/api';
 
   // Test different date formats that .NET might accept
   final now = DateTime.now();

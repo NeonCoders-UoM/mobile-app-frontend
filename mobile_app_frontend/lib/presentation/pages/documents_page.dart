@@ -1,13 +1,12 @@
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:convert';
-import 'dart:html' as html;
-import 'dart:ui' as ui;
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
@@ -15,8 +14,73 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_html/flutter_html.dart';
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
+
+class DocumentActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color iconColor;
+
+  const DocumentActionButton({
+    Key? key,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.backgroundColor = AppColors.neutral450,
+    this.textColor = AppColors.neutral100,
+    this.iconColor = AppColors.neutral100,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: AppTextStyles.textSmMedium.copyWith(
+              color: textColor,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class Document {
   final int documentId;
@@ -64,6 +128,10 @@ class _DocumentsPageState extends State<DocumentsPage> {
   bool isLoading = true;
   String? vehicleModel;
   String? chassisNumber;
+  bool _isDownloading = false;
+  final TextEditingController expirationDateController = TextEditingController();
+  CameraController? _cameraController;
+  List<CameraDescription>? _cameras;
 
   final documentTypes = [
     {'name': 'Vehicle Registration Certificate', 'value': 0},
@@ -74,26 +142,72 @@ class _DocumentsPageState extends State<DocumentsPage> {
     {'name': 'Warranty Document', 'value': 5},
   ];
 
-  // Controller for expiration date input
-  final TextEditingController expirationDateController =
-      TextEditingController();
-
   @override
   void initState() {
     super.initState();
-    fetchVehicleDetails(); // fetch model and chassis number
+    fetchVehicleDetails();
     fetchDocuments();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    try {
+      final cameraStatus = await Permission.camera.request();
+      print('Camera permission status: $cameraStatus');
+      if (cameraStatus.isPermanentlyDenied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Camera permission is permanently denied. Please enable it in settings.'),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
+        );
+        return;
+      } else if (cameraStatus != PermissionStatus.granted) {
+        print('Camera permission not granted');
+        return;
+      }
+
+      print('Fetching available cameras...');
+      _cameras = await availableCameras();
+      print('Available cameras: ${_cameras?.length ?? 0}');
+      if (_cameras != null && _cameras!.isNotEmpty) {
+        print('Initializing camera controller...');
+        _cameraController = CameraController(
+          _cameras![0],
+          ResolutionPreset.high,
+          enableAudio: false,
+        );
+        await _cameraController!.initialize();
+        print('Camera initialized: ${_cameraController!.value.isInitialized}');
+        if (mounted) {
+          setState(() {});
+        }
+      } else {
+        print('No cameras available');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No cameras available on this device.')),
+        );
+      }
+    } catch (e) {
+      print('Error initializing camera: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error initializing camera: $e')),
+      );
+    }
   }
 
   @override
   void dispose() {
     expirationDateController.dispose();
+    _cameraController?.dispose();
     super.dispose();
   }
 
   Future<void> fetchVehicleDetails() async {
-    final url =
-        'http://localhost:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
+    final url = 'http://192.168.1.11:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -114,7 +228,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> fetchDocuments() async {
     final url =
-        'http://localhost:5039/api/documents/listByVehicle/${widget.customerId}/${widget.vehicleId}';
+        'http://192.168.1.11:5039/api/documents/listByVehicle/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -136,17 +250,71 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
   }
 
+  Future<Directory?> getDownloadPath() async {
+    Directory? directory = await getDownloadsDirectory();
+    print('Downloads directory: $directory');
+    return directory;
+  }
+
   Future<void> downloadFile(String downloadUrl, String fileName) async {
+    if (_isDownloading) return;
+    _isDownloading = true;
+
     try {
+      if (Platform.isAndroid) {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+        print('Android SDK: ${androidInfo.version.sdkInt}');
+
+        var status;
+        if (androidInfo.version.sdkInt >= 33) {
+          status = await Permission.photos.request();
+          print('Photo permission status: $status');
+        } else {
+          status = await Permission.storage.request();
+          print('Storage permission status: $status');
+        }
+
+        if (status != PermissionStatus.granted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                  'Permission denied. Please enable it in settings to download files.'),
+              action: SnackBarAction(
+                label: 'Settings',
+                onPressed: () => openAppSettings(),
+              ),
+            ),
+          );
+          return;
+        }
+      }
+
+      print('Downloading from: $downloadUrl');
       final response = await http.get(Uri.parse(downloadUrl));
+      print('Response status: ${response.statusCode}');
+      print('Response headers: ${response.headers}');
       if (response.statusCode == 200) {
-        final blob = html.Blob([response.bodyBytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', fileName)
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        final directory = await getDownloadPath();
+        print('Downloads directory: $directory');
+        if (directory == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unable to access downloads directory')),
+          );
+          return;
+        }
+
+        final filePath = '${directory.path}/$fileName';
+        print('Saving file to: $filePath');
+        final file = File(filePath);
+        print('File exists before writing: ${await file.exists()}');
+        await file.writeAsBytes(response.bodyBytes);
+        print('File exists after writing: ${await file.exists()}');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('File downloaded to $filePath')),
+        );
       } else {
+        print('Response body: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text('Failed to download file: ${response.statusCode}')),
@@ -157,13 +325,15 @@ class _DocumentsPageState extends State<DocumentsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error downloading file: $e')),
       );
+    } finally {
+      _isDownloading = false;
     }
   }
 
   Future<void> deleteDocument(
       int documentId, String fileName, String title) async {
     final url =
-        'http://localhost:5039/api/documents/delete?documentId=$documentId';
+        'http://192.168.1.11:5039/api/documents/delete?documentId=$documentId';
     try {
       final response = await http.delete(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -189,7 +359,87 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
   }
 
-  Future<void> uploadDocument() async {
+  Future<void> uploadDocument({bool fromCamera = false}) async {
+    if (fromCamera) {
+      await _uploadFromCamera();
+    } else {
+      await _uploadFromFilePicker();
+    }
+  }
+
+  Future<void> _uploadFromCamera() async {
+    final cameraStatus = await Permission.camera.request();
+    print('Camera permission status: $cameraStatus');
+
+    if (cameraStatus.isPermanentlyDenied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Camera permission is permanently denied. Please enable it in settings.'),
+          action: SnackBarAction(
+            label: 'Settings',
+            onPressed: () => openAppSettings(),
+          ),
+        ),
+      );
+      return;
+    } else if (cameraStatus != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Camera permission denied')),
+      );
+      return;
+    }
+
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Camera not available')),
+      );
+      return;
+    }
+
+    final XFile? image = await Navigator.of(context).push<XFile>(
+      MaterialPageRoute(
+        builder: (context) => CameraPreviewScreen(
+          controller: _cameraController!,
+          onPictureTaken: (XFile image) {
+            Navigator.of(context).pop(image);
+          },
+        ),
+      ),
+    );
+
+    if (image != null) {
+      final fileBytes = await File(image.path).readAsBytes();
+      final fileName = 'scanned_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      await showDialog(
+        context: context,
+        builder: (context) => UploadDocumentDialog(
+          customerId: widget.customerId,
+          vehicleId: widget.vehicleId,
+          fileName: fileName,
+          fileBytes: fileBytes,
+          onUploadSuccess: fetchDocuments,
+        ),
+      );
+    }
+  }
+
+  Future<void> _uploadFromFilePicker() async {
+    if (Platform.isAndroid) {
+      var photoStatus = await Permission.photos.request();
+      print('Photo permission status: $photoStatus');
+      if (photoStatus != PermissionStatus.granted) {
+        var storageStatus = await Permission.storage.request();
+        print('Storage permission status: $storageStatus');
+        if (storageStatus != PermissionStatus.granted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Storage or photo permission denied')),
+          );
+          return;
+        }
+      }
+    }
+
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'txt'],
@@ -203,10 +453,39 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
 
     final file = result.files.single;
-    final fileName = file.name;
-    final fileBytes = file.bytes;
+    print('File name: ${file.name}');
+    print('File path: ${file.path}');
+    print('File bytes: ${file.bytes != null ? "Available" : "Null"}');
+    print('File size: ${file.size} bytes');
 
-    if (fileBytes == null) {
+    if (file.size > 10 * 1024 * 1024) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('File size exceeds 10MB limit')),
+      );
+      return;
+    }
+
+    Uint8List fileBytes;
+    if (file.path != null) {
+      try {
+        final fileFromPath = File(file.path!);
+        if (await fileFromPath.exists()) {
+          fileBytes = await fileFromPath.readAsBytes();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Selected file does not exist')),
+          );
+          return;
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to read file: $e')),
+        );
+        return;
+      }
+    } else if (file.bytes != null) {
+      fileBytes = file.bytes!;
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to read file')),
       );
@@ -218,7 +497,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
       builder: (context) => UploadDocumentDialog(
         customerId: widget.customerId,
         vehicleId: widget.vehicleId,
-        fileName: fileName,
+        fileName: file.name,
         fileBytes: fileBytes,
         onUploadSuccess: fetchDocuments,
       ),
@@ -228,9 +507,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
   void previewDocument(
       String fileUrl, String title, String fileName, int documentId) {
     final previewUrl =
-        'http://localhost:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
+        'http://192.168.1.11:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
     final downloadUrl =
-        'http://localhost:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
+        'http://192.168.1.11:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
 
     final fileExtension = fileName.toLowerCase().split('.').last;
     final isSupportedType =
@@ -261,7 +540,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
       return;
     }
 
-    // Show full-screen dialog for supported file types
     Navigator.of(context).push(
       MaterialPageRoute(
         fullscreenDialog: true,
@@ -283,7 +561,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   String getDocumentTitle(Document doc) {
     if (doc.documentType == 5) {
-      // WarrantyDocument
       return (doc.displayName != null && doc.displayName!.isNotEmpty)
           ? doc.displayName!
           : doc.fileName;
@@ -300,126 +577,237 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Widget build(BuildContext context) {
     final filteredDocuments = documents.where((doc) {
       final title = getDocumentTitle(doc).toLowerCase();
-      return title.contains(searchQuery);
+      return searchQuery.isEmpty || title.contains(searchQuery.toLowerCase());
     }).toList();
-
-    // Update expiration date controller text on build
-    // (only if dialog is open; this is safe here because controller is in state)
-    // Note: This is just to keep the expiration date text synced when needed.
 
     return Scaffold(
       appBar: CustomAppBar(title: 'Documents', showTitle: true),
       backgroundColor: AppColors.neutral400,
-      body: Padding(
-        padding: const EdgeInsets.all(40.0),
-        child: Column(
-          children: [
-            if (vehicleModel != null && chassisNumber != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Model: $vehicleModel',
-                      style: AppTextStyles.displaySmSemibold
-                          .copyWith(color: AppColors.neutral100),
-                    ),
-                    Text('Chassis Number: $chassisNumber',
+      body: Column(
+        children: [
+          // Fixed header section
+          Container(
+            padding: const EdgeInsets.all(20.0),
+            color: AppColors.neutral400,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (vehicleModel != null && chassisNumber != null)
+                  Column(
+                    children: [
+                      Text(
+                        'Model: $vehicleModel',
+                        style: AppTextStyles.displaySmSemibold
+                            .copyWith(color: AppColors.neutral100),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'Chassis Number: $chassisNumber',
                         style: AppTextStyles.textMdRegular
-                            .copyWith(color: AppColors.neutral100)),
-                    SizedBox(height: 40),
-                  ],
+                            .copyWith(color: AppColors.neutral100),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search documents...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: AppColors.neutral450,
+                    hintStyle: const TextStyle(color: AppColors.neutral200),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: const TextStyle(color: AppColors.neutral100),
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value.toLowerCase();
+                    });
+                  },
                 ),
-              ),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search documents...',
-                prefixIcon: Icon(Icons.search),
-                filled: true,
-                fillColor: AppColors.neutral450,
-                hintStyle: TextStyle(color: AppColors.neutral200),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: TextStyle(color: AppColors.neutral100),
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value.toLowerCase();
-                });
-              },
+                const SizedBox(height: 16),
+              ],
             ),
-            const SizedBox(height: 16),
-            // Show loading, empty message, or list
-            isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Expanded(
-                    child: filteredDocuments.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'No documents found matching your search.',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredDocuments.length,
-                            itemBuilder: (context, index) {
-                              final doc = filteredDocuments[index];
-                              final title = getDocumentTitle(doc);
-
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 40),
-                                  tileColor: AppColors.neutral450,
-                                  title: Text(
-                                    title,
-                                    style: AppTextStyles.textSmSemibold
-                                        .copyWith(color: AppColors.neutral100),
-                                  ),
-                                  leading: SvgPicture.asset(
-                                    'assets/icons/document_card_icon.svg',
-                                    height: 24,
-                                    width: 24,
-                                    colorFilter: const ColorFilter.mode(
-                                      AppColors.neutral100,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                  onTap: () => previewDocument(
-                                    doc.fileUrl,
-                                    title,
-                                    doc.fileName,
-                                    doc.documentId,
+          ),
+          // Scrollable document list
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(40.0, 0, 40.0, 80.0),
+                  sliver: isLoading
+                      ? const SliverToBoxAdapter(
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : filteredDocuments.isEmpty
+                          ? const SliverToBoxAdapter(
+                              child: Center(
+                                child: Text(
+                                  'No documents found matching your search.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                  ),
-          ],
-        ),
+                              ),
+                            )
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final doc = filteredDocuments[index];
+                                  final title = getDocumentTitle(doc);
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: ListTile(
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          vertical: 4, horizontal: 24),
+                                      tileColor: AppColors.neutral450,
+                                      title: Text(
+                                        title,
+                                        style: AppTextStyles.textSmSemibold
+                                            .copyWith(
+                                                color: AppColors.neutral100),
+                                      ),
+                                      leading: SvgPicture.asset(
+                                        'assets/icons/document_card_icon.svg',
+                                        height: 24,
+                                        width: 24,
+                                        colorFilter: const ColorFilter.mode(
+                                          AppColors.neutral100,
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      onTap: () => previewDocument(
+                                        doc.fileUrl,
+                                        title,
+                                        doc.fileName,
+                                        doc.documentId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                childCount: filteredDocuments.length,
+                              ),
+                            ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(40, 40, 40, 80),
-        child: CustomButton(
-          label: 'Add New Document',
-          type: ButtonType.primary,
-          size: ButtonSize.medium,
-          onTap: uploadDocument,
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(40, 20, 40, 20),
+          decoration: BoxDecoration(
+            color: AppColors.neutral400,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              DocumentActionButton(
+                label: 'Smart Scan',
+                icon: Icons.document_scanner_outlined,
+                onTap: (_cameraController != null &&
+                        _cameraController!.value.isInitialized)
+                    ? () => uploadDocument(fromCamera: true)
+                    : () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Camera not available. Please check permissions or device capabilities.'),
+                          ),
+                        );
+                      },
+                backgroundColor: AppColors.neutral450,
+                textColor: AppColors.neutral100,
+                iconColor: AppColors.neutral100,
+              ),
+              DocumentActionButton(
+                label: 'Import Files',
+                icon: Icons.folder_open,
+                onTap: () => uploadDocument(fromCamera: false),
+                backgroundColor: AppColors.neutral450,
+                textColor: AppColors.neutral100,
+                iconColor: AppColors.neutral100,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class FullScreenDocumentPreview extends StatelessWidget {
+class CameraPreviewScreen extends StatefulWidget {
+  final CameraController controller;
+  final Function(XFile) onPictureTaken;
+
+  const CameraPreviewScreen({
+    Key? key,
+    required this.controller,
+    required this.onPictureTaken,
+  }) : super(key: key);
+
+  @override
+  _CameraPreviewScreenState createState() => _CameraPreviewScreenState();
+}
+
+class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scan Document'),
+        backgroundColor: AppColors.neutral450,
+      ),
+      body: widget.controller.value.isInitialized
+          ? Stack(
+              children: [
+                CameraPreview(widget.controller),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: FloatingActionButton(
+                      onPressed: () async {
+                        try {
+                          final image = await widget.controller.takePicture();
+                          widget.onPictureTaken(image);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error capturing image: $e')),
+                          );
+                        }
+                      },
+                      child: const Icon(Icons.camera),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : const Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+class FullScreenDocumentPreview extends StatefulWidget {
   final String previewUrl;
   final String downloadUrl;
   final String fileName;
@@ -440,23 +828,233 @@ class FullScreenDocumentPreview extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _FullScreenDocumentPreviewState createState() =>
+      _FullScreenDocumentPreviewState();
+}
+
+class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
+  String? _localFilePath;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFile();
+  }
+
+  Future<void> _loadFile() async {
+    final fileExtension = widget.fileName.toLowerCase().split('.').last;
+    final isPdf = fileExtension == 'pdf';
+
+    if (!isPdf) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      print('Fetching PDF from: ${widget.previewUrl}');
+      final response = await http.get(Uri.parse(widget.previewUrl));
+      print('Response status: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final tempDir = await getTemporaryDirectory();
+        final filePath = '${tempDir.path}/${widget.fileName}';
+        print('Saving PDF to: $filePath');
+        final file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+        print('File saved: ${await file.exists()}');
+        setState(() {
+          _localFilePath = filePath;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = 'Failed to load PDF: ${response.statusCode}';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading PDF: $e');
+      setState(() {
+        _error = 'Error loading PDF: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _shareFile() async {
+    try {
+      final fileExtension = widget.fileName.toLowerCase().split('.').last;
+      final isSupportedType =
+          ['pdf', 'jpg', 'jpeg', 'png', 'txt'].contains(fileExtension);
+
+      if (!isSupportedType) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('File type (.$fileExtension) is not supported for sharing')),
+        );
+        return;
+      }
+
+      String filePath;
+      if (_localFilePath != null && await File(_localFilePath!).exists()) {
+        filePath = _localFilePath!;
+      } else {
+        final response = await http.get(Uri.parse(widget.previewUrl));
+        if (response.statusCode == 200) {
+          final tempDir = await getTemporaryDirectory();
+          filePath = '${tempDir.path}/${widget.fileName}';
+          final file = File(filePath);
+          await file.writeAsBytes(response.bodyBytes);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('Failed to download file for sharing: ${response.statusCode}')),
+          );
+          return;
+        }
+      }
+
+      final file = XFile(filePath, mimeType: _getMimeType(fileExtension));
+      await Share.shareXFiles(
+        [file],
+        text: 'Sharing document: ${widget.title}',
+        subject: 'Document: ${widget.title}',
+      );
+    } catch (e) {
+      print('Error sharing file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sharing file: $e')),
+      );
+    }
+  }
+
+  String _getMimeType(String extension) {
+    switch (extension) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'txt':
+        return 'text/plain';
+      default:
+        return 'application/octet-stream';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final fileExtension = fileName.toLowerCase().split('.').last;
+    final fileExtension = widget.fileName.toLowerCase().split('.').last;
     final isImage = ['jpg', 'jpeg', 'png'].contains(fileExtension);
+    final isPdf = fileExtension == 'pdf';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        backgroundColor: AppColors.neutral450,
+        title: Text(
+          widget.title,
+          style: AppTextStyles.textSmSemibold.copyWith(color: AppColors.neutral100),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppColors.neutral100),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
-          IconButton(icon: Icon(Icons.download), onPressed: onDownload),
-          IconButton(icon: Icon(Icons.delete), onPressed: onDelete),
+          IconButton(
+            icon: const Icon(Icons.share, color: AppColors.neutral100),
+            onPressed: _shareFile,
+          ),
+          IconButton(
+            icon: const Icon(Icons.download, color: AppColors.neutral100),
+            onPressed: widget.onDownload,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: AppColors.neutral100),
+            onPressed: widget.onDelete,
+          ),
         ],
       ),
-      body: isImage
-          ? Image.network(previewUrl)
-          : Html(
-              data: '<iframe src="$previewUrl" width="100%" height="600px" style="border:none;"></iframe>',
-            ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : isImage
+                  ? Image.network(
+                      widget.previewUrl,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'Error loading image',
+                            style: TextStyle(color: Colors.red, fontSize: 16),
+                          ),
+                        );
+                      },
+                    )
+                  : isPdf && _localFilePath != null
+                      ? PDFView(
+                          filePath: _localFilePath!,
+                          onError: (error) {
+                            setState(() {
+                              _error = 'Error loading PDF: $error';
+                            });
+                          },
+                          onPageError: (page, error) {
+                            setState(() {
+                              _error = 'Error on page $page: $error';
+                            });
+                          },
+                        )
+                      : Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Preview not available for ${fileExtension.toUpperCase()} files on mobile.',
+                                style: const TextStyle(
+                                  color: AppColors.neutral100,
+                                  fontSize: 16,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: widget.onDownload,
+                                child: const Text('Download File'),
+                              ),
+                            ],
+                          ),
+                        ),
     );
+  }
+
+  @override
+  void dispose() {
+    if (_localFilePath != null) {
+      File(_localFilePath!).delete().catchError((e) {
+        print('Error deleting temporary file: $e');
+      });
+    }
+    super.dispose();
   }
 }
 
@@ -500,9 +1098,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
     return [1, 2, 3, 4, 5].contains(documentType);
   }
 
-  // Controller for expiration date input
-  final TextEditingController expirationDateController =
-      TextEditingController();
+  final TextEditingController expirationDateController = TextEditingController();
 
   @override
   void dispose() {
@@ -515,7 +1111,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
 
     setState(() => isUploading = true);
 
-    final url = 'http://localhost:5039/api/documents/upload';
+    final url = 'http://192.168.1.11:5039/api/documents/upload';
     final request = http.MultipartRequest('POST', Uri.parse(url));
 
     request.fields['customerId'] = widget.customerId.toString();
@@ -596,13 +1192,12 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                     .map((type) => DropdownMenuItem(
                           value: type['value'] as int,
                           child: Text(type['name'] as String,
-                              style: TextStyle(color: AppColors.neutral200)),
+                              style: const TextStyle(color: AppColors.neutral200)),
                         ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
                     documentType = value;
-                    // Clear expiration date when document type changes
                     expirationDate = null;
                     expirationDateController.text = '';
                   });
@@ -624,7 +1219,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                   decoration: const InputDecoration(
                     labelText: 'Expiration Date',
                     hintText: 'Select expiration date',
-                    labelStyle: const TextStyle(color: AppColors.neutral200),
+                    labelStyle: TextStyle(color: AppColors.neutral200),
                   ),
                   readOnly: true,
                   onTap: () async {
@@ -678,3 +1273,4 @@ class VehicleInfo {
     );
   }
 }
+

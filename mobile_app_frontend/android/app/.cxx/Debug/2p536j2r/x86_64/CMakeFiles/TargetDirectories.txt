@@ -1,0 +1,2 @@
+C:/Users/Weditha/Desktop/MobileApp_FrontEnd/mobile-app-frontend/mobile_app_frontend/android/app/.cxx/Debug/2p536j2r/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Weditha/Desktop/MobileApp_FrontEnd/mobile-app-frontend/mobile_app_frontend/android/app/.cxx/Debug/2p536j2r/x86_64/CMakeFiles/rebuild_cache.dir

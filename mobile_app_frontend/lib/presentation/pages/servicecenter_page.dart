@@ -89,13 +89,24 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      final lat = position.latitude;
-      final lng = position.longitude;
-      userLat = lat;
-      userLng = lng;
-      print('lat: $lat, lng: $lng');
-      print(
-          'serviceIds: ${widget.selectedServices.map((s) => s.serviceId).toList()}');
+    final lat = position.latitude;
+    final lng = position.longitude;
+    print('lat: $lat, lng: $lng');
+print('serviceIds: ${widget.selectedServices.map((s) => s.serviceId).toList()}');
+
+    // Step 2: Call nearby API using Dio
+    final dio = Dio();
+    final response = await dio.get(
+      'http://192.168.1.11:5039/api/servicecenters/nearby',
+      queryParameters: {
+        'lat': lat,
+        'lng': lng,
+        'serviceIds': widget.selectedServices.map((s) => s.serviceId).toList(),
+      },
+      options: Options(headers: {
+        'Authorization': 'Bearer ${widget.token}',
+      }),
+    );
 
       // Step 2: Call nearby API using Dio
       final dio = Dio();
