@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 // Simple script to test backend connection
 void main() async {
-  const String baseUrl = 'http://localhost:5039/api';
+  const String baseUrl = 'http:// 192.168.1.11:5039/api';
 
   print('Testing backend connection...');
 
@@ -86,6 +86,6 @@ void main() async {
     print('\nBackend connection test completed!');
   } catch (e) {
     print('Connection error: $e');
-    print('\nMake sure your .NET backend is running on http://localhost:5039');
+    print('\nMake sure your .NET backend is running on http:// 192.168.1.11:5039');
   }
 }

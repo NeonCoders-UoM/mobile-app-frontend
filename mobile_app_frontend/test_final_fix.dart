@@ -9,7 +9,7 @@ void main() async {
 }
 
 Future<void> testFinalFix() async {
-  final baseUrl = 'http://localhost:5039/api';
+  final baseUrl = 'http://192.168.1.11:5039/api';
 
   // Test without sending date field - let backend auto-set it
   final testRecord = {
