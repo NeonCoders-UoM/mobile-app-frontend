@@ -12,7 +12,7 @@ Future<void> testFuelEfficiencyIntegration() async {
   print('🧪 Testing Fuel Efficiency Integration with Updated Models');
   print('=' * 60);
 
-  final baseUrl = 'http://localhost:5039/api';
+  final baseUrl = 'http:// 192.168.1.11:5039/api';
 
   try {
     // Test 1: Create a new fuel efficiency record using AddFuelEfficiencyDTO format

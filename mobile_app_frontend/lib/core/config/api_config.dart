@@ -1,10 +1,10 @@
 class ApiConfig {
   // Backend API base URL
   // Change this to your actual backend URL
-  static const String baseUrl = 'http://localhost:5039/api';
+  static const String baseUrl = 'http://192.168.1.11:5039/api';
 
   // Alternative configurations for different environments
-  static const String devBaseUrl = 'http://localhost:5039/api';
+  static const String devBaseUrl = 'http://192.168.1.11:5039/api';
   static const String stagingBaseUrl =
       'https://staging-api.your-domain.com/api';
   static const String prodBaseUrl = 'https://api.your-domain.com/api';
