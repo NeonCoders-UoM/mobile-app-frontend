@@ -5,6 +5,7 @@ import 'package:mobile_app_frontend/presentation/pages/notification_detail_page.
 import 'package:mobile_app_frontend/data/repositories/reminder_repository.dart';
 import 'package:mobile_app_frontend/data/models/reminder_model.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
+import 'package:mobile_app_frontend/core/services/notification_service.dart';
 
 class NotificationsPage extends StatefulWidget {
   final int customerId;
@@ -26,6 +27,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
   List<Map<String, dynamic>> _notifications = [];
   bool _isLoading = true;
   final ReminderRepository _reminderRepository = ReminderRepository();
+  final Set<int> _notifiedReminders =
+      {}; // Track which reminders have been notified this session
 
   @override
   void initState() {
@@ -40,9 +43,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
     try {
       List<ServiceReminderModel> reminders;
       if (widget.vehicleId != null) {
-        reminders = await _reminderRepository.getVehicleReminders(widget.vehicleId!, token: widget.token);
+        reminders = await _reminderRepository
+            .getVehicleReminders(widget.vehicleId!, token: widget.token);
       } else {
-        reminders = await _reminderRepository.getAllReminders(token: widget.token);
+        reminders =
+            await _reminderRepository.getAllReminders(token: widget.token);
       }
       // Map reminders to notification format, only include those within notify period
       _notifications = reminders.where((reminder) {
@@ -52,7 +57,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }).map((reminder) {
         final now = DateTime.now();
         final daysUntilDue = reminder.reminderDate.difference(now).inDays;
-        final dueDateStr = '${reminder.reminderDate.day.toString().padLeft(2, '0')}/${reminder.reminderDate.month.toString().padLeft(2, '0')}/${reminder.reminderDate.year}';
+        final dueDateStr =
+            '${reminder.reminderDate.day.toString().padLeft(2, '0')}/${reminder.reminderDate.month.toString().padLeft(2, '0')}/${reminder.reminderDate.year}';
         String time;
         if (daysUntilDue < 0) {
           time = 'Overdue by ${-daysUntilDue} days';
@@ -79,14 +85,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
         final notes = (reminder.notes != null && reminder.notes!.isNotEmpty)
             ? '\nNotes: ${reminder.notes}'
             : '';
+        // Dynamic, user-friendly title and description
+        final title = '$serviceName for $vehicleInfo';
         final description = [
-          '$serviceName is ${daysUntilDue < 0 ? 'overdue' : 'due'} for your $vehicleInfo on $dueDateStr.',
+          'Your $vehicleInfo is scheduled for $serviceName on $dueDateStr.',
           time + '.',
           if (notes.isNotEmpty) notes
         ].join('\n');
         return {
           'id': reminder.serviceReminderId ?? reminder.hashCode,
-          'title': serviceName,
+          'title': title,
           'description': description,
           'time': time,
           'type': 'service_reminder',
@@ -264,6 +272,28 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final priority = notification['priority'] as String;
     final actionable = notification['actionable'] as bool;
 
+    // Trigger backend notification if not already sent for this reminder
+    final reminderId = notification['id'];
+    if (reminderId != null && !_notifiedReminders.contains(reminderId)) {
+      _notifiedReminders.add(reminderId);
+      // Build notification data for backend
+      final notificationData = {
+        'customerId': widget.customerId,
+        'title': notification['title'],
+        'message': notification['description'],
+        'type': notification['type'],
+        'priority': priority,
+        'serviceReminderId': notification['id'],
+        'vehicleId': notification['vehicleId'],
+        // Add more fields as needed
+      };
+      NotificationService.sendNotificationToBackend(
+        customerId: widget.customerId,
+        notificationData: notificationData,
+        token: widget.token,
+      );
+    }
+
     return GestureDetector(
       onTap: () async {
         // Navigate to notification detail page
@@ -397,7 +427,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       child: ElevatedButton(
                         onPressed: () {
                           // Navigate to AppointmentPage
-                          final vehicleId = int.tryParse(notification['vehicleId']?.toString() ?? '') ?? widget.vehicleId ?? 1;
+                          final vehicleId = int.tryParse(
+                                  notification['vehicleId']?.toString() ??
+                                      '') ??
+                              widget.vehicleId ??
+                              1;
                           Navigator.push(
                             context,
                             MaterialPageRoute(
