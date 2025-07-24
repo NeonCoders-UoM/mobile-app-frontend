@@ -20,14 +20,16 @@ class AppointmentconfirmationPage extends StatefulWidget {
   final int customerId;
   final int vehicleId;
   final String token;
+  final int? stationId;
 
   const AppointmentconfirmationPage({
     Key? key,
-  required this.selectedDate,
-  required this.selectedServices, // full Service list
-  required this.customerId,
-  required this.vehicleId,
-  required this.token,
+    required this.selectedDate,
+    required this.selectedServices,
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
+    this.stationId,
   }) : super(key: key);
 
   @override
@@ -67,15 +69,15 @@ class _AppointmentconfirmationPageState
       errorMessage = null;
     });
     try {
-      // Map selectedServices to their real serviceId property
       final serviceIds = widget.selectedServices.map((s) => s.serviceId).toList();
       final appointment = AppointmentCreate(
         customerId: widget.customerId,
         vehicleId: widget.vehicleId,
-        stationId: 1, // TODO: Replace with actual selected stationId
+        stationId: widget.stationId ?? 1,
         appointmentDate: selectedDate,
         serviceIds: serviceIds,
       );
+      print('Appointment payload: ${appointment.toJson()}');
       await AppointmentRepository(Dio())
           .createAppointment(appointment, widget.token);
       if (!mounted) return;
@@ -93,8 +95,29 @@ class _AppointmentconfirmationPageState
       );
     } catch (e) {
       setState(() {
-        errorMessage = e.toString();
+        if (e is DioException && e.response != null) {
+          errorMessage = 'Error: ${e.response?.data?['message'] ?? e.message}';
+        } else {
+          errorMessage = e.toString();
+        }
       });
+      print('Error: $e, Response: ${e is DioException ? e.response : null}');
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ServiceCenterPage(
+            selectedServices: widget.selectedServices,
+            selectedDate: selectedDate,
+            customerId: widget.customerId,
+            vehicleId: widget.vehicleId,
+            token: widget.token,
+          ),
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage!)),
+      );
     } finally {
       setState(() {
         isLoading = false;
@@ -125,34 +148,37 @@ class _AppointmentconfirmationPageState
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DatePicker(
-                initialDate: selectedDate,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Selected Services',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  child: DatePicker(
+                    initialDate: selectedDate,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                height: 440,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.neutral450,
-                  border: Border.all(color: AppColors.neutral200),
-                  borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 24),
+                Text(
+                  'Selected Services',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: widget.selectedServices.isEmpty
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral450,
+                    border: Border.all(color: AppColors.neutral200),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      widget.selectedServices.isEmpty
                           ? const Center(
                               child: Text(
                                 'No Selected Services',
@@ -162,86 +188,93 @@ class _AppointmentconfirmationPageState
                                 ),
                               ),
                             )
-                          : ListView.builder(
-                              itemCount: widget.selectedServices.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 6),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        widget.selectedServices[index].serviceName,
-                                        style: AppTextStyles.textLgRegular
-                                            .copyWith(
-                                          color: AppColors.neutral200,
+                          : SizedBox(
+                              height: (widget.selectedServices.length * 100.0)
+                                  .clamp(100.0, double.infinity),
+                              child: ListView.builder(
+                                itemCount: widget.selectedServices.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 6),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          widget.selectedServices[index].serviceName,
+                                          style: AppTextStyles.textLgRegular
+                                              .copyWith(
+                                            color: AppColors.neutral200,
+                                          ),
                                         ),
-                                      ),
-                                      Checkbox(
-                                          value: true,
-                                          onChanged: (_) {},
-                                          checkColor: Colors.white,
-                                          activeColor: AppColors.primary200)
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                    const SizedBox(height: 8),
-                    GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ServiceselectionPage(
-                                selectedDate: selectedDate,
-                                customerId: widget.customerId,
-                                vehicleId: widget.vehicleId,
-                                token: widget.token,
+                                        Checkbox(
+                                            value: true,
+                                            onChanged: (_) {},
+                                            checkColor: Colors.white,
+                                            activeColor: AppColors.primary200)
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.all(8.0),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            '+',
-                            style: TextStyle(
-                              fontSize: 24,
-                              color: AppColors.neutral200,
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ServiceselectionPage(
+                                  selectedDate: selectedDate,
+                                  customerId: widget.customerId,
+                                  vehicleId: widget.vehicleId,
+                                  token: widget.token,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.all(8.0),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              '+',
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: AppColors.neutral200,
+                              ),
                             ),
-                          ),
-                        )),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+                          )),
+                    ],
                   ),
                 ),
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  label: isLoading ? 'Applying...' : 'Apply',
-                  type: ButtonType.primary,
-                  size: ButtonSize.medium,
-                  onTap: !isLoading
-                      ? () {
-                          _createAppointment();
-                        }
-                      : null,
+                const SizedBox(height: 24),
+                if (errorMessage != null)
+                  SizedBox(
+                    height: 20,
+                    child: Text(
+                      errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    label: isLoading ? 'Applying...' : 'Apply',
+                    type: ButtonType.primary,
+                    size: ButtonSize.medium,
+                    onTap: !isLoading
+                        ? () {
+                            _createAppointment();
+                          }
+                        : null,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 60), // Increased padding
+              ],
+            ),
           ),
         ),
       ),
