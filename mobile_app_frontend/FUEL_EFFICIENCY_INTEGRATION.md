@@ -73,7 +73,7 @@ cd /path/to/your/dotnet/project
 dotnet run
 ```
 
-Ensure it's running on `http://localhost:5039` (or update `ApiConfig.baseUrl`)
+Ensure it's running on `http://10.10.13.168:5039` (or update `ApiConfig.baseUrl`)
 
 ### 2. Test Backend Integration
 

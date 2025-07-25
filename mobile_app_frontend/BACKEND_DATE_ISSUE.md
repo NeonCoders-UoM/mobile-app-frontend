@@ -119,7 +119,7 @@ Map<String, dynamic> toCreateJson() {
 Test backend directly:
 
 ```bash
-curl -X POST http://localhost:5039/api/FuelEfficiency \
+curl -X POST http://10.10.13.168:5039/api/FuelEfficiency \
   -H "Content-Type: application/json" \
   -d '{"VehicleId":1,"FuelAmount":50.0,"Notes":"Direct test"}'
 ```
@@ -127,7 +127,7 @@ curl -X POST http://localhost:5039/api/FuelEfficiency \
 Check what's stored:
 
 ```bash
-curl http://localhost:5039/api/FuelEfficiency/vehicle/1
+curl http://10.10.13.168:5039/api/FuelEfficiency/vehicle/1
 ```
 
 ---

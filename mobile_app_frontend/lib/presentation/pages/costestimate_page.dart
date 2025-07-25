@@ -68,7 +68,7 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
       int customerId, int vehicleId, String token) async {
     final dio = Dio();
     final response = await dio.get(
-      'http://localhost:5039/api/Customers/$customerId/vehicles/$vehicleId',
+      'http://10.10.13.168:5039/api/Customers/$customerId/vehicles/$vehicleId',
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
     if (response.statusCode == 200 && response.data != null) {
@@ -85,7 +85,7 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
     try {
       final dio = Dio();
       final response = await dio.get(
-        'http://localhost:5039/api/Appointment/customer/${widget.customerId}/vehicle/${widget.vehicleId}/details/${widget.appointmentId}',
+        'http://10.10.13.168:5039/api/Appointment/customer/${widget.customerId}/vehicle/${widget.vehicleId}/details/${widget.appointmentId}',
         options: Options(headers: {'Authorization': 'Bearer ${widget.token}'}),
       );
       final data = response.data;
@@ -117,7 +117,7 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
       if (serviceCenterId.isNotEmpty) {
         try {
           final scResponse = await dio.get(
-            'http://localhost:5039/api/ServiceCenters/$serviceCenterId',
+            'http://10.10.13.168:5039/api/ServiceCenters/$serviceCenterId',
             options:
                 Options(headers: {'Authorization': 'Bearer ${widget.token}'}),
           );

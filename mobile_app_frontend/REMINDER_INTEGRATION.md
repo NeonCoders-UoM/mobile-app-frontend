@@ -10,7 +10,7 @@ This document describes the integration between the Flutter mobile app frontend 
 
 The Flutter app is configured to connect to the .NET backend through `api_config.dart`:
 
-- **Base URL**: `http://localhost:5039/api` (development)
+- **Base URL**: `http://10.10.13.168:5039/api` (development)
 - **Default Vehicle ID**: `1` (integer to match backend)
 - **Endpoints**: Match the .NET controller structure
 
@@ -107,7 +107,7 @@ The model provides methods for converting to backend DTOs:
 
 ### Prerequisites
 
-1. .NET backend running on `http://localhost:5039`
+1. .NET backend running on `http://10.10.13.168:5039`
 2. Database with Vehicle and Service tables populated
 3. Flutter development environment set up
 

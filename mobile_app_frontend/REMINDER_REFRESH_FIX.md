@@ -111,13 +111,13 @@ List refreshed after adding reminder
 If the fix doesn't work as expected:
 
 1. **Check Console Logs**: Look for the debug messages mentioned above
-2. **Verify Backend**: Ensure the .NET backend is running on `http://localhost:5039`
+2. **Verify Backend**: Ensure the .NET backend is running on `http://10.10.13.168:5039`
 3. **Check Network**: Verify API calls are successful in browser dev tools
 4. **CORS Configuration**: Ensure backend allows requests from the frontend origin
 
 ## Configuration Notes
 
-- **Backend URL**: Currently set to `http://localhost:5039/api` in `api_config.dart`
+- **Backend URL**: Currently set to `http://10.10.13.168:5039/api` in `api_config.dart`
 - **Default Vehicle ID**: Set to `1` for testing purposes
 - **Timeouts**: 30 seconds for both connect and receive timeouts
 - **Error Handling**: Comprehensive error handling for network and API issues
