@@ -151,22 +151,24 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
             description: service.serviceDescription,
             date: _formatDate(service.serviceDate),
             isVerified: service.isVerified,
-            onEdit: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditServiceHistoryPage(
-                    service: service,
-                    vehicleName: widget.vehicleName,
-                    vehicleRegistration: widget.vehicleRegistration,
-                    token: widget.token,
-                  ),
-                ),
-              );
-              if (result == true) {
-                _loadServiceHistory();
-              }
-            },
+            onEdit: service.isVerified
+                ? null
+                : () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditServiceHistoryPage(
+                          service: service,
+                          vehicleName: widget.vehicleName,
+                          vehicleRegistration: widget.vehicleRegistration,
+                          token: widget.token,
+                        ),
+                      ),
+                    );
+                    if (result == true) {
+                      _loadServiceHistory();
+                    }
+                  },
           );
         },
       ),

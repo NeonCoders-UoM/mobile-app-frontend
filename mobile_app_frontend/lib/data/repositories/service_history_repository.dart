@@ -187,8 +187,8 @@ class ServiceHistoryRepository {
   Future<bool> updateService(ServiceHistoryModel service,
       {String? token}) async {
     try {
-      if (service.isVerified && service.serviceHistoryId != null) {
-        // Update verified service via API
+      if (service.serviceHistoryId != null) {
+        // Update both verified and unverified services via API
         final response = await http
             .put(
               Uri.parse(ApiConfig.updateVehicleServiceHistoryUrl(
@@ -205,7 +205,7 @@ class ServiceHistoryRepository {
           return false;
         }
       } else {
-        // Update unverified service in local storage
+        // Fallback: update in local storage if no ID
         final index = _localServiceHistory
             .indexWhere((s) => s.serviceHistoryId == service.serviceHistoryId);
         if (index != -1) {
