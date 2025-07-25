@@ -78,6 +78,27 @@ class ServiceHistoryCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                    if (isVerified) ...[
+                      const SizedBox(width: 8.0),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 4.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors
+                              .states['ok'], // Use a green color for verified
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: Text(
+                          'Verified',
+                          style: AppTextStyles.textXsmRegular.copyWith(
+                            color: AppColors.neutral100,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 4.0),

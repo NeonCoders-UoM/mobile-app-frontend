@@ -41,6 +41,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> _initNotifications() async {
+    await NotificationService.generateNotificationsFromServiceReminders(
+        token: widget.token);
     await _fetchBackendNotifications();
     await _loadNotifications();
   }
@@ -73,80 +75,76 @@ class _NotificationsPageState extends State<NotificationsPage> {
       _isLoading = true;
     });
     try {
-      List<ServiceReminderModel> reminders;
-      if (widget.vehicleId != null) {
-        reminders = await _reminderRepository
-            .getVehicleReminders(widget.vehicleId!, token: widget.token);
+      final response = await http.get(
+        Uri.parse(
+            'http://localhost:5039/api/Notifications/Customer/${widget.customerId}'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> notifications = json.decode(response.body);
+        _notifications = notifications.map<Map<String, dynamic>>((n) {
+          // Determine priority: use backend if valid, else compute from due date
+          String priority = (n['priority'] ?? '').toString().toLowerCase();
+          if (priority != 'high' && priority != 'medium' && priority != 'low') {
+            // Try to compute from due date if available
+            DateTime? dueDate;
+            if (n['reminderDate'] != null) {
+              dueDate = DateTime.tryParse(n['reminderDate']);
+            } else if (n['sentAt'] != null) {
+              dueDate = DateTime.tryParse(n['sentAt']);
+            } else if (n['createdAt'] != null) {
+              dueDate = DateTime.tryParse(n['createdAt']);
+            }
+            if (dueDate != null) {
+              final daysUntilDue = dueDate.difference(DateTime.now()).inDays;
+              if (daysUntilDue <= 0) {
+                priority = 'high';
+              } else if (daysUntilDue <= 3) {
+                priority = 'medium';
+              } else {
+                priority = 'low';
+              }
+            } else {
+              priority = 'low'; // fallback
+            }
+          }
+          return {
+            'id': n['notificationId'],
+            'title': n['title'] ?? '',
+            'description': n['message'] ?? '',
+            'time': n['sentAt'] ?? n['createdAt'] ?? '',
+            'type': n['type'] ?? '',
+            'priority': priority,
+            'isRead': n['isRead'] ?? false,
+            'actionable': true, // or use your own logic
+            'vehicleId': n['vehicleId'],
+            'reminderDate': n['sentAt'] ?? n['createdAt'],
+            // Add other fields as needed
+          };
+        }).toList();
+        // Sort notifications by newest sentAt/createdAt first
+        _notifications.sort((a, b) {
+          final aDate =
+              DateTime.tryParse(a['reminderDate'] ?? '') ?? DateTime(1970);
+          final bDate =
+              DateTime.tryParse(b['reminderDate'] ?? '') ?? DateTime(1970);
+          return bDate.compareTo(aDate);
+        });
+        // Remove reminderDate from notification maps (optional, for UI cleanliness)
+        for (var n in _notifications) {
+          n.remove('reminderDate');
+        }
       } else {
-        reminders =
-            await _reminderRepository.getAllReminders(token: widget.token);
-      }
-      // Map reminders to notification format, only include those within notify period
-      _notifications = reminders.where((reminder) {
-        final now = DateTime.now();
-        final daysUntilDue = reminder.reminderDate.difference(now).inDays;
-        return daysUntilDue <= reminder.notifyBeforeDays;
-      }).map((reminder) {
-        final now = DateTime.now();
-        final daysUntilDue = reminder.reminderDate.difference(now).inDays;
-        final dueDateStr =
-            '${reminder.reminderDate.day.toString().padLeft(2, '0')}/${reminder.reminderDate.month.toString().padLeft(2, '0')}/${reminder.reminderDate.year}';
-        String time;
-        if (daysUntilDue < 0) {
-          time = 'Overdue by  [1m${-daysUntilDue}\u001b[0m days';
-        } else if (daysUntilDue == 0) {
-          time = 'Due today';
-        } else {
-          time = 'Due in $daysUntilDue days';
-        }
-        String priority;
-        if (daysUntilDue < 0) {
-          priority = 'high';
-        } else if (daysUntilDue <= reminder.notifyBeforeDays) {
-          priority = 'medium';
-        } else {
-          priority = 'low';
-        }
-        final vehicleInfo = [
-          if (reminder.vehicleBrand != null && reminder.vehicleModel != null)
-            '${reminder.vehicleBrand} ${reminder.vehicleModel}',
-          if (reminder.vehicleRegistrationNumber != null)
-            '(${reminder.vehicleRegistrationNumber})',
-        ].join(' ');
-        final serviceName = reminder.serviceName ?? 'Service Reminder';
-        final notes = (reminder.notes != null && reminder.notes!.isNotEmpty)
-            ? '\nNotes: ${reminder.notes}'
-            : '';
-        // Dynamic, user-friendly title and description
-        final title = '$serviceName for $vehicleInfo';
-        final description = [
-          'Your $vehicleInfo is scheduled for $serviceName on $dueDateStr.',
-          time + '.',
-          if (notes.isNotEmpty) notes
-        ].join('\n');
-        return {
-          'id': reminder.serviceReminderId ?? reminder.hashCode,
-          'title': title,
-          'description': description,
-          'time': time,
-          'type': 'service_reminder',
-          'priority': priority,
-          'isRead': reminder.isActive ? false : true,
-          'actionable': reminder.isActive,
-          'vehicleId': reminder.vehicleId,
-          // Add reminderDate for sorting
-          'reminderDate': reminder.reminderDate,
-        };
-      }).toList();
-      // Sort notifications by newest reminderDate first
-      _notifications.sort((a, b) => (b['reminderDate'] as DateTime)
-          .compareTo(a['reminderDate'] as DateTime));
-      // Remove reminderDate from notification maps (optional, for UI cleanliness)
-      for (var n in _notifications) {
-        n.remove('reminderDate');
+        _notifications = [];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed to load notifications: ${response.body}')),
+        );
       }
     } catch (e) {
-      // On error, show empty or fallback
       _notifications = [];
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load notifications: $e')),
@@ -161,29 +159,53 @@ class _NotificationsPageState extends State<NotificationsPage> {
     await _loadNotifications();
   }
 
-  void _markAsRead(int notificationId) {
+  Future<void> _markAsRead(int notificationId) async {
     setState(() {
       final index = _notifications.indexWhere((n) => n['id'] == notificationId);
       if (index != -1) {
         _notifications[index]['isRead'] = true;
       }
     });
-    // TODO: Update read status on backend
+    try {
+      await NotificationService.markNotificationAsRead(
+        notificationId: notificationId,
+        token: widget.token,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to mark notification as read: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _markAllAsRead() {
+  Future<void> _markAllAsRead() async {
     setState(() {
       for (var notification in _notifications) {
         notification['isRead'] = true;
       }
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('All notifications marked as read'),
-        backgroundColor: Colors.green,
-      ),
-    );
-    // TODO: Update all read status on backend
+    try {
+      await NotificationService.markAllNotificationsAsRead(
+        customerId: widget.customerId,
+        token: widget.token,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All notifications marked as read'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to mark all as read: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _deleteNotification(int notificationId) async {
