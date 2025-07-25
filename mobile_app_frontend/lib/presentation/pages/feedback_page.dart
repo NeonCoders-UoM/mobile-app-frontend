@@ -7,9 +7,12 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class FeedbackPage extends StatefulWidget {
-  const FeedbackPage({super.key});
+  final int vehicleId;
+  const FeedbackPage({Key? key, required this.vehicleId}) : super(key: key);
 
   @override
   State<FeedbackPage> createState() => _FeedbackPageState();
@@ -18,6 +21,34 @@ class FeedbackPage extends StatefulWidget {
 class _FeedbackPageState extends State<FeedbackPage> {
   int rating = 0;
   final TextEditingController feedbackController = TextEditingController();
+
+  String? vehicleRegNo;
+  bool isLoadingVehicle = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchVehicleRegNo();
+  }
+
+  Future<void> fetchVehicleRegNo() async {
+    // Replace with your actual API endpoint and token if needed
+    final url =
+        Uri.parse('http://localhost:5039/api/Vehicles/${widget.vehicleId}');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        vehicleRegNo = data['registrationNumber'] ?? '';
+        isLoadingVehicle = false;
+      });
+    } else {
+      setState(() {
+        vehicleRegNo = '';
+        isLoadingVehicle = false;
+      });
+    }
+  }
 
   void _handleSubmitFeedback() {
     final feedback = feedbackController.text;
@@ -38,7 +69,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Cost Estimation',
+        title: 'Rate Your Experience',
         showTitle: true,
         onBackPressed: () => Navigator.of(context).pop(),
       ),
@@ -56,22 +87,21 @@ class _FeedbackPageState extends State<FeedbackPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              "Your vehicle service at Janaka Motors is now complete. Thank you for choosing us!",
+              "Your vehicle service is now complete. Thank you for choosing us!",
               style: AppTextStyles.textMdRegular.copyWith(
                 color: AppColors.neutral150,
               ),
             ),
             const SizedBox(height: 12),
-            const CostEstimateDescription(
-              servicecenterName: "Janaka Motors",
-              vehicleRegNo: "CAX-4589",
-              appointmentDate: "2025-02-26",
-              loyaltyPoints: "120",
-              serviceCenterId: "SC123456",
-              address: "123 Main St, Colombo",
-              distance: "5.2 km",
-              services: ["Oil Change", "Body Check"],
-            ),
+            isLoadingVehicle
+                ? const Center(child: CircularProgressIndicator())
+                : CostEstimateDescription(
+                    servicecenterName: 'Service Center', // Replace as needed
+                    vehicleRegNo: vehicleRegNo ?? '',
+                    appointmentDate: '', // Replace as needed
+                    serviceCenterId: '', // Replace as needed
+                    services: const [''],
+                  ),
             const SizedBox(height: 20),
             Text(
               "We hope you had a great experience! Your feedback helps us improve our service.",

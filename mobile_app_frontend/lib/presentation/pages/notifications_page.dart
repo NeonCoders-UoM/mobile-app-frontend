@@ -7,6 +7,7 @@ import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/core/services/notification_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:mobile_app_frontend/presentation/components/molecules/notification_card.dart';
 
 class NotificationsPage extends StatefulWidget {
   final int customerId;
@@ -243,7 +244,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         backgroundColor: AppColors.neutral400,
         elevation: 0,
         title: Text(
-          'Service Reminders',
+          'Notifications',
           style: AppTextStyles.textLgSemibold.copyWith(
             color: AppColors.neutral100,
           ),
@@ -352,35 +353,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final isRead = notification['isRead'] as bool;
     final priority = notification['priority'] as String;
     final actionable = notification['actionable'] as bool;
-
-    // Trigger backend notification if not already sent for this reminder (deduped with backend)
-    final reminderId = notification['id'];
-    if (reminderId != null &&
-        !_notifiedReminders.contains(reminderId) &&
-        !_backendNotifiedReminders.contains(reminderId)) {
-      _notifiedReminders.add(reminderId);
-      // Build notification data for backend
-      final notificationData = {
-        'customerId': widget.customerId,
-        'title': notification['title'],
-        'message': notification['description'],
-        'type': notification['type'],
-        'priority': priority,
-        'serviceReminderId': notification['id'],
-        'vehicleId': notification['vehicleId'],
-        // Add more fields as needed
-      };
-      NotificationService.sendNotificationToBackend(
-        customerId: widget.customerId,
-        notificationData: notificationData,
-        token: widget.token,
-      );
-    }
+    final type = notification['type'] as String;
 
     return GestureDetector(
-      onTap: () async {
-        // Navigate to notification detail page
-        final result = await Navigator.push(
+      onTap: () {
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => NotificationDetailPage(
@@ -393,168 +370,78 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ),
           ),
         );
-
-        // If notification was deleted, result will be true
-        if (result == true) {
-          // Refresh the list to reflect changes
-          setState(() {});
-        }
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6.0),
-        padding: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isRead ? AppColors.neutral450 : AppColors.neutral300,
-          borderRadius: BorderRadius.circular(8.0),
+          color: _getCardBackgroundColor(priority, type),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isRead ? AppColors.neutral300 : _getPriorityColor(priority),
-            width: isRead ? 1 : 2,
+            color: _getCardBorderColor(priority, type),
+            width: 2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _getPriorityColor(priority).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
+            Icon(
+              _getNotificationIcon(type),
+              color: _getPriorityColor(priority),
+              size: 32,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    notification['title'] ?? '',
+                    style: AppTextStyles.textMdSemibold.copyWith(
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                    ),
                   ),
-                  child: Icon(
-                    _getNotificationIcon(notification['type']),
-                    color: _getPriorityColor(priority),
-                    size: 20,
+                  const SizedBox(height: 4),
+                  Text(
+                    notification['description'] ?? '',
+                    style: AppTextStyles.textSmRegular.copyWith(
+                      color: const Color.fromARGB(255, 83, 83, 88),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              notification['title'],
-                              style: AppTextStyles.textMdMedium.copyWith(
-                                color: AppColors.neutral100,
-                                fontWeight: isRead
-                                    ? FontWeight.normal
-                                    : FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          if (!isRead)
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: _getPriorityColor(priority),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
+                      Icon(Icons.access_time,
+                          size: 14, color: AppColors.neutral200),
+                      const SizedBox(width: 4),
                       Text(
-                        notification['time'],
+                        notification['time'] ?? '',
                         style: AppTextStyles.textXsmRegular.copyWith(
                           color: AppColors.neutral200,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              notification['description'],
-              style: AppTextStyles.textSmRegular.copyWith(
-                color: AppColors.neutral150,
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            // View Details Row
-            Row(
-              children: [
-                Icon(
-                  Icons.visibility,
-                  size: 16,
-                  color: AppColors.neutral200,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Tap to view details',
-                  style: AppTextStyles.textXsmRegular.copyWith(
-                    color: AppColors.neutral200,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 14,
-                  color: AppColors.neutral200,
-                ),
-              ],
-            ),
-            if (actionable)
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Navigate to AppointmentPage
-                          final vehicleId = int.tryParse(
-                                  notification['vehicleId']?.toString() ??
-                                      '') ??
-                              widget.vehicleId ??
-                              1;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AppointmentPage(
-                                customerId: widget.customerId,
-                                vehicleId: vehicleId,
-                                token: widget.token,
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _getPriorityColor(priority),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                        ),
-                        child: const Text('Book Service'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // TODO: Snooze reminder functionality
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Reminder snoozed for 1 week'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.neutral100,
-                          side: BorderSide(color: AppColors.neutral200),
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                        ),
-                        child: const Text('Snooze'),
-                      ),
-                    ),
-                  ],
+            if (!isRead)
+              Container(
+                margin: const EdgeInsets.only(left: 8, top: 4),
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
                 ),
               ),
           ],
@@ -574,6 +461,29 @@ class _NotificationsPageState extends State<NotificationsPage> {
       default:
         return AppColors.neutral200;
     }
+  }
+
+  Color _getCardBackgroundColor(String priority, String type) {
+    if (type == 'service_history_verified') {
+      return Colors.blue.withOpacity(0.10);
+    }
+    switch (priority) {
+      case 'high':
+        return Colors.red.withOpacity(0.08);
+      case 'medium':
+        return Colors.orange.withOpacity(0.08);
+      case 'low':
+        return Colors.blue.withOpacity(0.08);
+      default:
+        return AppColors.neutral100;
+    }
+  }
+
+  Color _getCardBorderColor(String priority, String type) {
+    if (type == 'service_history_verified') {
+      return Colors.blue;
+    }
+    return _getPriorityColor(priority);
   }
 
   IconData _getNotificationIcon(String type) {

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:mobile_app_frontend/core/config/api_config.dart';
 import 'package:mobile_app_frontend/data/models/service_history_model.dart';
 import 'dart:typed_data'; // Added for Uint8List
+import 'package:mobile_app_frontend/core/services/notification_service.dart';
 
 class ServiceHistoryRepository {
   // Local storage for unverified services (in real app, use shared preferences or local DB)
@@ -78,7 +79,7 @@ class ServiceHistoryRepository {
 
   // Add verified service record (to API)
   Future<bool> addVerifiedService(ServiceHistoryModel service,
-      {String? token}) async {
+      {String? token, int? customerId}) async {
     try {
       print('🔧 Attempting to add service via API...');
       print(
@@ -100,6 +101,23 @@ class ServiceHistoryRepository {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         print('✅ Service added successfully via API');
+        // Send notification if customerId and token are available
+        if (customerId != null && token != null) {
+          final notificationData = {
+            "CustomerId": customerId,
+            "Title": "Service Record Verified",
+            "Message":
+                "A new verified service record for ${service.serviceType} was added.",
+            "Type": "service_history_verified",
+            "VehicleId": service.vehicleId,
+            "CreatedAt": DateTime.now().toIso8601String(),
+          };
+          await NotificationService.sendNotificationToBackend(
+            customerId: customerId,
+            notificationData: notificationData,
+            token: token,
+          );
+        }
         return true;
       } else {
         print('❌ API Error ${response.statusCode}: ${response.body}');

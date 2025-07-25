@@ -9,6 +9,8 @@ class NotificationService {
   }) async {
     final url = Uri.parse(
         'http://localhost:5039/api/Notifications'); // <-- Replace with your backend URL
+    // PRINT the data you are about to send
+    print('Sending notification to backend: ' + notificationData.toString());
     final response = await http.post(
       url,
       headers: {
@@ -17,6 +19,8 @@ class NotificationService {
       },
       body: json.encode(notificationData),
     );
+    // PRINT the response from the backend
+    print('Notification response: \\${response.statusCode} \\${response.body}');
     if (response.statusCode != 201) {
       // Optionally handle error
       print('Failed to create backend notification: \\${response.body}');

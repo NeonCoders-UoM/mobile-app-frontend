@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/feedback_page.dart';
 
 class NotificationDetailPage extends StatefulWidget {
   final Map<String, dynamic> notification;
@@ -203,15 +204,17 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
 
     // Build a more meaningful description
     final dueDateStr = _notification['description']?.contains('on') == true
-      ? '' // Already included in description
-      : (_notification['dueDate'] ?? '');
+        ? '' // Already included in description
+        : (_notification['dueDate'] ?? '');
     final vehicleInfo = [
-      if (_notification['vehicleBrand'] != null && _notification['vehicleModel'] != null)
+      if (_notification['vehicleBrand'] != null &&
+          _notification['vehicleModel'] != null)
         '${_notification['vehicleBrand']} ${_notification['vehicleModel']}',
       if (_notification['vehicleRegistrationNumber'] != null)
         '(${_notification['vehicleRegistrationNumber']})',
     ].join(' ');
-    final notes = (_notification['notes'] != null && _notification['notes'].toString().isNotEmpty)
+    final notes = (_notification['notes'] != null &&
+            _notification['notes'].toString().isNotEmpty)
         ? '\nNotes: ${_notification['notes']}'
         : '';
     final description = [
@@ -388,10 +391,15 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                   _buildDetailRow('Service', _notification['title'] ?? '-'),
                   if (vehicleInfo.trim().isNotEmpty)
                     _buildDetailRow('Vehicle', vehicleInfo),
-                  _buildDetailRow('Due Date', dueDateStr.isNotEmpty ? dueDateStr : (_notification['time'] ?? '-')),
+                  _buildDetailRow(
+                      'Due Date',
+                      dueDateStr.isNotEmpty
+                          ? dueDateStr
+                          : (_notification['time'] ?? '-')),
                   _buildDetailRow('Status', _notification['time'] ?? '-'),
                   if (notes.trim().isNotEmpty)
-                    _buildDetailRow('Notes', notes.replaceFirst('\nNotes: ', '')),
+                    _buildDetailRow(
+                        'Notes', notes.replaceFirst('\nNotes: ', '')),
                 ],
               ),
             ),
@@ -399,68 +407,110 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             if (actionable) ...[
               const SizedBox(height: 24),
               // Action Buttons
-              _buildSection(
-                'Available Actions',
-                Icons.play_arrow,
-                Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          // Navigate to AppointmentPage
-                          final vehicleId = int.tryParse(_notification['vehicleId']?.toString() ?? '') ?? widget.vehicleId ?? 1;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AppointmentPage(
-                                customerId: widget.customerId,
-                                vehicleId: vehicleId,
-                                token: widget.token,
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _getPriorityColor(priority),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        icon: const Icon(Icons.calendar_today),
-                        label: const Text(
-                          'Book Service Appointment',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Reminder snoozed for 1 week'),
-                                  backgroundColor: Colors.orange,
+              if (type == 'service_history_verified')
+                _buildSection(
+                  'Available Actions',
+                  Icons.play_arrow,
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FeedbackPage(
+                                  vehicleId: _notification['vehicleId'] ??
+                                      widget.vehicleId ??
+                                      1,
                                 ),
-                              );
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.neutral100,
-                              side: BorderSide(color: AppColors.neutral200),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            icon: const Icon(Icons.snooze),
-                            label: const Text('Snooze'),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary200,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          icon: const Icon(Icons.feedback),
+                          label: const Text(
+                            'Add Feedback',
+                            style: TextStyle(fontSize: 16),
                           ),
                         ),
-                        // Removed Find Centers button
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
+                )
+              else
+                _buildSection(
+                  'Available Actions',
+                  Icons.play_arrow,
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // Navigate to AppointmentPage
+                            final vehicleId = int.tryParse(
+                                    _notification['vehicleId']?.toString() ??
+                                        '') ??
+                                widget.vehicleId ??
+                                1;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AppointmentPage(
+                                  customerId: widget.customerId,
+                                  vehicleId: vehicleId,
+                                  token: widget.token,
+                                ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _getPriorityColor(priority),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          icon: const Icon(Icons.calendar_today),
+                          label: const Text(
+                            'Book Service Appointment',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('Reminder snoozed for 1 week'),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.neutral100,
+                                side: BorderSide(color: AppColors.neutral200),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              icon: const Icon(Icons.snooze),
+                              label: const Text('Snooze'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
 
             const SizedBox(height: 20),
