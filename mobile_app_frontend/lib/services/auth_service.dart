@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String _baseUrl = 'http://localhost:5039/api';
+  final String _baseUrl = 'http://192.168.1.11:5039/api';
 
   Future<bool> registerCustomer({
     required String firstName,

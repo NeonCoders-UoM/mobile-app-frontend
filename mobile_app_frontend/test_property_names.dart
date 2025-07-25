@@ -9,7 +9,7 @@ void main() async {
 }
 
 Future<void> testDifferentPropertyNames() async {
-  final baseUrl = 'http://localhost:5039/api';
+  final baseUrl = 'http://192.168.1.11:5039/api';
 
   // Test different property names the backend might expect
   final propertyTests = [
