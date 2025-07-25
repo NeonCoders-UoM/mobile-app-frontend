@@ -14,10 +14,8 @@ void testPropertyNameFix() {
   // Create a test record
   final testRecord = FuelEfficiencyModel(
     vehicleId: 1,
-    fuelDate: DateTime.now(),
+    date: DateTime.now(), // changed from fuelDate to date
     fuelAmount: 45.5,
-    pricePerLiter: 150.0,
-    totalCost: 6825.0,
     odometer: 15500,
     location: 'Test Station',
     fuelType: 'Petrol',

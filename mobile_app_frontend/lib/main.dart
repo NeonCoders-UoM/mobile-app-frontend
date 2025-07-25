@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/costestimate_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/home_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/start_page.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile_app_frontend/state/providers/vehicle_provider.dart';
@@ -23,7 +18,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (_) => VehicleProvider(
-            VehicleRepository('http://localhost:5039'), // TODO: Replace with actual base URL
+            VehicleRepository(
+                'http://localhost:5039'), // TODO: Replace with actual base URL
           ),
         ),
       ],

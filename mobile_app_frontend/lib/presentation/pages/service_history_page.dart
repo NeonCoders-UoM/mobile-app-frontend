@@ -182,8 +182,6 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
       appBar: const CustomAppBar(title: 'Service History'),
       body: Column(
         children: [
-          // Backend Connection Status
-          const BackendConnectionWidget(),
           // Add Service Button
           Padding(
             padding: const EdgeInsets.all(16.0),

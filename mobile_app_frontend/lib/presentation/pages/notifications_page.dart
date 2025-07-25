@@ -3,7 +3,6 @@ import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/notification_detail_page.dart';
 import 'package:mobile_app_frontend/data/repositories/reminder_repository.dart';
-import 'package:mobile_app_frontend/data/models/reminder_model.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/core/services/notification_service.dart';
 import 'dart:convert';

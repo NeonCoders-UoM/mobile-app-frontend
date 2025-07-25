@@ -153,49 +153,6 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
     return _repository.calculateMonthlySummary(_fuelEntries);
   }
 
-  Widget _buildConnectionStatus() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _isBackendConnected
-            ? Colors.green.withOpacity(0.1)
-            : Colors.orange.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: _isBackendConnected ? Colors.green : Colors.orange,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            _isBackendConnected ? Icons.cloud_done : Icons.cloud_off,
-            color: _isBackendConnected ? Colors.green : Colors.orange,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _isBackendConnected
-                  ? 'Connected to backend API'
-                  : 'Backend unavailable - using local storage',
-              style: AppTextStyles.textSmRegular.copyWith(
-                color: _isBackendConnected ? Colors.green : Colors.orange,
-              ),
-            ),
-          ),
-          if (!_isBackendConnected)
-            IconButton(
-              icon: const Icon(Icons.refresh, size: 18),
-              onPressed: _testBackendConnection,
-              color: Colors.orange,
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSummaryCards() {
     if (_summary == null) return const SizedBox.shrink();
 
@@ -472,7 +429,6 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildConnectionStatus(),
                     FuelInputForm(onSubmit: _addFuelUsage),
                     const SizedBox(height: 24),
                     _buildSummaryCards(),
