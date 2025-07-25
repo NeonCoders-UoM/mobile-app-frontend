@@ -13,21 +13,25 @@ import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.d
 import 'package:mobile_app_frontend/data/repositories/service_center_repository.dart';
 import 'package:mobile_app_frontend/data/models/service_model.dart';
 import 'package:dio/dio.dart';
+import 'package:mobile_app_frontend/data/repositories/appointment_repository.dart';
+import 'package:mobile_app_frontend/data/models/appointment_model.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:math';
 
 class CostEstimatePage extends StatefulWidget {
   final int customerId;
   final int vehicleId;
   final String token;
-  final int serviceCenterId;
-  final List<Service> selectedServices;
+  final int appointmentId;
+  final String? distance;
 
   const CostEstimatePage({
     Key? key,
     required this.customerId,
     required this.vehicleId,
     required this.token,
-    required this.serviceCenterId,
-    required this.selectedServices,
+    required this.appointmentId,
+    this.distance,
   }) : super(key: key);
 
   @override
@@ -38,34 +42,103 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
   double totalCost = 0.0;
   bool isLoading = true;
   String? errorMessage;
-  List<Service> centerServices = [];
+  List<String> serviceNames = [];
+  List<int> serviceCosts = [];
+  String serviceCenterName = '';
+  String serviceCenterId = '';
+  String vehicleRegNo = '';
+  String appointmentDate = '';
+  String address = '';
+  String loyaltyPoints = '';
+  String distance = '';
+  double? serviceCenterLat;
+  double? serviceCenterLng;
+  double? userLat;
+  double? userLng;
+  String computedDistance = '';
+  List<Map<String, dynamic>> detailedServices = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchCostEstimate();
+    _fetchCostEstimateFromBackend();
   }
 
-  Future<void> _fetchCostEstimate() async {
+  Future<String?> fetchVehicleRegistrationNo(
+      int customerId, int vehicleId, String token) async {
+    final dio = Dio();
+    final response = await dio.get(
+      'http://localhost:5039/api/Customers/$customerId/vehicles/$vehicleId',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    if (response.statusCode == 200 && response.data != null) {
+      return response.data['registrationNumber'] as String?;
+    }
+    return null;
+  }
+
+  Future<void> _fetchCostEstimateFromBackend() async {
     setState(() {
       isLoading = true;
       errorMessage = null;
     });
     try {
-      final repo = ServiceCenterRepository(Dio());
-      final services = await repo.getServicesForCenter(
-          centerId: widget.serviceCenterId, token: widget.token);
-      double total = 0.0;
-      for (final selected in widget.selectedServices) {
-        final svc =
-            services.where((s) => s.serviceId == selected.serviceId).toList();
-        if (svc.isNotEmpty) {
-          total += svc.first.basePrice;
+      final dio = Dio();
+      final response = await dio.get(
+        'http://localhost:5039/api/Appointment/customer/${widget.customerId}/vehicle/${widget.vehicleId}/details/${widget.appointmentId}',
+        options: Options(headers: {'Authorization': 'Bearer ${widget.token}'}),
+      );
+      final data = response.data;
+      serviceCenterId = (data['stationId']?.toString() ??
+          data['serviceCenterId']?.toString() ??
+          '');
+      serviceCenterName = data['stationName'] ?? '';
+      vehicleRegNo = data['vehicleRegistrationNumber'] ?? '';
+      appointmentDate = data['appointmentDate'] ?? '';
+      address = data['stationAddress'] ?? data['address'] ?? '';
+      loyaltyPoints = data['loyaltyPoints']?.toString() ?? '';
+      distance = data['distance']?.toString() ?? '';
+      // Parse services and costs
+      final List<dynamic> services = (data['services'] ?? []) as List<dynamic>;
+      serviceNames = [];
+      serviceCosts = [];
+      detailedServices = [];
+      double runningTotal = 0.0;
+      for (final s in services) {
+        final name = s['serviceName'] as String? ?? '';
+        final cost = (s['estimatedCost'] as num?)?.toInt() ?? 0;
+        serviceNames.add(name);
+        serviceCosts.add(cost);
+        runningTotal += cost;
+        detailedServices.add(Map<String, dynamic>.from(s));
+      }
+      totalCost = (data['totalCost'] as num?)?.toDouble() ?? runningTotal;
+      // Fetch service center details if stationId is available
+      if (serviceCenterId.isNotEmpty) {
+        try {
+          final scResponse = await dio.get(
+            'http://localhost:5039/api/ServiceCenters/$serviceCenterId',
+            options:
+                Options(headers: {'Authorization': 'Bearer ${widget.token}'}),
+          );
+          final scData = scResponse.data;
+          address = scData['address'] ?? address;
+          serviceCenterName = scData['station_name'] ?? serviceCenterName;
+          serviceCenterLat = (scData['latitude'] as num?)?.toDouble();
+          serviceCenterLng = (scData['longitude'] as num?)?.toDouble();
+        } catch (e) {
+          // If fetching service center fails, keep previous address/name
         }
       }
+      // Fetch vehicle registration number from CustomersController
+      final regNo = await fetchVehicleRegistrationNo(
+          widget.customerId, widget.vehicleId, widget.token);
+      if (regNo != null && regNo.isNotEmpty) {
+        vehicleRegNo = regNo;
+      }
+      // Get user location and compute distance
+      await _getUserLocationAndComputeDistance();
       setState(() {
-        centerServices = services;
-        totalCost = total;
         isLoading = false;
       });
     } catch (e) {
@@ -75,6 +148,45 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
       });
     }
   }
+
+  Future<void> _getUserLocationAndComputeDistance() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      if (permission == LocationPermission.deniedForever) return;
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      userLat = position.latitude;
+      userLng = position.longitude;
+      if (serviceCenterLat != null && serviceCenterLng != null) {
+        final dist = _calculateDistance(
+            userLat!, userLng!, serviceCenterLat!, serviceCenterLng!);
+        computedDistance = '${dist.toStringAsFixed(2)} km';
+      }
+    } catch (e) {
+      // Ignore location errors
+    }
+  }
+
+  double _calculateDistance(
+      double lat1, double lon1, double lat2, double lon2) {
+    const double R = 6371; // Earth's radius in km
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+    final a = (sin(dLat / 2) * sin(dLat / 2)) +
+        cos(_toRadians(lat1)) *
+            cos(_toRadians(lat2)) *
+            (sin(dLon / 2) * sin(dLon / 2));
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return R * c;
+  }
+
+  double _toRadians(double deg) => deg * pi / 180;
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +199,8 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
             context,
             MaterialPageRoute(
               builder: (context) => ServiceCenterPage(
-                selectedServices: widget.selectedServices,
-                selectedDate: DateTime.now(), // Pass real date if needed
+                selectedServices: [],
+                selectedDate: DateTime.now(),
                 customerId: widget.customerId,
                 vehicleId: widget.vehicleId,
                 token: widget.token,
@@ -110,30 +222,20 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CostEstimateDescription(
-                            servicecenterName:
-                                '', // TODO: Add real name if needed
-                            vehicleRegNo: '', // TODO: Add real reg no if needed
-                            appointmentDate:
-                                '', // TODO: Add real date if needed
-                            loyaltyPoints: '',
-                            serviceCenterId: widget.serviceCenterId.toString(),
-                            address: '',
-                            distance: '',
+                            servicecenterName: serviceCenterName,
+                            vehicleRegNo: vehicleRegNo,
+                            appointmentDate: appointmentDate,
+                            loyaltyPoints: loyaltyPoints,
+                            serviceCenterId: serviceCenterId,
+                            address: address,
+                            distance: widget.distance ?? computedDistance,
                           ),
                           const SizedBox(height: 48),
                           CostEstimateTable(
-                            services: widget.selectedServices
-                                .map((s) => s.serviceName)
-                                .toList(),
-                            costs: widget.selectedServices.map((s) {
-                              final svc = centerServices
-                                  .where((cs) => cs.serviceId == s.serviceId)
-                                  .toList();
-                              return svc.isNotEmpty
-                                  ? svc.first.basePrice.toInt()
-                                  : 0;
-                            }).toList(),
+                            services: serviceNames,
+                            costs: serviceCosts,
                             total: totalCost.toInt(),
+                            detailedServices: detailedServices,
                           ),
                           const SizedBox(height: 80),
                           SizedBox(

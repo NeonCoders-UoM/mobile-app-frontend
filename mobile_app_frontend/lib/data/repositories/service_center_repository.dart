@@ -28,4 +28,18 @@ class ServiceCenterRepository {
         .map((json) => Service.fromJson(json))
         .toList();
   }
+
+  // Fetch appointment details (including cost estimation) for a customer, vehicle, and appointment
+  Future<Response> getAppointmentDetails({
+    required int customerId,
+    required int vehicleId,
+    required int appointmentId,
+    required String token,
+  }) async {
+    final response = await dio.get(
+      '${ApiConfig.currentBaseUrl}/customer/$customerId/vehicle/$vehicleId/details/$appointmentId',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    return response;
+  }
 }

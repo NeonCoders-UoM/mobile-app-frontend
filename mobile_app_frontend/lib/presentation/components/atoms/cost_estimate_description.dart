@@ -26,78 +26,56 @@ class CostEstimateDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.neutral400,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.neutral500,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      elevation: 4,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2C2C2E),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.neutral450.withOpacity(0.5)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              servicecenterName,
-              style: AppTextStyles.textLgMedium.copyWith(
-                color: AppColors.neutral100,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              "Vehicle Registration No : $vehicleRegNo",
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Vehicle Registration No : $vehicleRegNo',
               style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral150),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Appointment Date : $appointmentDate",
-              style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral150),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Loyalty Points : $loyaltyPoints",
-              style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral150),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Service Center ID : $serviceCenterId",
-              style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral150),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Address : $address",
-              style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral150),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Distance : $distance",
-              style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral150),
-            ),
-            Text(
-              "Distance : $distance",
-              style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral150),
-            ),
-            Text(
-              "Services: ${services?.whereType<String>().join(', ')}",
-              style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral150),
-            ),
+                  .copyWith(color: AppColors.neutral200)),
+          const SizedBox(height: 10),
+          if (appointmentDate?.isNotEmpty == true) ...[
+            Text('Appointment Date : $appointmentDate',
+                style: AppTextStyles.textSmRegular
+                    .copyWith(color: AppColors.neutral200)),
+            const SizedBox(height: 10),
           ],
-        ),
+          if (loyaltyPoints?.isNotEmpty == true) ...[
+            Text('Loyalty Points : $loyaltyPoints',
+                style: AppTextStyles.textSmRegular
+                    .copyWith(color: AppColors.neutral200)),
+            const SizedBox(height: 10),
+          ],
+          if (serviceCenterId?.isNotEmpty == true) ...[
+            Text('Service Center ID : $serviceCenterId',
+                style: AppTextStyles.textSmRegular
+                    .copyWith(color: AppColors.neutral200)),
+            const SizedBox(height: 10),
+          ],
+          if (address?.isNotEmpty == true) ...[
+            Text('Address : $address',
+                style: AppTextStyles.textSmRegular
+                    .copyWith(color: AppColors.neutral200)),
+            const SizedBox(height: 10),
+          ],
+          if (distance?.isNotEmpty == true) ...[
+            Text('Distance : $distance',
+                style: AppTextStyles.textSmRegular
+                    .copyWith(color: AppColors.neutral200)),
+          ],
+        ],
       ),
     );
   }

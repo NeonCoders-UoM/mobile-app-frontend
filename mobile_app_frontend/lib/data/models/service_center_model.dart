@@ -15,7 +15,7 @@ class ServiceCenterModel {
     required this.email,
     required this.telephone,
     required this.stationStatus,
-     required this.latitude,
+    required this.latitude,
     required this.longitude,
   });
 
