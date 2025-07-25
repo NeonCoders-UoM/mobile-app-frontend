@@ -22,4 +22,24 @@ class NotificationService {
       print('Failed to create backend notification: \\${response.body}');
     }
   }
+
+  static Future<void> deleteNotificationFromBackend({
+    required int notificationId,
+    required String token,
+  }) async {
+    final url = Uri.parse(
+        'http://localhost:5039/api/Notifications/$notificationId'); // <-- Replace with your backend URL
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      // Optionally handle error
+      print('Failed to delete backend notification: \\${response.body}');
+      throw Exception('Failed to delete notification');
+    }
+  }
 }

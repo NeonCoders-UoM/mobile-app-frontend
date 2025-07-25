@@ -6,6 +6,8 @@ import 'package:mobile_app_frontend/data/repositories/reminder_repository.dart';
 import 'package:mobile_app_frontend/data/models/reminder_model.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/core/services/notification_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class NotificationsPage extends StatefulWidget {
   final int customerId;
@@ -29,11 +31,41 @@ class _NotificationsPageState extends State<NotificationsPage> {
   final ReminderRepository _reminderRepository = ReminderRepository();
   final Set<int> _notifiedReminders =
       {}; // Track which reminders have been notified this session
+  Set<int> _backendNotifiedReminders =
+      {}; // Track reminders already notified in backend
 
   @override
   void initState() {
     super.initState();
-    _loadNotifications();
+    _initNotifications();
+  }
+
+  Future<void> _initNotifications() async {
+    await _fetchBackendNotifications();
+    await _loadNotifications();
+  }
+
+  Future<void> _fetchBackendNotifications() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'http://localhost:5039/api/Notifications/Customer/${widget.customerId}'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> notifications = json.decode(response.body);
+        _backendNotifiedReminders = notifications
+            .map((n) => n['serviceReminderId'])
+            .where((id) => id != null)
+            .cast<int>()
+            .toSet();
+      }
+    } catch (e) {
+      print('Failed to fetch backend notifications: $e');
+    }
   }
 
   Future<void> _loadNotifications() async {
@@ -61,7 +93,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             '${reminder.reminderDate.day.toString().padLeft(2, '0')}/${reminder.reminderDate.month.toString().padLeft(2, '0')}/${reminder.reminderDate.year}';
         String time;
         if (daysUntilDue < 0) {
-          time = 'Overdue by ${-daysUntilDue} days';
+          time = 'Overdue by  [1m${-daysUntilDue}\u001b[0m days';
         } else if (daysUntilDue == 0) {
           time = 'Due today';
         } else {
@@ -102,8 +134,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
           'isRead': reminder.isActive ? false : true,
           'actionable': reminder.isActive,
           'vehicleId': reminder.vehicleId,
+          // Add reminderDate for sorting
+          'reminderDate': reminder.reminderDate,
         };
       }).toList();
+      // Sort notifications by newest reminderDate first
+      _notifications.sort((a, b) => (b['reminderDate'] as DateTime)
+          .compareTo(a['reminderDate'] as DateTime));
+      // Remove reminderDate from notification maps (optional, for UI cleanliness)
+      for (var n in _notifications) {
+        n.remove('reminderDate');
+      }
     } catch (e) {
       // On error, show empty or fallback
       _notifications = [];
@@ -145,11 +186,30 @@ class _NotificationsPageState extends State<NotificationsPage> {
     // TODO: Update all read status on backend
   }
 
-  void _deleteNotification(int notificationId) {
+  void _deleteNotification(int notificationId) async {
     setState(() {
       _notifications.removeWhere((n) => n['id'] == notificationId);
     });
-    // TODO: Delete notification on backend
+    try {
+      await NotificationService.deleteNotificationFromBackend(
+        notificationId: notificationId,
+        token: widget.token,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Notification deleted successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      await _loadNotifications(); // Refresh the list from backend
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete notification: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   int get _unreadCount => _notifications.where((n) => !n['isRead']).length;
@@ -272,9 +332,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final priority = notification['priority'] as String;
     final actionable = notification['actionable'] as bool;
 
-    // Trigger backend notification if not already sent for this reminder
+    // Trigger backend notification if not already sent for this reminder (deduped with backend)
     final reminderId = notification['id'];
-    if (reminderId != null && !_notifiedReminders.contains(reminderId)) {
+    if (reminderId != null &&
+        !_notifiedReminders.contains(reminderId) &&
+        !_backendNotifiedReminders.contains(reminderId)) {
       _notifiedReminders.add(reminderId);
       // Build notification data for backend
       final notificationData = {

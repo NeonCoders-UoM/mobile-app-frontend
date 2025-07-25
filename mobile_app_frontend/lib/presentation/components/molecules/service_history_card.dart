@@ -7,6 +7,7 @@ class ServiceHistoryCard extends StatelessWidget {
   final String description;
   final String date;
   final bool isVerified;
+  final VoidCallback? onEdit;
 
   const ServiceHistoryCard({
     Key? key,
@@ -14,6 +15,7 @@ class ServiceHistoryCard extends StatelessWidget {
     required this.description,
     required this.date,
     this.isVerified = true,
+    this.onEdit,
   }) : super(key: key);
 
   @override
@@ -47,6 +49,14 @@ class ServiceHistoryCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (onEdit != null) ...[
+                      IconButton(
+                        icon:
+                            const Icon(Icons.edit, color: AppColors.primary200),
+                        tooltip: 'Edit Service Record',
+                        onPressed: onEdit,
+                      ),
+                    ],
                     // Verification Badge
                     if (!isVerified) ...[
                       const SizedBox(width: 8.0),

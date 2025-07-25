@@ -12,6 +12,7 @@ import 'dart:typed_data';
 import 'dart:html' as html;
 import 'package:url_launcher/url_launcher.dart';
 import 'pdf_view_page.dart';
+import 'edit_service_history_page.dart';
 
 class ServiceHistoryPage extends StatefulWidget {
   final int vehicleId;
@@ -120,21 +121,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
   }
 
   String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return '${date.day}, ${months[date.month - 1]}, ${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 
   Widget _buildServiceRecord(ServiceHistoryModel service) {
@@ -147,6 +134,45 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
     );
   }
 
+  Widget _buildServiceHistoryList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_serviceHistory.isEmpty) {
+      return const Center(child: Text('No service history records found.'));
+    }
+    return Expanded(
+      child: ListView.builder(
+        itemCount: _serviceHistory.length,
+        itemBuilder: (context, index) {
+          final service = _serviceHistory[index];
+          return ServiceHistoryCard(
+            title: service.serviceTitle,
+            description: service.serviceDescription,
+            date: _formatDate(service.serviceDate),
+            isVerified: service.isVerified,
+            onEdit: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditServiceHistoryPage(
+                    service: service,
+                    vehicleName: widget.vehicleName,
+                    vehicleRegistration: widget.vehicleRegistration,
+                    token: widget.token,
+                  ),
+                ),
+              );
+              if (result == true) {
+                _loadServiceHistory();
+              }
+            },
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,7 +182,6 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
         children: [
           // Backend Connection Status
           const BackendConnectionWidget(),
-
           // Add Service Button
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -200,7 +225,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
                           ),
                         );
                       },
-                icon: const Icon(Icons.visibility, color: Colors.white),
+                icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
                 label: Text(
                   'View Service History PDF',
                   style: AppTextStyles.textMdSemibold.copyWith(
@@ -217,55 +242,8 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
               ),
             ),
           ),
-
           // Service History List
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primary200,
-                    ),
-                  )
-                : _serviceHistory.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.history,
-                              size: 64,
-                              color: AppColors.neutral200,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No Service History',
-                              style: AppTextStyles.textLgSemibold.copyWith(
-                                color: AppColors.neutral100,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Add your first service record to get started',
-                              style: AppTextStyles.textSmRegular.copyWith(
-                                color: AppColors.neutral200,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadServiceHistory,
-                        color: AppColors.primary200,
-                        backgroundColor: AppColors.neutral400,
-                        child: ListView.builder(
-                          itemCount: _serviceHistory.length,
-                          itemBuilder: (context, index) {
-                            return _buildServiceRecord(_serviceHistory[index]);
-                          },
-                        ),
-                      ),
-          ),
+          _buildServiceHistoryList(),
         ],
       ),
     );

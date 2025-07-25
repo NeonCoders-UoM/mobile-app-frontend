@@ -8,115 +8,74 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_header.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:mobile_app_frontend/data/repositories/reminder_repository.dart';
 
-class Service {
-  final int serviceId;
-  final String serviceName;
-  final String description;
-  final double basePrice;
-  final String category;
-
-  Service({
-    required this.serviceId,
-    required this.serviceName,
-    required this.description,
-    required this.basePrice,
-    required this.category,
-  });
-
-  factory Service.fromJson(Map<String, dynamic> json) {
-    return Service(
-      serviceId: json['serviceId'],
-      serviceName: json['serviceName'],
-      description: json['description'],
-      basePrice: (json['basePrice'] as num).toDouble(),
-      category: json['category'],
-    );
-  }
-}
-
-class AddUnverifiedServicePage extends StatefulWidget {
-  final int vehicleId;
+class EditServiceHistoryPage extends StatefulWidget {
+  final ServiceHistoryModel service;
   final String vehicleName;
   final String vehicleRegistration;
-  final String? token; // Add token parameter
+  final String? token;
 
-  const AddUnverifiedServicePage({
+  const EditServiceHistoryPage({
     Key? key,
-    required this.vehicleId,
+    required this.service,
     required this.vehicleName,
     required this.vehicleRegistration,
-    this.token, // Add token parameter
+    this.token,
   }) : super(key: key);
 
   @override
-  _AddUnverifiedServicePageState createState() =>
-      _AddUnverifiedServicePageState();
+  _EditServiceHistoryPageState createState() => _EditServiceHistoryPageState();
 }
 
-class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
-  // Form controllers
+class _EditServiceHistoryPageState extends State<EditServiceHistoryPage> {
   final _formKey = GlobalKey<FormState>();
-  final _serviceTitleController = TextEditingController();
-  final _serviceDescriptionController = TextEditingController();
-  final _serviceProviderController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _costController = TextEditingController();
-  final _notesController = TextEditingController();
-
-  // Date selection
+  late TextEditingController _serviceTitleController;
+  late TextEditingController _serviceDescriptionController;
+  late TextEditingController _serviceProviderController;
+  late TextEditingController _locationController;
+  late TextEditingController _costController;
+  late TextEditingController _notesController;
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
-
-  // Repository
   final ServiceHistoryRepository _serviceHistoryRepository =
       ServiceHistoryRepository();
-
-  List<Service> _services = [];
-  Service? _selectedService;
-  bool _servicesLoading = true;
-  String? _servicesError;
+  final List<String> _commonServices = [
+    'Oil Change',
+    'Brake Service',
+    'Tire Replacement',
+    'Air Filter Replacement',
+    'Battery Replacement',
+    'Transmission Service',
+    'Coolant Flush',
+    'Wheel Alignment',
+    'Engine Diagnostic',
+    'Spark Plug Replacement',
+    'Belt Replacement',
+    'Suspension Repair',
+    'Exhaust Repair',
+    'AC Service',
+    'Custom Service',
+  ];
+  String? _selectedServiceType;
 
   @override
   void initState() {
     super.initState();
-    _fetchServices();
-  }
-
-  Future<void> _fetchServices() async {
-    setState(() {
-      _servicesLoading = true;
-      _servicesError = null;
-    });
-    try {
-      final response = await http.get(
-        Uri.parse(
-            'http://localhost:5039/api/Services'), // <-- Replace with your backend URL
-        headers: {
-          'Content-Type': 'application/json',
-          if (widget.token != null) 'Authorization': 'Bearer ${widget.token}',
-        },
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          _services = data.map((json) => Service.fromJson(json)).toList();
-          _servicesLoading = false;
-        });
-      } else {
-        setState(() {
-          _servicesError = 'Failed to load services';
-          _servicesLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _servicesError = e.toString();
-        _servicesLoading = false;
-      });
-    }
+    _selectedServiceType = widget.service.serviceType;
+    _serviceTitleController =
+        TextEditingController(text: widget.service.serviceType);
+    _serviceDescriptionController =
+        TextEditingController(text: widget.service.description);
+    _serviceProviderController = TextEditingController(
+        text: widget.service.externalServiceCenterName ??
+            widget.service.serviceCenterName ??
+            '');
+    _locationController = TextEditingController(); // Not in model, left blank
+    _costController =
+        TextEditingController(text: widget.service.cost?.toString() ?? '');
+    _notesController = TextEditingController(text: widget.service.notes ?? '');
+    _selectedDate = widget.service.serviceDate;
   }
 
   @override
@@ -161,17 +120,14 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 
-  Future<void> _addUnverifiedService() async {
+  Future<void> _updateService() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-
     setState(() {
       _isLoading = true;
     });
-
     try {
-      // Parse cost if provided
       double? cost;
       if (_costController.text.trim().isNotEmpty) {
         cost = double.tryParse(_costController.text.trim());
@@ -185,14 +141,10 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
           return;
         }
       }
-
-      // Create the service title based on selection
-      String serviceTitle =
-          _selectedService?.serviceName ?? _serviceTitleController.text.trim();
-
-      // Create unverified service record
-      final unverifiedService = ServiceHistoryModel.unverified(
-        vehicleId: widget.vehicleId,
+      String serviceTitle = _selectedServiceType == 'Custom Service'
+          ? _serviceTitleController.text.trim()
+          : _selectedServiceType ?? _serviceTitleController.text.trim();
+      final updatedService = widget.service.copyWith(
         serviceType: serviceTitle,
         description: _serviceDescriptionController.text.trim(),
         serviceDate: _selectedDate,
@@ -202,24 +154,40 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
             ? null
             : _notesController.text.trim(),
       );
-
-      // Add to repository (will try backend first, fallback to local)
       final success = await _serviceHistoryRepository
-          .addUnverifiedService(unverifiedService, token: widget.token);
-
+          .updateService(updatedService, token: widget.token);
       if (success) {
+        // Remove matching reminder(s) after service completion
+        try {
+          final reminderRepo = ReminderRepository();
+          final reminders = await reminderRepo.getVehicleReminders(
+              widget.service.vehicleId,
+              token: widget.token);
+          final matchingReminders = reminders.where((reminder) =>
+              (reminder.serviceName != null &&
+                  reminder.serviceName!.toLowerCase().trim() ==
+                      serviceTitle.toLowerCase().trim()));
+          for (final reminder in matchingReminders) {
+            if (reminder.serviceReminderId != null) {
+              await reminderRepo.deleteReminder(reminder.serviceReminderId!,
+                  token: widget.token);
+            }
+          }
+        } catch (e) {
+          // Optionally log or show error, but don't block service update
+          print('Error removing matching reminders: $e');
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('Service record added! Check console for backend status.'),
+            content: Text('Service record updated!'),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to add service record. Please try again.'),
+            content: Text('Failed to update service record. Please try again.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -240,74 +208,10 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Replace the service type dropdown with the dynamic one
-    Widget serviceDropdown;
-    if (_servicesLoading) {
-      serviceDropdown = const Center(child: CircularProgressIndicator());
-    } else if (_servicesError != null) {
-      serviceDropdown = Text(
-        'Error: ${_servicesError!}',
-        style: const TextStyle(color: Colors.red),
-      );
-    } else {
-      serviceDropdown = DropdownButtonFormField<Service>(
-        value: _selectedService,
-        hint: Text(
-          'Select service',
-          style: AppTextStyles.textSmSemibold.copyWith(
-            color: AppColors.neutral200,
-          ),
-        ),
-        items: _services.map((service) {
-          return DropdownMenuItem<Service>(
-            value: service,
-            child: Text(
-              service.serviceName,
-              style: AppTextStyles.textSmRegular.copyWith(
-                color: AppColors.neutral100,
-              ),
-            ),
-          );
-        }).toList(),
-        onChanged: (Service? newValue) {
-          setState(() {
-            _selectedService = newValue;
-            if (newValue != null) {
-              _serviceTitleController.text = newValue.serviceName;
-            }
-          });
-        },
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.transparent,
-          border: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColors.neutral200),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColors.neutral200),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColors.neutral200, width: 2),
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        dropdownColor: AppColors.neutral400,
-        iconEnabledColor: AppColors.neutral100,
-        validator: (value) {
-          if (value == null) {
-            return 'Please select a service';
-          }
-          return null;
-        },
-      );
-    }
-
     return Scaffold(
       backgroundColor: AppColors.neutral400,
       appBar: const CustomAppBar(
-        title: 'Add Service Record',
+        title: 'Edit Service Record',
         showTitle: true,
       ),
       body: SingleChildScrollView(
@@ -315,7 +219,6 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 32.0),
-            // Vehicle Header
             VehicleHeader(
               vehicleName: widget.vehicleName,
               vehicleId: widget.vehicleRegistration,
@@ -328,7 +231,6 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 48.0),
-                    // Information text
                     Container(
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
@@ -346,7 +248,7 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                           const SizedBox(width: 12.0),
                           Expanded(
                             child: Text(
-                              'Add services performed at other service centers as unverified records. These will appear in your service history with an "Unverified" status.',
+                              'Edit your service record details below. Changes will be saved to your service history.',
                               style: AppTextStyles.textSmRegular.copyWith(
                                 color: AppColors.neutral100,
                               ),
@@ -356,20 +258,72 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                       ),
                     ),
                     const SizedBox(height: 32.0),
-
-                    // Service
                     Text(
-                      'Service',
+                      'Service Type',
                       style: AppTextStyles.textSmRegular.copyWith(
                         color: AppColors.neutral100,
                       ),
                     ),
                     const SizedBox(height: 8.0),
-                    serviceDropdown,
+                    DropdownButtonFormField<String>(
+                      value: _commonServices.contains(_selectedServiceType)
+                          ? _selectedServiceType
+                          : null,
+                      hint: Text(
+                        'Select service type',
+                        style: AppTextStyles.textSmSemibold.copyWith(
+                          color: AppColors.neutral200,
+                        ),
+                      ),
+                      items: _commonServices.map((String service) {
+                        return DropdownMenuItem<String>(
+                          value: service,
+                          child: Text(
+                            service,
+                            style: AppTextStyles.textSmRegular.copyWith(
+                              color: AppColors.neutral100,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedServiceType = newValue;
+                          if (newValue != 'Custom Service') {
+                            _serviceTitleController.text = newValue ?? '';
+                          }
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.transparent,
+                        border: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: AppColors.neutral200),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: AppColors.neutral200),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                              color: AppColors.neutral200, width: 2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      dropdownColor: AppColors.neutral400,
+                      iconEnabledColor: AppColors.neutral100,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select a service type';
+                        }
+                        return null;
+                      },
+                    ),
                     const SizedBox(height: 16.0),
-
-                    // Custom Service Title (only if Custom Service is selected)
-                    if (_selectedService == null) ...[
+                    if (_selectedServiceType == 'Custom Service') ...[
                       Text(
                         'Custom Service Title',
                         style: AppTextStyles.textSmRegular.copyWith(
@@ -406,7 +360,7 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                           ),
                         ),
                         validator: (value) {
-                          if (_selectedService == null &&
+                          if (_selectedServiceType == 'Custom Service' &&
                               (value == null || value.isEmpty)) {
                             return 'Please enter a service title';
                           }
@@ -415,8 +369,6 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                       ),
                       const SizedBox(height: 16.0),
                     ],
-
-                    // Service Description
                     Text(
                       'Service Description',
                       style: AppTextStyles.textSmRegular.copyWith(
@@ -462,8 +414,6 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                       },
                     ),
                     const SizedBox(height: 16.0),
-
-                    // Service Provider
                     Text(
                       'Service Provider',
                       style: AppTextStyles.textSmRegular.copyWith(
@@ -507,53 +457,6 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                       },
                     ),
                     const SizedBox(height: 16.0),
-
-                    // Location
-                    Text(
-                      'Location',
-                      style: AppTextStyles.textSmRegular.copyWith(
-                        color: AppColors.neutral100,
-                      ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    TextFormField(
-                      controller: _locationController,
-                      style: AppTextStyles.textSmRegular.copyWith(
-                        color: AppColors.neutral100,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Enter city or area where service was done',
-                        hintStyle: AppTextStyles.textSmRegular.copyWith(
-                          color: AppColors.neutral200,
-                        ),
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        border: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColors.neutral200),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColors.neutral200),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                              color: AppColors.neutral200, width: 2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the service location';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16.0),
-
-                    // Service Date
                     Text(
                       'Service Date',
                       style: AppTextStyles.textSmRegular.copyWith(
@@ -590,8 +493,6 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                       ),
                     ),
                     const SizedBox(height: 16.0),
-
-                    // Cost (Optional)
                     Text(
                       'Cost (Optional)',
                       style: AppTextStyles.textSmRegular.copyWith(
@@ -630,8 +531,6 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                       ),
                     ),
                     const SizedBox(height: 16.0),
-
-                    // Notes (Optional)
                     Text(
                       'Additional Notes (Optional)',
                       style: AppTextStyles.textSmRegular.copyWith(
@@ -671,20 +570,14 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                       ),
                     ),
                     const SizedBox(height: 32.0),
-
-                    // Add Service Button
                     CustomButton(
-                      label: _isLoading
-                          ? 'Adding Service...'
-                          : 'Add Service Record',
+                      label: _isLoading ? 'Saving...' : 'Save Changes',
                       type: ButtonType.primary,
                       size: ButtonSize.large,
                       customWidth: double.infinity,
-                      onTap: _isLoading ? () {} : _addUnverifiedService,
+                      onTap: _isLoading ? () {} : _updateService,
                     ),
                     const SizedBox(height: 16.0),
-
-                    // Cancel Button
                     CustomButton(
                       label: 'Cancel',
                       type: ButtonType.secondary,
