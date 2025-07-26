@@ -11,12 +11,12 @@ import 'package:mobile_app_frontend/services/auth_service.dart';
 import 'dart:convert'; // Added for jsonEncode
 import 'package:http/http.dart' as http; // Added for http
 import 'package:mobile_app_frontend/presentation/pages/password_changed_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   final int customerId;
   final String token;
-  const ChangePasswordPage({super.key, required this.customerId, required this.token});
+  const ChangePasswordPage(
+      {super.key, required this.customerId, required this.token});
 
   @override
   State<ChangePasswordPage> createState() => _ChangePasswordPageState();
@@ -104,7 +104,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       _retypeNewPasswordFieldState = InputFieldState.error;
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('New passwords do not match'), backgroundColor: Colors.red),
+                      const SnackBar(
+                          content: Text('New passwords do not match'),
+                          backgroundColor: Colors.red),
                     );
                     return;
                   }
@@ -113,7 +115,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       _newPasswordFieldState = InputFieldState.error;
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Password must be at least 6 characters'), backgroundColor: Colors.red),
+                      const SnackBar(
+                          content:
+                              Text('Password must be at least 6 characters'),
+                          backgroundColor: Colors.red),
                     );
                     return;
                   }
@@ -133,7 +138,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Failed to change password'), backgroundColor: Colors.red),
+                      const SnackBar(
+                          content: Text('Failed to change password'),
+                          backgroundColor: Colors.red),
                     );
                   }
                 },
@@ -146,6 +153,4 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       ),
     );
   }
-
-  
 }

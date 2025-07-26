@@ -100,6 +100,8 @@ class _RemindersPageState extends State<RemindersPage> {
 
       // Force UI rebuild by creating a new list instance
       final newReminders = List<ServiceReminderModel>.from(reminderModels);
+      // Sort by newest first (latest reminderDate first)
+      newReminders.sort((a, b) => b.reminderDate.compareTo(a.reminderDate));
 
       setState(() {
         reminders = newReminders;
@@ -115,6 +117,8 @@ class _RemindersPageState extends State<RemindersPage> {
         _refreshCount++; // Increment refresh counter
         // Fallback to sample data if backend is not available
         reminders = _getSampleReminders();
+        // Sort fallback reminders by newest first
+        reminders.sort((a, b) => b.reminderDate.compareTo(a.reminderDate));
       });
       print('Using fallback sample data with ${reminders.length} reminders');
     }
@@ -413,19 +417,31 @@ class _RemindersPageState extends State<RemindersPage> {
                         reminder.toMap(); // Convert to Map for UI compatibility
 
                     return ServiceReminderCard(
-                      title: reminder.notes?.isNotEmpty == true
+                      // Show service type (serviceName) as the main title
+                      title: (reminder.serviceName != null &&
+                              reminder.serviceName!.isNotEmpty)
+                          ? reminder.serviceName!
+                          : (reminder.notes?.isNotEmpty == true
+                              ? reminder.notes!
+                              : 'Service Reminder'),
+                      // Show notes/description as subtitle if available
+                      description: (reminder.notes != null &&
+                              reminder.notes!.isNotEmpty &&
+                              reminder.notes != reminder.serviceName)
                           ? reminder.notes!
-                          : reminder.serviceName ?? 'Service Reminder',
-                      description: _generateDescription(reminder),
+                          : _generateDescription(reminder),
                       status: _getStatusFromDate(reminder),
                       onTap: () async {
                         // Show the dialog and wait for a result
                         final result = await showDialog<Map<String, dynamic>>(
                           context: context,
                           builder: (context) => ReminderDetailsDialog(
-                            title: reminder.notes?.isNotEmpty == true
-                                ? reminder.notes!
-                                : reminder.serviceName ?? 'Service Reminder',
+                            title: (reminder.serviceName != null &&
+                                    reminder.serviceName!.isNotEmpty)
+                                ? reminder.serviceName!
+                                : (reminder.notes?.isNotEmpty == true
+                                    ? reminder.notes!
+                                    : 'Service Reminder'),
                             nextDue: _generateNextDue(reminder),
                             status: _getStatusFromDate(reminder),
                             mileageInterval:

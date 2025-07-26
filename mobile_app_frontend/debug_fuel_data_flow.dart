@@ -69,14 +69,13 @@ Future<void> testAddRecord() async {
     // Create a test record
     final testRecord = FuelEfficiencyModel(
       vehicleId: ApiConfig.defaultVehicleId,
-      fuelDate: DateTime.now(),
+      date: DateTime.now(), // changed from fuelDate to date
       fuelAmount: 45.5,
-      pricePerLiter: 1.65,
-      totalCost: 75.08,
       odometer: 15500,
       location: 'Test Station Debug',
       fuelType: 'Petrol',
-      notes: 'Debug test record - ${DateTime.now().millisecondsSinceEpoch}',
+      notes:
+          'Debug test record -  [33m${DateTime.now().millisecondsSinceEpoch} [0m',
     );
 
     print('📝 Attempting to add record...');

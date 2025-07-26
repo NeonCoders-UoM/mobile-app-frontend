@@ -5,7 +5,6 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/successful-message.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/login_page.dart'; // or next step
 
 class PaymentSuccessfulMessagePage extends StatelessWidget {
   final int customerId;

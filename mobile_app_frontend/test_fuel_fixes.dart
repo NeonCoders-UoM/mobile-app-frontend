@@ -32,13 +32,11 @@ Future<void> testModelParsing() async {
     final model = FuelEfficiencyModel.fromJson(testData);
     print('✅ FuelEfficiencyModel parsed successfully');
     print('   - vehicleId: ${model.vehicleId}');
-    print('   - fuelEfficiency: ${model.fuelEfficiency}');
     print('   - notes: ${model.notes}');
 
     // Test summary model
     final summaryData = {
       'vehicleId': null,
-      'year': null,
       'totalRecords': 12,
       'totalFuelAmount': 540.0,
       'totalCost': 810.0,
@@ -50,7 +48,6 @@ Future<void> testModelParsing() async {
     final summaryModel = FuelEfficiencySummaryModel.fromJson(summaryData);
     print('✅ FuelEfficiencySummaryModel parsed successfully');
     print('   - vehicleId: ${summaryModel.vehicleId}');
-    print('   - year: ${summaryModel.year}');
 
     // Test monthly model
     final monthlyData = {
