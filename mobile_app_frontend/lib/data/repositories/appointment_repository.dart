@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mobile_app_frontend/core/config/api_config.dart';
 import 'package:mobile_app_frontend/data/models/appointment_model.dart';
+import 'package:mobile_app_frontend/data/models/loyalty_points_model.dart';
 
 class AppointmentRepository {
   final String baseUrl = ApiConfig.baseUrl;
@@ -149,6 +150,63 @@ class AppointmentRepository {
       }
     } catch (e) {
       throw Exception('Failed to create appointment: $e');
+    }
+  }
+
+  // Get loyalty points for a specific appointment
+  Future<LoyaltyPointsModel> getAppointmentLoyaltyPoints(
+    int appointmentId,
+    String token,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/Appointment/$appointmentId/loyalty-points'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return LoyaltyPointsModel.fromJson(data);
+      } else {
+        throw Exception('Failed to fetch loyalty points');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch loyalty points: $e');
+    }
+  }
+
+  // Get total loyalty points for a customer across all appointments
+  Future<int> getTotalCustomerLoyaltyPoints(
+    int customerId,
+    String token,
+  ) async {
+    try {
+      // First get all appointments for the customer
+      // Note: This is a simplified approach. In a real implementation,
+      // you might want to create a dedicated endpoint for total loyalty points
+      final response = await http.get(
+        Uri.parse(
+            '$baseUrl/Appointment/customer/$customerId/total-loyalty-points'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['totalLoyaltyPoints'] ?? 0;
+      } else {
+        // If the endpoint doesn't exist, return 0 for now
+        return 0;
+      }
+    } catch (e) {
+      // If there's an error, return 0 for now
+      print('Error fetching total loyalty points: $e');
+      return 0;
     }
   }
 }

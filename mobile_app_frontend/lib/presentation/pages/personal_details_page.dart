@@ -4,6 +4,9 @@ import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/services/auth_service.dart';
 import 'package:mobile_app_frontend/presentation/pages/profile_options_page.dart';
+import 'package:mobile_app_frontend/data/repositories/loyalty_points_repository.dart';
+import 'package:mobile_app_frontend/presentation/components/molecules/loyalty_points_card.dart';
+import 'package:mobile_app_frontend/presentation/pages/loyalty_points_details_page.dart';
 
 class PersonalDetailsPage extends StatefulWidget {
   final int customerId;
@@ -21,7 +24,9 @@ class PersonalDetailsPage extends StatefulWidget {
 
 class _PersonalDetailsPageState extends State<PersonalDetailsPage> {
   final _authService = AuthService();
+  final _loyaltyPointsRepository = LoyaltyPointsRepository();
   Map<String, dynamic>? _customerData;
+  int _totalLoyaltyPoints = 0;
   bool _isLoading = true;
   bool _isInitialLoad = true;
 
@@ -41,14 +46,31 @@ class _PersonalDetailsPageState extends State<PersonalDetailsPage> {
 
   Future<void> _loadCustomerData() async {
     try {
-      final customerData = await _authService.getCustomerDetails(
+      // Load customer data and loyalty points in parallel
+      final customerDataFuture = _authService.getCustomerDetails(
         customerId: widget.customerId,
         token: widget.token,
       );
 
+      final loyaltyPointsFuture =
+          _loyaltyPointsRepository.getTotalCustomerLoyaltyPoints(
+        widget.customerId,
+        widget.token,
+      );
+
+      // Wait for both to complete
+      final results = await Future.wait([
+        customerDataFuture,
+        loyaltyPointsFuture,
+      ]);
+
+      final customerData = results[0] as Map<String, dynamic>?;
+      final totalLoyaltyPoints = results[1] as int;
+
       if (customerData != null) {
         setState(() {
           _customerData = customerData;
+          _totalLoyaltyPoints = totalLoyaltyPoints;
           _isLoading = false;
         });
         // Only show success message if this is a refresh, not initial load
@@ -74,6 +96,7 @@ class _PersonalDetailsPageState extends State<PersonalDetailsPage> {
             'address': 'Not Available',
             'loyaltyPoints': 0,
           };
+          _totalLoyaltyPoints = totalLoyaltyPoints;
           _isLoading = false;
         });
         // Mark as no longer initial load
@@ -97,6 +120,7 @@ class _PersonalDetailsPageState extends State<PersonalDetailsPage> {
           'address': 'Error Loading',
           'loyaltyPoints': 0,
         };
+        _totalLoyaltyPoints = 0;
         _isLoading = false;
       });
       // Mark as no longer initial load
@@ -167,6 +191,23 @@ class _PersonalDetailsPageState extends State<PersonalDetailsPage> {
                     ),
                     const SizedBox(height: 32),
 
+                    // Loyalty Points Card
+                    LoyaltyPointsCard(
+                      totalLoyaltyPoints: _totalLoyaltyPoints,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoyaltyPointsDetailsPage(
+                              customerId: widget.customerId,
+                              token: widget.token,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 32),
+
                     // Personal Details Section
                     Text(
                       'Personal Information',
@@ -186,8 +227,6 @@ class _PersonalDetailsPageState extends State<PersonalDetailsPage> {
                     _buildDetailRow('NIC', _customerData!['nic'] ?? 'N/A'),
                     _buildDetailRow(
                         'Address', _customerData!['address'] ?? 'N/A'),
-                    _buildDetailRow('Loyalty Points',
-                        _customerData!['loyaltyPoints']?.toString() ?? '0'),
 
                     // Add some bottom padding to ensure settings icon doesn't overlap
                     const SizedBox(height: 80),
