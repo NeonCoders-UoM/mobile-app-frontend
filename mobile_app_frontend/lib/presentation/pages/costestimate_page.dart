@@ -6,7 +6,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/cost_estimate_
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
-import 'package:mobile_app_frontend/presentation/pages/advanced_payment_required_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/appointment_advance_payment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
@@ -248,10 +248,13 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => AppointmentPage(
+                                    builder: (context) =>
+                                        AppointmentAdvancePaymentPage(
                                       customerId: widget.customerId,
                                       vehicleId: widget.vehicleId,
                                       token: widget.token,
+                                      appointmentId: widget.appointmentId,
+                                      totalCost: totalCost,
                                     ),
                                   ),
                                 )

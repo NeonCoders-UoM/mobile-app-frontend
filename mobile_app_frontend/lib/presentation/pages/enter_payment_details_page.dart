@@ -8,12 +8,16 @@ class EnterPaymentDetailsPage extends StatelessWidget {
   final int customerId;
   final int vehicleId;
   final String token;
+  final int? appointmentId;
+  final double? advancePaymentAmount;
 
   const EnterPaymentDetailsPage({
     Key? key,
     required this.customerId,
     required this.vehicleId,
     required this.token,
+    this.appointmentId,
+    this.advancePaymentAmount,
   }) : super(key: key);
 
   @override
@@ -62,7 +66,9 @@ class EnterPaymentDetailsPage extends StatelessWidget {
                       builder: (context) => PaymentSuccessfulMessagePage(
                           customerId: customerId,
                           vehicleId: vehicleId,
-                          token: token)));
+                          token: token,
+                          appointmentId: appointmentId,
+                          advancePaymentAmount: advancePaymentAmount)));
               // Add payment processing logic here
             },
           ),

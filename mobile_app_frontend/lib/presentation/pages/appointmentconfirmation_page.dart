@@ -23,11 +23,11 @@ class AppointmentconfirmationPage extends StatefulWidget {
 
   const AppointmentconfirmationPage({
     Key? key,
-  required this.selectedDate,
-  required this.selectedServices, // full Service list
-  required this.customerId,
-  required this.vehicleId,
-  required this.token,
+    required this.selectedDate,
+    required this.selectedServices, // full Service list
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
   }) : super(key: key);
 
   @override
@@ -61,45 +61,20 @@ class _AppointmentconfirmationPageState
     }
   }
 
-  Future<void> _createAppointment() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
-    try {
-      // Map selectedServices to their real serviceId property
-      final serviceIds = widget.selectedServices.map((s) => s.serviceId).toList();
-      final appointment = AppointmentCreate(
-        customerId: widget.customerId,
-        vehicleId: widget.vehicleId,
-        stationId: 1, // TODO: Replace with actual selected stationId
-        appointmentDate: selectedDate,
-        serviceIds: serviceIds,
-      );
-      await AppointmentRepository(Dio())
-          .createAppointment(appointment, widget.token);
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ServiceCenterPage(
-            selectedServices: widget.selectedServices,
-            selectedDate: selectedDate,
-            customerId: widget.customerId,
-            vehicleId: widget.vehicleId,
-            token: widget.token,
-          ),
+  Future<void> _proceedToServiceCenterSelection() async {
+    // Navigate directly to service center selection without creating appointment
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ServiceCenterPage(
+          selectedServices: widget.selectedServices,
+          selectedDate: selectedDate,
+          customerId: widget.customerId,
+          vehicleId: widget.vehicleId,
+          token: widget.token,
         ),
-      );
-    } catch (e) {
-      setState(() {
-        errorMessage = e.toString();
-      });
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
+      ),
+    );
   }
 
   @override
@@ -173,7 +148,8 @@ class _AppointmentconfirmationPageState
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        widget.selectedServices[index].serviceName,
+                                        widget.selectedServices[index]
+                                            .serviceName,
                                         style: AppTextStyles.textLgRegular
                                             .copyWith(
                                           color: AppColors.neutral200,
@@ -236,7 +212,7 @@ class _AppointmentconfirmationPageState
                   size: ButtonSize.medium,
                   onTap: !isLoading
                       ? () {
-                          _createAppointment();
+                          _proceedToServiceCenterSelection();
                         }
                       : null,
                 ),

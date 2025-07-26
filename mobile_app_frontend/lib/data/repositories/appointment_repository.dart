@@ -42,4 +42,21 @@ class AppointmentRepository {
       throw Exception('Failed to create appointment: \\${response.statusCode}');
     }
   }
+
+  Future<int> createConfirmedAppointmentAndReturnId(
+      AppointmentCreate appointment, String token) async {
+    final response = await dio.post(
+      '${ApiConfig.currentBaseUrl}/Appointment/create-confirmed',
+      data: appointment.toJson(),
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    // Assume backend returns the created appointment as JSON with appointmentId
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = response.data;
+      return data['appointmentId'] as int;
+    } else {
+      throw Exception(
+          'Failed to create confirmed appointment: \\${response.statusCode}');
+    }
+  }
 }
