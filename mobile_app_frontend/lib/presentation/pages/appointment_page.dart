@@ -31,7 +31,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
   @override
   void initState() {
     super.initState();
-    _appointments = AppointmentRepository(Dio()).getAppointmentsByVehicle(
+    _appointments = AppointmentRepository().getAppointmentsByVehicle(
       widget.customerId,
       widget.vehicleId,
       widget.token,

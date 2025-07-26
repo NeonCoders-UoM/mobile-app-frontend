@@ -95,6 +95,24 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
     }
   }
 
+  bool _isAppointmentCompleted() {
+    // Check if the notification indicates a completed appointment
+    final type = _notification['type'] as String;
+    final title = _notification['title']?.toString().toLowerCase() ?? '';
+    final description =
+        _notification['description']?.toString().toLowerCase() ?? '';
+
+    // Check for completed appointment indicators
+    return type == 'service_history_verified' ||
+        title.contains('completed') ||
+        title.contains('finished') ||
+        title.contains('done') ||
+        description.contains('completed') ||
+        description.contains('finished') ||
+        description.contains('done') ||
+        _notification['status']?.toString().toLowerCase() == 'completed';
+  }
+
   void _deleteNotification() {
     showDialog(
       context: context,
@@ -407,7 +425,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             if (actionable) ...[
               const SizedBox(height: 24),
               // Action Buttons
-              if (type == 'service_history_verified')
+              if (_isAppointmentCompleted())
                 _buildSection(
                   'Available Actions',
                   Icons.play_arrow,
@@ -424,6 +442,16 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                                   vehicleId: _notification['vehicleId'] ??
                                       widget.vehicleId ??
                                       1,
+                                  customerId: widget.customerId,
+                                  token: widget.token,
+                                  serviceCenterId:
+                                      _notification['serviceCenterId'],
+                                  serviceDate:
+                                      _notification['serviceDate'] != null
+                                          ? DateTime.tryParse(
+                                              _notification['serviceDate'])
+                                          : null,
+                                  appointmentId: _notification['appointmentId'],
                                 ),
                               ),
                             );

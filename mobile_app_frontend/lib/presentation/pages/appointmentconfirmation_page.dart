@@ -23,11 +23,11 @@ class AppointmentconfirmationPage extends StatefulWidget {
 
   const AppointmentconfirmationPage({
     Key? key,
-  required this.selectedDate,
-  required this.selectedServices, // full Service list
-  required this.customerId,
-  required this.vehicleId,
-  required this.token,
+    required this.selectedDate,
+    required this.selectedServices, // full Service list
+    required this.customerId,
+    required this.vehicleId,
+    required this.token,
   }) : super(key: key);
 
   @override
@@ -68,7 +68,8 @@ class _AppointmentconfirmationPageState
     });
     try {
       // Map selectedServices to their real serviceId property
-      final serviceIds = widget.selectedServices.map((s) => s.serviceId).toList();
+      final serviceIds =
+          widget.selectedServices.map((s) => s.serviceId).toList();
       final appointment = AppointmentCreate(
         customerId: widget.customerId,
         vehicleId: widget.vehicleId,
@@ -76,7 +77,7 @@ class _AppointmentconfirmationPageState
         appointmentDate: selectedDate,
         serviceIds: serviceIds,
       );
-      await AppointmentRepository(Dio())
+      await AppointmentRepository()
           .createAppointment(appointment, widget.token);
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -173,7 +174,8 @@ class _AppointmentconfirmationPageState
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        widget.selectedServices[index].serviceName,
+                                        widget.selectedServices[index]
+                                            .serviceName,
                                         style: AppTextStyles.textLgRegular
                                             .copyWith(
                                           color: AppColors.neutral200,

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/data/repositories/service_history_repository.dart';
+import 'package:mobile_app_frontend/presentation/pages/payment_successful_message_page.dart';
 
 class PaymentSuccessPage extends StatefulWidget {
   final int vehicleId;
@@ -80,22 +81,20 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
   Widget build(BuildContext context) {
     if (loading) return const Center(child: CircularProgressIndicator());
     if (status == 'Paid') {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Payment successful!'),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: downloading ? null : _downloadPdf,
-              icon: const Icon(Icons.download, color: Colors.white),
-              label: Text(downloading
-                  ? 'Downloading...'
-                  : 'Download Service History PDF'),
+      // Redirect to the enhanced success page
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => PaymentSuccessfulMessagePage(
+              customerId:
+                  1, // TODO: Replace with actual customerId if available
+              vehicleId: widget.vehicleId,
+              token: widget.token ?? '',
             ),
-          ],
-        ),
-      );
+          ),
+        );
+      });
+      return const SizedBox.shrink();
     }
     return Center(child: Text('Payment status: $status'));
   }

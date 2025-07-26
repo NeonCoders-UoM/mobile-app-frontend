@@ -34,7 +34,7 @@ class ServiceCenterPage extends StatefulWidget {
 }
 
 class _ServiceCenterPageState extends State<ServiceCenterPage> {
-  List<ServiceCenterModel> centers = [];
+  List<ServiceCenterDTO> centers = [];
   Map<int, double> costEstimates = {};
   bool isLoading = true;
   String? errorMessage;
@@ -113,9 +113,8 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
       );
 
       final List<dynamic> responseData = response.data;
-      final List<ServiceCenterModel> data = responseData
-          .map((json) => ServiceCenterModel.fromJson(json))
-          .toList();
+      final List<ServiceCenterDTO> data =
+          responseData.map((json) => ServiceCenterDTO.fromJson(json)).toList();
 
       print('Received ${data.length} centers');
       for (var c in data) {
@@ -124,7 +123,7 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
       }
 
       // Step 3: For each center, create a temp appointment and fetch cost estimation
-      final appointmentRepo = AppointmentRepository(dio);
+      final appointmentRepo = AppointmentRepository();
       final Map<int, double> costs = {};
       final Map<int, int> points = {};
       for (final center in data) {
@@ -201,12 +200,13 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
                       String distanceStr = '';
                       if (userLat != null && userLng != null) {
                         final dist = _calculateDistance(userLat!, userLng!,
-                            center.latitude, center.longitude);
+                            center.latitude ?? 0.0, center.longitude ?? 0.0);
                         distanceStr = '${dist.toStringAsFixed(2)} km';
                       }
                       return ServiceCenterCard(
-                        servicecenterName: center.stationName,
-                        address: center.address,
+                        servicecenterName: center.stationName ??
+                            'Service Center ${center.stationId}',
+                        address: center.address ?? '',
                         distance: distanceStr,
                         loyaltyPoints:
                             loyaltyPointsMap[center.stationId]?.toString() ??
@@ -215,8 +215,7 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
                         onTap: () async {
                           try {
                             // Create appointment for this center and get appointmentId
-                            final dio = Dio();
-                            final appointmentRepo = AppointmentRepository(dio);
+                            final appointmentRepo = AppointmentRepository();
                             final serviceIds = widget.selectedServices
                                 .map((s) => s.serviceId)
                                 .toList();
