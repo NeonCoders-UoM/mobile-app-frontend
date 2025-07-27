@@ -40,6 +40,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <meta-data
+    android:name="com.google.android.gms.signin.client_id"
+    android:value="592070367506-h6o0mgh2tg9e5mk1pskvkqc40qfphj98.apps.googleusercontent.com" />
     </application>
 
     <queries>
