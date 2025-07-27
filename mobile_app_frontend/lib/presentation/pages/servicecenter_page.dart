@@ -35,7 +35,7 @@ class ServiceCenterPage extends StatefulWidget {
 }
 
 class _ServiceCenterPageState extends State<ServiceCenterPage> {
-  List<ServiceCenterDTO> centers = [];
+  List<ServiceCenterSearchResult> centers = [];
   Map<int, double> costEstimates = {};
   bool isLoading = true;
   String? errorMessage;
@@ -123,11 +123,9 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
 //       final List<ServiceCenterDTO> data =
 //           responseData.map((json) => ServiceCenterDTO.fromJson(json)).toList();
 
-
       print('Received ${data.length} available centers');
       for (var c in data) {
         print(
-
             'Center: ${c.stationName}, cost: ${c.totalCost}, available slots: ${c.availableSlots}');
 
 //             'Center: ${c.stationName}, lat: ${c.latitude}, lng: ${c.longitude}');
@@ -170,22 +168,10 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
 //           print(
 //               'Error fetching cost for center ${center.stationId}: ${e.toString()}');
 //         }
-
       }
 
       setState(() {
-        centers = data
-            .map((result) => ServiceCenterModel(
-                  stationId: result.stationId,
-                  stationName: result.stationName,
-                  address: result.address,
-                  email: '', // Not provided in search result
-                  telephone: '', // Not provided in search result
-                  stationStatus: 'Active', // Default status
-                  latitude: result.latitude,
-                  longitude: result.longitude,
-                ))
-            .toList();
+        centers = data;
         costEstimates = Map.fromEntries(data.map((result) =>
             MapEntry(result.stationId, result.totalCost.toDouble())));
         loyaltyPointsMap = Map.fromEntries(data
@@ -239,10 +225,8 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
                         estimatedCost: 'Rs. ${cost.toStringAsFixed(2)}',
                         onTap: () async {
                           try {
-
                             // Create confirmed appointment for this center
-                            final dio = Dio();
-                            final appointmentRepo = AppointmentRepository(dio);
+                            final appointmentRepo = AppointmentRepository();
 
                             // Create appointment for this center and get appointmentId
 //                             final appointmentRepo = AppointmentRepository();
