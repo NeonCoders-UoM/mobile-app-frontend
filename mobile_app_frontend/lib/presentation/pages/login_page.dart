@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
+import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/text_field.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_field_state.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
-import 'package:mobile_app_frontend/services/auth_service.dart';
-import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/register_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'package:mobile_app_frontend/core/services/local_storage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -20,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
   final _authService = AuthService();
 
   InputFieldState _emailFieldState = InputFieldState.defaultState;
@@ -32,29 +35,34 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        _emailFieldState = email.isEmpty
-            ? InputFieldState.error
-            : InputFieldState.defaultState;
-        _passwordFieldState = password.isEmpty
-            ? InputFieldState.error
-            : InputFieldState.defaultState;
-      });
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     final result = await _authService.loginCustomer(
-      email: email,
-      password: password,
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
     );
 
     if (result != null) {
       final token = result['token'];
       final customerId = result['customerId'];
+
+      // Save authentication data to local storage
+      await LocalStorageService.saveAuthData(
+        token: token,
+        customerId: customerId,
+      );
+
+      print('💾 Authentication data saved after login');
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -70,6 +78,10 @@ class _LoginPageState extends State<LoginPage> {
             content: Text('Invalid credentials or email not verified')),
       );
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _navigateToRegister() {

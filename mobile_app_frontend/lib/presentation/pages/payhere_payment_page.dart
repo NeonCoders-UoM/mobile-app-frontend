@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:payhere_mobilesdk_flutter/payhere_mobilesdk_flutter.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
+import 'package:mobile_app_frontend/presentation/pages/payment_successful_message_page.dart';
+import 'package:mobile_app_frontend/core/services/local_storage.dart';
 
 class PayHerePaymentPage extends StatefulWidget {
   final int vehicleId;
   final String customerEmail;
   final String customerName;
+  final int? customerId;
+  final String? token;
 
   const PayHerePaymentPage({
     Key? key,
     required this.vehicleId,
     required this.customerEmail,
     required this.customerName,
+    this.customerId,
+    this.token,
   }) : super(key: key);
 
   @override
@@ -22,7 +28,24 @@ class PayHerePaymentPage extends StatefulWidget {
 class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
   bool _isProcessing = false;
 
-  void _startPayment() {
+  void _startPayment() async {
+    // Save authentication data before payment redirect
+    if (widget.token != null && widget.customerId != null) {
+      await LocalStorageService.saveAuthData(
+        token: widget.token!,
+        customerId: widget.customerId!,
+      );
+
+      // Save payment context
+      await LocalStorageService.savePaymentContext(
+        vehicleId: widget.vehicleId,
+        customerEmail: widget.customerEmail,
+        customerName: widget.customerName,
+      );
+
+      print('💾 Authentication data saved before payment redirect');
+    }
+
     final paymentObject = {
       "sandbox": true,
       "merchant_id": "1230582",
@@ -55,17 +78,77 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
 
     PayHere.startPayment(
       paymentObject,
-      (paymentId) {
-        // Success
-        Navigator.of(context).pop(true);
+      (paymentId) async {
+        print('✅ Payment successful! Payment ID: $paymentId');
+
+        // Retrieve saved authentication data
+        final authData = await LocalStorageService.getAuthData();
+        final paymentContext = await LocalStorageService.getPaymentContext();
+
+        print('🔑 Retrieved auth data: ${authData != null ? "✅" : "❌"}');
+        print(
+            '📱 Retrieved payment context: ${paymentContext != null ? "✅" : "❌"}');
+
+        if (authData != null && paymentContext != null) {
+          print('✅ Using saved authentication data');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => PaymentSuccessfulMessagePage(
+                vehicleId: paymentContext['vehicleId'],
+                token: authData['token'],
+                customerId: authData['customerId'],
+              ),
+            ),
+          );
+
+          // Clear payment context after successful navigation
+          await LocalStorageService.clearPaymentContext();
+        } else {
+          print('❌ No saved authentication data found, using widget data');
+          // Fallback to widget data
+          if (widget.token != null && widget.customerId != null) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => PaymentSuccessfulMessagePage(
+                  vehicleId: widget.vehicleId,
+                  token: widget.token!,
+                  customerId: widget.customerId!,
+                ),
+              ),
+            );
+          } else {
+            print('❌ No authentication data available');
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Authentication error. Please log in again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            setState(() {
+              _isProcessing = false;
+            });
+          }
+        }
       },
       (error) {
-        // Failure
-        Navigator.of(context).pop(false);
+        print('❌ Payment failed: $error');
+        // Handle payment error
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Payment failed: $error')),
+        );
       },
       () {
-        // Cancelled/dismissed
-        Navigator.of(context).pop(false);
+        print('❌ Payment cancelled by user');
+        // Handle payment cancelled
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment cancelled')),
+        );
       },
     );
   }

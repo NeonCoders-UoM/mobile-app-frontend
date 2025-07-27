@@ -6,7 +6,9 @@ import '../../state/providers/vehicle_provider.dart';
 class VehicleSwitcher extends StatelessWidget {
   final int customerId;
   final String token;
-  const VehicleSwitcher({Key? key, required this.customerId, required this.token}) : super(key: key);
+  const VehicleSwitcher(
+      {Key? key, required this.customerId, required this.token})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,16 +16,54 @@ class VehicleSwitcher extends StatelessWidget {
       builder: (context, vehicleProvider, child) {
         final vehicles = vehicleProvider.vehicles;
         final selectedVehicle = vehicleProvider.selectedVehicle;
+        final isLoading = vehicleProvider.isLoading;
+
+        // Show loading indicator if vehicles are being loaded
+        if (isLoading) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          );
+        }
+
+        // Show placeholder if no vehicles are available
+        if (vehicles.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'No vehicles',
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          );
+        }
+
         return DropdownButton<Vehicle?>(
           value: selectedVehicle,
           underline: Container(),
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
           dropdownColor: Colors.grey[900],
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
           items: [
             ...vehicles.map((vehicle) => DropdownMenuItem<Vehicle?>(
                   value: vehicle,
-                  child: Text(vehicle.registrationNumber, style: const TextStyle(color: Colors.white)),
+                  child: Text(vehicle.registrationNumber,
+                      style: const TextStyle(color: Colors.white)),
                 )),
             const DropdownMenuItem<Vehicle?>(
               value: null,
@@ -41,7 +81,8 @@ class VehicleSwitcher extends StatelessWidget {
               // Add Vehicle selected
               await showDialog(
                 context: context,
-                builder: (context) => AddVehicleDialog(customerId: customerId, token: token),
+                builder: (context) =>
+                    AddVehicleDialog(customerId: customerId, token: token),
               );
             } else {
               vehicleProvider.selectVehicle(vehicle);
@@ -56,7 +97,9 @@ class VehicleSwitcher extends StatelessWidget {
 class AddVehicleDialog extends StatefulWidget {
   final int customerId;
   final String token;
-  const AddVehicleDialog({Key? key, required this.customerId, required this.token}) : super(key: key);
+  const AddVehicleDialog(
+      {Key? key, required this.customerId, required this.token})
+      : super(key: key);
 
   @override
   State<AddVehicleDialog> createState() => _AddVehicleDialogState();
@@ -87,7 +130,8 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Registration Number'),
+                decoration:
+                    const InputDecoration(labelText: 'Registration Number'),
                 onSaved: (v) => _formData['registrationNumber'] = v ?? '',
                 validator: (v) => v == null || v.isEmpty ? 'Required' : null,
               ),
@@ -109,7 +153,8 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Mileage'),
                 keyboardType: TextInputType.number,
-                onSaved: (v) => _formData['mileage'] = int.tryParse(v ?? '0') ?? 0,
+                onSaved: (v) =>
+                    _formData['mileage'] = int.tryParse(v ?? '0') ?? 0,
                 validator: (v) => v == null || v.isEmpty ? 'Required' : null,
               ),
               TextFormField(
@@ -148,7 +193,8 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
                     });
                     try {
                       await Provider.of<VehicleProvider>(context, listen: false)
-                          .addVehicle(widget.customerId, _formData, widget.token);
+                          .addVehicle(
+                              widget.customerId, _formData, widget.token);
                       Navigator.of(context).pop();
                     } catch (e) {
                       setState(() {
@@ -158,9 +204,10 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
                     }
                   }
                 },
-          child: _loading ? const CircularProgressIndicator() : const Text('Add'),
+          child:
+              _loading ? const CircularProgressIndicator() : const Text('Add'),
         ),
       ],
     );
   }
-} 
+}

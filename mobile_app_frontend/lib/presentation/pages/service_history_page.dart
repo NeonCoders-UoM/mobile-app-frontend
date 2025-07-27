@@ -17,12 +17,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'pdf_view_page.dart';
 import 'edit_service_history_page.dart';
 
-
 class ServiceHistoryPage extends StatefulWidget {
   final int vehicleId;
   final String vehicleName;
   final String vehicleRegistration;
   final String? token;
+  final int? customerId;
 
   const ServiceHistoryPage({
     Key? key,
@@ -30,6 +30,7 @@ class ServiceHistoryPage extends StatefulWidget {
     this.vehicleName = 'Mustang 1977',
     this.vehicleRegistration = 'AB89B395',
     this.token,
+    this.customerId,
   }) : super(key: key);
 
   @override
@@ -228,6 +229,8 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
           customerEmail:
               "testuser@example.com", // TODO: replace with actual user email
           customerName: "Test User", // TODO: replace with actual user name
+          customerId: widget.customerId,
+          token: widget.token,
         ),
       ),
     );
@@ -340,7 +343,6 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
               child: ElevatedButton.icon(
                 onPressed: _isLoading
                     ? null
-
                     : _hasPaid
                         ? _downloadServiceHistoryPdf
                         : _startPaymentFlow,

@@ -7,6 +7,8 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_t
 import 'package:mobile_app_frontend/presentation/components/atoms/successful-message.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 import 'package:mobile_app_frontend/data/repositories/service_history_repository.dart';
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
+import 'package:mobile_app_frontend/core/services/local_storage.dart';
 
 class PaymentSuccessfulMessagePage extends StatefulWidget {
   final int customerId;
@@ -32,6 +34,23 @@ class PaymentSuccessfulMessagePage extends StatefulWidget {
 class _PaymentSuccessfulMessagePageState
     extends State<PaymentSuccessfulMessagePage> {
   bool isDownloading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print('🎉 PaymentSuccessfulMessagePage initialized');
+    print('🔑 Token: ${widget.token}');
+    print('👤 Customer ID: ${widget.customerId}');
+    print('🚗 Vehicle ID: ${widget.vehicleId}');
+
+    // Clear payment context since we're now in the success page
+    _clearPaymentContext();
+  }
+
+  Future<void> _clearPaymentContext() async {
+    await LocalStorageService.clearPaymentContext();
+    print('🗑️ Payment context cleared in PaymentSuccessfulMessagePage');
+  }
 
   Future<void> _downloadPdf() async {
     setState(() => isDownloading = true);
@@ -95,12 +114,41 @@ class _PaymentSuccessfulMessagePageState
             label: 'Home',
             type: ButtonType.primary,
             size: ButtonSize.large,
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              print('🏠 Home button pressed');
+              print('🔑 Token: ${widget.token}');
+              print('👤 Customer ID: ${widget.customerId}');
+
+              // Ensure we have valid authentication data
+              if (widget.customerId != null &&
+                  widget.token != null &&
+                  widget.token!.isNotEmpty) {
+                print(
+                    '✅ Authentication data valid, navigating to VehicleDetailsHomePage');
+                Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
                       builder: (context) => VehicleDetailsHomePage(
-                          customerId: widget.customerId, token: widget.token)));
+                          customerId: widget.customerId!,
+                          token: widget.token!)),
+                  (route) => false, // Remove all previous routes
+                );
+              } else {
+                print('❌ Authentication data missing or invalid');
+                // Fallback: navigate to login if authentication data is missing
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Authentication error. Please log in again.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                // Navigate to login page
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
+              }
             },
             customWidth: 360.0,
             customHeight: 56.0,
