@@ -8,12 +8,16 @@ class SelectPaymentMethodPage extends StatelessWidget {
   final int customerId;
   final int vehicleId;
   final String token;
+  final int? appointmentId;
+  final double? advancePaymentAmount;
 
   const SelectPaymentMethodPage({
     Key? key,
     required this.customerId,
     required this.vehicleId,
     required this.token,
+    this.appointmentId,
+    this.advancePaymentAmount,
   }) : super(key: key);
 
   @override
@@ -56,6 +60,8 @@ class SelectPaymentMethodPage extends StatelessWidget {
                       customerId: customerId,
                       vehicleId: vehicleId,
                       token: token,
+                      appointmentId: appointmentId,
+                      advancePaymentAmount: advancePaymentAmount,
                     ),
                   ),
                 );
@@ -73,6 +79,8 @@ class SelectPaymentMethodPage extends StatelessWidget {
                       customerId: customerId,
                       vehicleId: vehicleId,
                       token: token,
+                      appointmentId: appointmentId,
+                      advancePaymentAmount: advancePaymentAmount,
                     ),
                   ),
                 );

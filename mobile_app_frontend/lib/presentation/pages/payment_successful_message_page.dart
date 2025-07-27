@@ -12,12 +12,16 @@ class PaymentSuccessfulMessagePage extends StatefulWidget {
   final int customerId;
   final int vehicleId;
   final String token;
+  final int? appointmentId;
+  final double? advancePaymentAmount;
 
   const PaymentSuccessfulMessagePage({
     Key? key,
     required this.customerId,
     required this.vehicleId,
     required this.token,
+    this.appointmentId,
+    this.advancePaymentAmount,
   }) : super(key: key);
 
   @override
