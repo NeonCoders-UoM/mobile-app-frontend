@@ -35,7 +35,7 @@ class ServiceCenterPage extends StatefulWidget {
 }
 
 class _ServiceCenterPageState extends State<ServiceCenterPage> {
-  List<ServiceCenterModel> centers = [];
+  List<ServiceCenterDTO> centers = [];
   Map<int, double> costEstimates = {};
   bool isLoading = true;
   String? errorMessage;
@@ -115,14 +115,62 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
       );
 
       final List<dynamic> responseData = response.data;
+
       final List<ServiceCenterSearchResult> data = responseData
           .map((json) => ServiceCenterSearchResult.fromJson(json))
           .toList();
 
+//       final List<ServiceCenterDTO> data =
+//           responseData.map((json) => ServiceCenterDTO.fromJson(json)).toList();
+
+
       print('Received ${data.length} available centers');
       for (var c in data) {
         print(
+
             'Center: ${c.stationName}, cost: ${c.totalCost}, available slots: ${c.availableSlots}');
+
+//             'Center: ${c.stationName}, lat: ${c.latitude}, lng: ${c.longitude}');
+//       }
+
+//       // Step 3: For each center, create a temp appointment and fetch cost estimation
+//       final appointmentRepo = AppointmentRepository();
+//       final Map<int, double> costs = {};
+//       final Map<int, int> points = {};
+//       for (final center in data) {
+//         try {
+//           final serviceIds =
+//               widget.selectedServices.map((s) => s.serviceId).toList();
+//           final appointment = AppointmentCreate(
+//             customerId: widget.customerId,
+//             vehicleId: widget.vehicleId,
+//             stationId: center.stationId,
+//             appointmentDate: widget.selectedDate,
+//             serviceIds: serviceIds,
+//           );
+//           // Create appointment and get appointmentId
+//           final appointmentId = await appointmentRepo
+//               .createAppointmentAndReturnId(appointment, widget.token);
+//           // Fetch appointment details (cost estimation)
+//           final detailsResponse = await dio.get(
+//             'http://localhost:5039/api/Appointment/customer/${widget.customerId}/vehicle/${widget.vehicleId}/details/$appointmentId',
+//             options:
+//                 Options(headers: {'Authorization': 'Bearer ${widget.token}'}),
+//           );
+//           final detailsData = detailsResponse.data;
+//           final double cost =
+//               (detailsData['totalCost'] as num?)?.toDouble() ?? 0.0;
+//           costs[center.stationId] = cost;
+//           final int pointsForCenter =
+//               (detailsData['loyaltyPoints'] as num?)?.toInt() ?? 0;
+//           points[center.stationId] = pointsForCenter;
+//         } catch (e) {
+//           costs[center.stationId] = 0.0;
+//           points[center.stationId] = 0;
+//           print(
+//               'Error fetching cost for center ${center.stationId}: ${e.toString()}');
+//         }
+
       }
 
       setState(() {
@@ -177,12 +225,13 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
                       String distanceStr = '';
                       if (userLat != null && userLng != null) {
                         final dist = _calculateDistance(userLat!, userLng!,
-                            center.latitude, center.longitude);
+                            center.latitude ?? 0.0, center.longitude ?? 0.0);
                         distanceStr = '${dist.toStringAsFixed(2)} km';
                       }
                       return ServiceCenterCard(
-                        servicecenterName: center.stationName,
-                        address: center.address,
+                        servicecenterName: center.stationName ??
+                            'Service Center ${center.stationId}',
+                        address: center.address ?? '',
                         distance: distanceStr,
                         loyaltyPoints:
                             loyaltyPointsMap[center.stationId]?.toString() ??
@@ -190,9 +239,14 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
                         estimatedCost: 'Rs. ${cost.toStringAsFixed(2)}',
                         onTap: () async {
                           try {
+
                             // Create confirmed appointment for this center
                             final dio = Dio();
                             final appointmentRepo = AppointmentRepository(dio);
+
+                            // Create appointment for this center and get appointmentId
+//                             final appointmentRepo = AppointmentRepository();
+
                             final serviceIds = widget.selectedServices
                                 .map((s) => s.serviceId)
                                 .toList();

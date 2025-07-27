@@ -7,14 +7,10 @@ import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_advance_payment_page.dart';
+
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
-import 'package:mobile_app_frontend/data/repositories/service_center_repository.dart';
-import 'package:mobile_app_frontend/data/models/service_model.dart';
 import 'package:dio/dio.dart';
-import 'package:mobile_app_frontend/data/repositories/appointment_repository.dart';
-import 'package:mobile_app_frontend/data/models/appointment_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:math';
 

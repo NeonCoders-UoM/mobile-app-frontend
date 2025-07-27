@@ -61,6 +61,7 @@ class _AppointmentconfirmationPageState
     }
   }
 
+
   Future<void> _proceedToServiceCenterSelection() async {
     // Navigate directly to service center selection without creating appointment
     Navigator.pushReplacement(
@@ -72,6 +73,37 @@ class _AppointmentconfirmationPageState
           customerId: widget.customerId,
           vehicleId: widget.vehicleId,
           token: widget.token,
+
+//   Future<void> _createAppointment() async {
+//     setState(() {
+//       isLoading = true;
+//       errorMessage = null;
+//     });
+//     try {
+//       // Map selectedServices to their real serviceId property
+//       final serviceIds =
+//           widget.selectedServices.map((s) => s.serviceId).toList();
+//       final appointment = AppointmentCreate(
+//         customerId: widget.customerId,
+//         vehicleId: widget.vehicleId,
+//         stationId: 1, // TODO: Replace with actual selected stationId
+//         appointmentDate: selectedDate,
+//         serviceIds: serviceIds,
+//       );
+//       await AppointmentRepository()
+//           .createAppointment(appointment, widget.token);
+//       if (!mounted) return;
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(
+//           builder: (context) => ServiceCenterPage(
+//             selectedServices: widget.selectedServices,
+//             selectedDate: selectedDate,
+//             customerId: widget.customerId,
+//             vehicleId: widget.vehicleId,
+//             token: widget.token,
+//           ),
+
         ),
       ),
     );

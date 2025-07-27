@@ -42,9 +42,9 @@ class CostEstimateDescription extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Vehicle Registration No : $vehicleRegNo',
-              style: AppTextStyles.textSmRegular
-                  .copyWith(color: AppColors.neutral200)),
+          // Text('Vehicle Registration No : $vehicleRegNo',
+          //     style: AppTextStyles.textSmRegular
+          //         .copyWith(color: AppColors.neutral200)),
           const SizedBox(height: 10),
           if (appointmentDate?.isNotEmpty == true) ...[
             Text('Appointment Date : $appointmentDate',

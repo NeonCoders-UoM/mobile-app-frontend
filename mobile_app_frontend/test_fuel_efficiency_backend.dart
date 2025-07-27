@@ -39,9 +39,8 @@ void main() async {
     if (records.isNotEmpty) {
       final firstRecord = records.first;
       print('   Sample record:');
-      print('   - Date: ${firstRecord.fuelDate}');
+      print('   - Date:  [33m${firstRecord.fuelDate} [0m');
       print('   - Amount: ${firstRecord.fuelAmount}L');
-      print('   - Cost: Rs ${firstRecord.totalCost ?? 'N/A'}');
       print('   - Type: ${firstRecord.fuelType ?? 'N/A'}');
     }
   } catch (e) {
@@ -53,10 +52,9 @@ void main() async {
   try {
     final testRecord = FuelEfficiencyModel(
       vehicleId: testVehicleId,
-      fuelDate: DateTime.now().subtract(const Duration(days: 1)),
+      date: DateTime.now()
+          .subtract(const Duration(days: 1)), // changed from fuelDate to date
       fuelAmount: 45.5,
-      pricePerLiter: 168.0,
-      totalCost: 45.5 * 168.0,
       odometer: 85000,
       location: 'Test Station',
       fuelType: 'Petrol',
@@ -66,7 +64,6 @@ void main() async {
     print('Creating test fuel record:');
     print('   Vehicle ID: ${testRecord.vehicleId}');
     print('   Amount: ${testRecord.fuelAmount}L');
-    print('   Cost: Rs ${testRecord.totalCost}');
     print('   JSON: ${json.encode(testRecord.toCreateJson())}');
 
     final success = await repository.addFuelRecord(testRecord);
@@ -85,10 +82,7 @@ void main() async {
     if (summary != null) {
       print('✅ Fuel Summary for $currentYear:');
       print('   Total Fuel: ${summary.totalFuelAmount}L');
-      print('   Total Cost: Rs ${summary.totalCost}');
-      print('   Average Efficiency: ${summary.averageEfficiency} km/L');
       print('   Total Records: ${summary.totalRecords}');
-      print('   Best Efficiency: ${summary.bestEfficiency ?? 'N/A'} km/L');
     } else {
       print('ℹ️ No summary data available for year $currentYear');
     }
@@ -106,8 +100,7 @@ void main() async {
     print('✅ Retrieved ${chartData.length} months of chart data');
     for (var monthData in chartData.take(3)) {
       // Show first 3 months
-      print(
-          '   ${monthData.monthName}: ${monthData.totalFuelAmount}L (Rs ${monthData.totalCost})');
+      print('   ${monthData.monthName}: ${monthData.totalFuelAmount}L');
     }
   } catch (e) {
     print('❌ Get monthly chart data failed: $e');
