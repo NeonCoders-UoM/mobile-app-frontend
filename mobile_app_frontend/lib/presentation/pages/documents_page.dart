@@ -19,6 +19,7 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mobile_app_frontend/core/config/api_config.dart';
 
 class DocumentActionButton extends StatelessWidget {
   final String label;
@@ -87,6 +88,7 @@ class Document {
   final String fileUrl;
   final int documentType;
   final String? displayName;
+  final DateTime? expirationDate;
 
   Document({
     required this.documentId,
@@ -94,6 +96,7 @@ class Document {
     required this.fileUrl,
     required this.documentType,
     required this.displayName,
+    this.expirationDate,
   });
 
   factory Document.fromJson(Map<String, dynamic> json) {
@@ -103,6 +106,9 @@ class Document {
       fileUrl: json['fileUrl'],
       documentType: json['documentType'],
       displayName: json['displayName'],
+      expirationDate: json['expirationDate'] != null 
+          ? DateTime.parse(json['expirationDate']) 
+          : null,
     );
   }
 }
@@ -620,7 +626,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 
   void previewDocument(
-      String fileUrl, String title, String fileName, int documentId) {
+      String fileUrl, String title, String fileName, int documentId, Document document) {
     final previewUrl =
         'http://192.168.8.186:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
     final downloadUrl =
@@ -664,10 +670,166 @@ class _DocumentsPageState extends State<DocumentsPage> {
           fileName: fileName,
           title: title,
           documentId: documentId,
+          documentType: document.documentType,
+          displayName: document.displayName,
+          expirationDate: document.expirationDate,
           onDownload: () => downloadFile(downloadUrl, fileName),
           onDelete: () async {
             await deleteDocument(documentId, fileName, title);
             Navigator.of(context).pop();
+          },
+          onUpdate: (displayName, expirationDate) async {
+            try {
+              print('Updating document with ID: $documentId');
+              print('Display name: $displayName');
+              print('Expiration date: $expirationDate');
+              
+              final url = '${ApiConfig.baseUrl}/documents/edit/${documentId}';
+              final requestBody = {
+                'documentType': document.documentType,
+                'displayName': displayName,
+                'expirationDate': expirationDate?.toIso8601String(),
+                'vehicleId': widget.vehicleId,
+              };
+              
+              print('Request body: ${jsonEncode(requestBody)}');
+              
+              // Try with different content type and additional headers
+              final response = await http.put(
+                Uri.parse(url),
+                headers: {
+                  'Content-Type': 'application/json; charset=UTF-8',
+                  'Accept': 'application/json',
+                },
+                body: jsonEncode(requestBody),
+              );
+
+              print('Response status code: ${response.statusCode}');
+              print('Response body: ${response.body}');
+              
+              if (response.statusCode == 200 || response.statusCode == 204) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Document updated successfully',
+                      textAlign: TextAlign.center,
+                    ),
+                    backgroundColor: AppColors.neutral450,
+                  ),
+                );
+                // Refresh the documents list
+                                    fetchDocuments();
+              } else {
+                final responseBody = response.body.isNotEmpty ? response.body : 'Unknown server error';
+                print('Update failed with status: ${response.statusCode}, body: $responseBody');
+                
+                // Try POST method as fallback if PUT fails
+                if (response.statusCode == 405) { // Method Not Allowed
+                  print('PUT method not allowed, trying POST...');
+                  final postResponse = await http.post(
+                    Uri.parse(url),
+                    headers: {
+                      'Content-Type': 'application/json; charset=UTF-8',
+                      'Accept': 'application/json',
+                    },
+                    body: jsonEncode(requestBody),
+                  );
+                  
+                  print('POST response status: ${postResponse.statusCode}');
+                  print('POST response body: ${postResponse.body}');
+                  
+                  if (postResponse.statusCode == 200 || postResponse.statusCode == 204) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Document updated successfully',
+                          textAlign: TextAlign.center,
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    fetchDocuments();
+                    return;
+                  } else {
+                    final postResponseBody = postResponse.body.isNotEmpty ? postResponse.body : 'Unknown server error';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Failed to update document: $postResponseBody',
+                          textAlign: TextAlign.center,
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } else if (response.statusCode == 404) {
+                  // Try using the upload endpoint with update flag
+                  print('Update endpoint not found, trying upload endpoint with update flag...');
+                  final uploadUrl = '${ApiConfig.baseUrl}/documents/upload';
+                  final updateRequestBody = {
+                    ...requestBody,
+                    'isUpdate': true,
+                  };
+                  
+                  final uploadResponse = await http.post(
+                    Uri.parse(uploadUrl),
+                    headers: {
+                      'Content-Type': 'application/json; charset=UTF-8',
+                      'Accept': 'application/json',
+                    },
+                    body: jsonEncode(updateRequestBody),
+                  );
+                  
+                  print('Upload endpoint response status: ${uploadResponse.statusCode}');
+                  print('Upload endpoint response body: ${uploadResponse.body}');
+                  
+                  if (uploadResponse.statusCode == 200 || uploadResponse.statusCode == 204) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Document updated successfully',
+                          textAlign: TextAlign.center,
+                        ),
+                        backgroundColor: AppColors.neutral450,
+                      ),
+                    );
+                    fetchDocuments();
+                    return;
+                  } else {
+                    final uploadResponseBody = uploadResponse.body.isNotEmpty ? uploadResponse.body : 'Unknown server error';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Failed to update document: $uploadResponseBody',
+                          textAlign: TextAlign.center,
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Failed to update document: $responseBody',
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Error updating document: $e',
+                    textAlign: TextAlign.center,
+                  ),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           },
         ),
       ),
@@ -802,6 +964,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
                                         title,
                                         doc.fileName,
                                         doc.documentId,
+                                        doc,
                                       ),
                                     ),
                                   );
@@ -928,8 +1091,12 @@ class FullScreenDocumentPreview extends StatefulWidget {
   final String fileName;
   final String title;
   final int documentId;
+  final int documentType;
+  final String? displayName;
+  final DateTime? expirationDate;
   final VoidCallback onDownload;
   final VoidCallback onDelete;
+  final Function(String? displayName, DateTime? expirationDate) onUpdate;
 
   const FullScreenDocumentPreview({
     Key? key,
@@ -938,8 +1105,12 @@ class FullScreenDocumentPreview extends StatefulWidget {
     required this.fileName,
     required this.title,
     required this.documentId,
+    required this.documentType,
+    this.displayName,
+    this.expirationDate,
     required this.onDownload,
     required this.onDelete,
+    required this.onUpdate,
   }) : super(key: key);
 
   @override
@@ -1048,6 +1219,133 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
     }
   }
 
+  void _showEditDialog() {
+    String? newDisplayName = widget.displayName;
+    DateTime? newExpirationDate = widget.expirationDate;
+    final TextEditingController displayNameController = TextEditingController(text: widget.displayName ?? '');
+    final TextEditingController expirationDateController = TextEditingController();
+    
+    if (newExpirationDate != null) {
+      expirationDateController.text = DateFormat('yyyy-MM-dd').format(newExpirationDate);
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.neutral400,
+          title: const Text(
+            'Edit Document',
+            style: TextStyle(color: AppColors.neutral150),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Display Name field (only for Warranty Document)
+              if (widget.documentType == 5) ...[
+                TextFormField(
+                  controller: displayNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Display Name',
+                    labelStyle: TextStyle(color: AppColors.neutral200),
+                  ),
+                  style: const TextStyle(color: AppColors.neutral200),
+                  onChanged: (value) => newDisplayName = value.isEmpty ? null : value,
+                ),
+                const SizedBox(height: 16),
+              ],
+              // Expiration Date field (for documents that require it)
+              if ([1, 2, 3, 4, 5].contains(widget.documentType)) ...[
+                TextFormField(
+                  controller: expirationDateController,
+                  decoration: const InputDecoration(
+                    labelText: 'Expiration Date',
+                    hintText: 'Select expiration date',
+                    labelStyle: TextStyle(color: AppColors.neutral200),
+                  ),
+                  style: const TextStyle(color: AppColors.neutral200),
+                  readOnly: true,
+                  onTap: () async {
+                    final selectedDate = await showDatePicker(
+                      context: context,
+                      initialDate: newExpirationDate ?? DateTime.now(),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: AppColors.primary200,
+                              onPrimary: Colors.white,
+                              surface: AppColors.neutral450,
+                              onSurface: AppColors.neutral100,
+                              onSecondary: AppColors.neutral100,
+                              secondary: AppColors.neutral300,
+                            ),
+                            dialogBackgroundColor: AppColors.neutral400,
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (selectedDate != null) {
+                      if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Expired documents can not add', textAlign: TextAlign.center),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() {
+                        newExpirationDate = selectedDate;
+                        expirationDateController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+                      });
+                    }
+                  },
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.neutral200),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                // Validate that expiration date is provided for documents that require it
+                if ([1, 2, 3, 4, 5].contains(widget.documentType) && newExpirationDate == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Expiration date is required for this document type',
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                
+                widget.onUpdate(newDisplayName, newExpirationDate);
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Save',
+                style: TextStyle(color: AppColors.primary200),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   String _getMimeType(String extension) {
     switch (extension) {
       case 'pdf':
@@ -1083,6 +1381,12 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          // Show edit icon for documents that have expiration dates (types 1,2,3,4,5) or warranty documents with display names
+          if ([1, 2, 3, 4, 5].contains(widget.documentType))
+            IconButton(
+              icon: const Icon(Icons.edit, color: AppColors.neutral100),
+              onPressed: _showEditDialog,
+            ),
           IconButton(
             icon: const Icon(Icons.share, color: AppColors.neutral100),
             onPressed: _shareFile,
