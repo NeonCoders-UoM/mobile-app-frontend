@@ -19,8 +19,6 @@ import 'package:mobile_app_frontend/presentation/pages/personal_details_page.dar
 import 'package:mobile_app_frontend/presentation/pages/notifications_page.dart';
 import 'package:mobile_app_frontend/presentation/components/vehicle_switcher.dart';
 import 'package:mobile_app_frontend/state/providers/vehicle_provider.dart';
-import 'package:mobile_app_frontend/data/repositories/vehicle_repository.dart';
-import 'package:mobile_app_frontend/core/models/vehicle.dart';
 
 class VehicleDetailsHomePage extends StatefulWidget {
   final int customerId;
@@ -340,7 +338,11 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                           ),
                         ),
                         _iconWithLabel(context, "assets/icons/delete.svg",
-                            "Delete", const DeleteVehiclePage()),
+                            "Delete", DeleteVehiclePage(
+                              customerId: widget.customerId,
+                              vehicleId: selectedVehicle.vehicleId,
+                              token: widget.token,
+                            )),
                       ],
                     ),
                   ),

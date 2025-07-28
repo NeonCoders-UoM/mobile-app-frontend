@@ -53,8 +53,8 @@ class VehicleProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteVehicle(int customerId, int vehicleId, String token) async {
-    await repository.deleteVehicle(customerId, vehicleId, token);
+  Future<void> deleteVehicle(int customerId, int vehicleId, String token, String password) async {
+    await repository.deleteVehicle(customerId, vehicleId, token, password);
     _vehicles.removeWhere((v) => v.vehicleId == vehicleId);
     if (_selectedVehicle?.vehicleId == vehicleId) {
       _selectedVehicle = _vehicles.isNotEmpty ? _vehicles.first : null;
