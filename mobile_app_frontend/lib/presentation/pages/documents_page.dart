@@ -331,6 +331,45 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> deleteDocument(
       int documentId, String fileName, String title) async {
+    // Show confirmation dialog
+    final bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.neutral400,
+          title: const Text(
+            'Delete Document',
+            style: TextStyle(color: AppColors.neutral150),
+          ),
+          content: Text(
+            'Are you sure you want to delete "$title"? This action cannot be undone.',
+            style: const TextStyle(color: AppColors.neutral100),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.neutral200),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    // If user cancels, return early
+    if (confirmDelete != true) {
+      return;
+    }
+
     final url =
         'http://192.168.8.186:5039/api/documents/delete?documentId=$documentId';
     try {
