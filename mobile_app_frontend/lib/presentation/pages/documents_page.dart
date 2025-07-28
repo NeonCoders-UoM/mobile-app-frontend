@@ -156,7 +156,10 @@ class _DocumentsPageState extends State<DocumentsPage> {
       if (cameraStatus.isPermanentlyDenied) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Camera permission is permanently denied. Please enable it in settings.'),
+            content: const Text(
+              'Camera permission is permanently denied. Please enable it in settings.',
+              textAlign: TextAlign.center,
+            ),
             action: SnackBarAction(
               label: 'Settings',
               onPressed: () => openAppSettings(),
@@ -187,13 +190,13 @@ class _DocumentsPageState extends State<DocumentsPage> {
       } else {
         print('No cameras available');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No cameras available on this device.')),
+          const SnackBar(content: Text('No cameras available on this device.', textAlign: TextAlign.center)),
         );
       }
     } catch (e) {
       print('Error initializing camera: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error initializing camera: $e')),
+        SnackBar(content: Text('Error initializing camera: $e', textAlign: TextAlign.center)),
       );
     }
   }
@@ -244,7 +247,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
       print('Error loading documents: $e');
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading documents: $e')),
+        SnackBar(content: Text('Error loading documents: $e', textAlign: TextAlign.center)),
       );
     }
   }
@@ -277,7 +280,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text(
-                  'Permission denied. Please enable it in settings to download files.'),
+                  'Permission denied. Please enable it in settings to download files.',
+                  textAlign: TextAlign.center,
+              ),
               action: SnackBarAction(
                 label: 'Settings',
                 onPressed: () => openAppSettings(),
@@ -297,7 +302,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
         print('Downloads directory: $directory');
         if (directory == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Unable to access downloads directory')),
+            const SnackBar(content: Text('Unable to access downloads directory', textAlign: TextAlign.center)),
           );
           return;
         }
@@ -310,19 +315,19 @@ class _DocumentsPageState extends State<DocumentsPage> {
         print('File exists after writing: ${await file.exists()}');
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File downloaded to $filePath')),
+          SnackBar(content: Text('File downloaded to $filePath', textAlign: TextAlign.center)),
         );
       } else {
         print('Response body: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Failed to download file: ${response.statusCode}')),
+              content: Text('Failed to download file: ${response.statusCode}', textAlign: TextAlign.center)),
         );
       }
     } catch (e) {
       print('Error downloading file: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error downloading file: $e')),
+        SnackBar(content: Text('Error downloading file: $e', textAlign: TextAlign.center)),
       );
     } finally {
       _isDownloading = false;
@@ -379,20 +384,20 @@ class _DocumentsPageState extends State<DocumentsPage> {
           documents.removeWhere((doc) => doc.documentId == documentId);
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Document "$title" deleted successfully')),
+          SnackBar(content: Text('Document "$title" deleted successfully', textAlign: TextAlign.center)),
         );
       } else {
         final responseBody =
             response.body.isNotEmpty ? response.body : 'Unknown server error';
         print('Delete failed for document $documentId ($title): $responseBody');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete "$title": $responseBody')),
+          SnackBar(content: Text('Failed to delete "$title": $responseBody', textAlign: TextAlign.center)),
         );
       }
     } catch (e) {
       print('Error deleting document $documentId ($title): $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting "$title": $e')),
+        SnackBar(content: Text('Error deleting "$title": $e', textAlign: TextAlign.center)),
       );
     }
   }
@@ -412,7 +417,10 @@ class _DocumentsPageState extends State<DocumentsPage> {
     if (cameraStatus.isPermanentlyDenied) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Camera permission is permanently denied. Please enable it in settings.'),
+          content: const Text(
+            'Camera permission is permanently denied. Please enable it in settings.',
+            textAlign: TextAlign.center,
+          ),
           action: SnackBarAction(
             label: 'Settings',
             onPressed: () => openAppSettings(),
@@ -422,14 +430,14 @@ class _DocumentsPageState extends State<DocumentsPage> {
       return;
     } else if (cameraStatus != PermissionStatus.granted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Camera permission denied')),
+        const SnackBar(content: Text('Camera permission denied', textAlign: TextAlign.center)),
       );
       return;
     }
 
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Camera not available')),
+        const SnackBar(content: Text('Camera not available', textAlign: TextAlign.center)),
       );
       return;
     }
@@ -446,6 +454,75 @@ class _DocumentsPageState extends State<DocumentsPage> {
     );
 
     if (image != null) {
+      // Show preview dialog to verify the captured image
+      final bool? shouldUpload = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: AppColors.neutral400,
+            title: const Text(
+              'Review Captured Document',
+              style: TextStyle(color: AppColors.neutral150),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Please review your captured document:',
+                  style: TextStyle(color: AppColors.neutral100),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  constraints: const BoxConstraints(
+                    maxHeight: 400,
+                    maxWidth: double.infinity,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.neutral300),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      File(image.path),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Is this image clear and suitable for upload?',
+                  style: TextStyle(color: AppColors.neutral100),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text(
+                  'Retake',
+                  style: TextStyle(color: AppColors.neutral200),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(
+                  'Upload',
+                  style: TextStyle(color: AppColors.primary200),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+
+      // If user wants to retake, return early
+      if (shouldUpload != true) {
+        return;
+      }
+
       final fileBytes = await File(image.path).readAsBytes();
       final fileName = 'scanned_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
@@ -471,7 +548,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
         print('Storage permission status: $storageStatus');
         if (storageStatus != PermissionStatus.granted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Storage or photo permission denied')),
+            const SnackBar(content: Text('Storage or photo permission denied', textAlign: TextAlign.center)),
           );
           return;
         }
@@ -485,7 +562,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
     if (result == null || result.files.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No file selected')),
+        const SnackBar(content: Text('No file selected', textAlign: TextAlign.center)),
       );
       return;
     }
@@ -498,7 +575,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
     if (file.size > 10 * 1024 * 1024) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('File size exceeds 10MB limit')),
+        const SnackBar(content: Text('File size exceeds 10MB limit', textAlign: TextAlign.center)),
       );
       return;
     }
@@ -511,13 +588,13 @@ class _DocumentsPageState extends State<DocumentsPage> {
           fileBytes = await fileFromPath.readAsBytes();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Selected file does not exist')),
+            const SnackBar(content: Text('Selected file does not exist', textAlign: TextAlign.center)),
           );
           return;
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to read file: $e')),
+          SnackBar(content: Text('Failed to read file: $e', textAlign: TextAlign.center)),
         );
         return;
       }
@@ -525,7 +602,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
       fileBytes = file.bytes!;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to read file')),
+        const SnackBar(content: Text('Failed to read file', textAlign: TextAlign.center)),
       );
       return;
     }
@@ -764,7 +841,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                'Camera not available. Please check permissions or device capabilities.'),
+                                'Camera not available. Please check permissions or device capabilities.', textAlign: TextAlign.center),
                           ),
                         );
                       },
@@ -1177,7 +1254,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:
-                  Text('Document "${widget.fileName}" uploaded successfully')),
+                  Text('Document "${widget.fileName}" uploaded successfully', textAlign: TextAlign.center)),
         );
       } else {
         final responseBody = await response.stream.bytesToString();
@@ -1185,13 +1262,13 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  'Failed to upload document: ${response.statusCode} $responseBody')),
+                  'Failed to upload document:  {response.statusCode} $responseBody', textAlign: TextAlign.center)),
         );
       }
     } catch (e) {
       print('Error uploading document ${widget.fileName}: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error uploading document: $e')),
+        SnackBar(content: Text('Error uploading document: $e', textAlign: TextAlign.center)),
       );
     } finally {
       if (mounted) {
