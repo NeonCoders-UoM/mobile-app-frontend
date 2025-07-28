@@ -1204,38 +1204,69 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                 validator: (value) =>
                     value == null ? 'Please select a document type' : null,
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Display Name (Optional)',
-                ),
-                onChanged: (value) => displayName = value,
-              ),
+                             if (documentType == 5) ...[
+                 const SizedBox(height: 16),
+                 TextFormField(
+                   decoration: const InputDecoration(
+                     labelText: 'Display Name (Optional)',
+                     labelStyle: TextStyle(color: AppColors.neutral200),
+                   ),
+                   style: const TextStyle(color: AppColors.neutral200),
+                   onChanged: (value) => displayName = value,
+                 ),
+               ],
               if (requiresExp) ...[
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: expirationDateController,
-                  decoration: const InputDecoration(
-                    labelText: 'Expiration Date',
-                    hintText: 'Select expiration date',
-                    labelStyle: TextStyle(color: AppColors.neutral200),
-                  ),
-                  readOnly: true,
-                  onTap: () async {
-                    final selectedDate = await showDatePicker(
-                      context: context,
-                      initialDate: expirationDate ?? DateTime.now(),
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                    );
-                    if (selectedDate != null) {
-                      setState(() {
-                        expirationDate = selectedDate;
-                        expirationDateController.text =
-                            DateFormat('yyyy-MM-dd').format(selectedDate);
-                      });
-                    }
-                  },
+                                 TextFormField(
+                   controller: expirationDateController,
+                   decoration: const InputDecoration(
+                     labelText: 'Expiration Date',
+                     hintText: 'Select expiration date',
+                     labelStyle: TextStyle(color: AppColors.neutral200),
+                   ),
+                   style: const TextStyle(color: AppColors.neutral200),
+                   readOnly: true,
+                                                        onTap: () async {
+                     final selectedDate = await showDatePicker(
+                       context: context,
+                       initialDate: expirationDate ?? DateTime.now(),
+                       firstDate: DateTime.now(),
+                       lastDate: DateTime(2100),
+                       builder: (context, child) {
+                         return Theme(
+                           data: Theme.of(context).copyWith(
+                             colorScheme: const ColorScheme.dark(
+                               primary: AppColors.primary200,
+                               onPrimary: Colors.white,
+                               surface: AppColors.neutral450,
+                               onSurface: AppColors.neutral100,
+                               onSecondary: AppColors.neutral100,
+                               secondary: AppColors.neutral300,
+                             ),
+                             dialogBackgroundColor: AppColors.neutral400,
+                           ),
+                           child: child!,
+                         );
+                       },
+                     );
+                     if (selectedDate != null) {
+                       // Check if selected date is in the past
+                       if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+                         ScaffoldMessenger.of(context).showSnackBar(
+                           const SnackBar(
+                             content: Text('Expired documents can not add'),
+                             backgroundColor: Colors.red,
+                           ),
+                         );
+                         return;
+                       }
+                       setState(() {
+                         expirationDate = selectedDate;
+                         expirationDateController.text =
+                             DateFormat('yyyy-MM-dd').format(selectedDate);
+                       });
+                     }
+                   },
                   validator: (value) {
                     if (requiresExp && (value == null || value.isEmpty)) {
                       return 'Expiration date is required';
@@ -1245,12 +1276,16 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                 ),
               ],
               const SizedBox(height: 16),
-              isUploading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: submitForm,
-                      child: const Text('Upload'),
-                    ),
+                             isUploading
+                   ? const CircularProgressIndicator()
+                   : ElevatedButton(
+                       onPressed: submitForm,
+                       style: ElevatedButton.styleFrom(
+                         backgroundColor: AppColors.primary200,
+                         foregroundColor: Colors.white,
+                       ),
+                       child: const Text('Upload'),
+                     ),
             ],
           ),
         ),
