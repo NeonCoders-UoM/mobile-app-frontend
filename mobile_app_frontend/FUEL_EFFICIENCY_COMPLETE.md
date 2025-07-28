@@ -44,7 +44,7 @@ All endpoints from your `FuelEfficiencyController` are supported:
 ### 1. Start Your Backend
 
 ```bash
-dotnet run  # Ensure running on http://10.10.13.168:5039
+dotnet run  # Ensure running on http://192.168.8.186:5039
 ```
 
 ### 2. Test API Integration
@@ -70,7 +70,7 @@ flutter run
 The integration uses your existing API configuration in `lib/core/config/api_config.dart`:
 
 ```dart
-static const String baseUrl = 'http://10.10.13.168:5039/api';
+static const String baseUrl = 'http://192.168.8.186:5039/api';
 static const int defaultVehicleId = 1;
 ```
 

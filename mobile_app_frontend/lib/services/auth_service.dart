@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String _baseUrl = 'http://192.168.1.11:5039/api';
+  final String _baseUrl = 'http://192.168.8.186:5039/api';
 
   Future<bool> registerCustomer({
     required String firstName,
@@ -274,7 +274,6 @@ class AuthService {
     required String token,
     required String registrationNumber,
     required String chassisNumber,
-    required String category,
     required String model,
     required String brand,
     required String fuel,
@@ -293,7 +292,6 @@ class AuthService {
       body: jsonEncode({
         "registrationNumber": registrationNumber,
         "chassisNumber": chassisNumber,
-        "category": category,
         "model": model,
         "brand": brand,
         "fuel": fuel,

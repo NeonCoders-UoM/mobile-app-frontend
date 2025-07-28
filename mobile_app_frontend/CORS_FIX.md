@@ -2,7 +2,7 @@
 
 ## Problem
 
-Your Flutter web app is getting a CORS error when trying to access your .NET backend API. This is a common issue when a web application running on one port (Flutter on `localhost:51443`) tries to access an API on another port (.NET on `10.10.13.168:5039`).
+Your Flutter web app is getting a CORS error when trying to access your .NET backend API. This is a common issue when a web application running on one port (Flutter on `localhost:51443`) tries to access an API on another port (.NET on `192.168.8.186:5039`).
 
 ## Root Cause
 
@@ -39,7 +39,7 @@ app.Run();
 
 1. Stop your .NET application
 2. Start it again
-3. Make sure it's running on `http://10.10.13.168:5039`
+3. Make sure it's running on `http://192.168.8.186:5039`
 
 ### Step 3: Test the Flutter App
 

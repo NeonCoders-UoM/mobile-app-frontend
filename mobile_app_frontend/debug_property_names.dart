@@ -9,7 +9,7 @@ void main() async {
 }
 
 Future<void> testPropertyNames() async {
-  final baseUrl = 'http://10.10.13.168:5039/api';
+  final baseUrl = 'http://192.168.8.186:5039/api';
   final now = DateTime.now();
 
   // Test different property names that .NET backend might expect

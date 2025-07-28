@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/services/auth_service.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/text_field.dart';
@@ -9,6 +10,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_t
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/state/providers/vehicle_provider.dart';
 
 class EditVehicledetailsPage extends StatefulWidget {
   final int customerId;
@@ -33,11 +35,9 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
       TextEditingController();
   final TextEditingController _chassisNumberController =
       TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _modelController = TextEditingController();
   final TextEditingController _fuelTypeController = TextEditingController();
-
-  String? _selectedBrand;
+  final TextEditingController _brandController = TextEditingController();
 
   bool _isLoading = true;
 
@@ -64,10 +64,9 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
           _registrationNumberController.text =
               vehicle['registrationNumber'] ?? '';
           _chassisNumberController.text = vehicle['chassisNumber'] ?? '';
-          _categoryController.text = vehicle['category'] ?? '';
           _modelController.text = vehicle['model'] ?? '';
           _fuelTypeController.text = vehicle['fuel'] ?? '';
-          _selectedBrand = vehicle['brand'] ?? '';
+          _brandController.text = vehicle['brand'] ?? '';
           _isLoading = false;
         });
       } else {
@@ -95,9 +94,8 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
       token: widget.token,
       registrationNumber: _registrationNumberController.text,
       chassisNumber: _chassisNumberController.text,
-      category: _categoryController.text,
       model: _modelController.text,
-      brand: _selectedBrand ?? '',
+      brand: _brandController.text,
       fuel: _fuelTypeController.text,
       mileage: 0, // TODO: let user enter mileage if needed
       year: 2025, // TODO: let user enter year if needed
@@ -106,6 +104,23 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
     if (!mounted) return;
 
     if (success) {
+      // Update the vehicle data in the provider
+      final vehicleProvider = Provider.of<VehicleProvider>(context, listen: false);
+      await vehicleProvider.updateVehicle(
+        widget.customerId,
+        widget.vehicleId,
+        {
+          'registrationNumber': _registrationNumberController.text,
+          'chassisNumber': _chassisNumberController.text,
+          'model': _modelController.text,
+          'brand': _brandController.text,
+          'fuel': _fuelTypeController.text,
+          'mileage': 0,
+          'year': 2025,
+        },
+        widget.token,
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vehicle updated successfully')),
       );
@@ -162,22 +177,11 @@ class _EditVehicledetailsPageState extends State<EditVehicledetailsPage> {
                       ),
                       const SizedBox(height: 32),
                       InputFieldAtom(
-                        label: 'Category',
-                        placeholder: 'Category',
-                        controller: _categoryController,
+                        label: 'Vehicle Brand',
+                        placeholder: 'Vehicle Brand',
+                        controller: _brandController,
                         keyboardType: TextInputType.text,
                         state: InputFieldState.defaultState,
-                      ),
-                      const SizedBox(height: 32),
-                      CustomDropdownField(
-                        label: "Vehicle Brand",
-                        items: ["Honda", "Benz", "BMW"],
-                        hintText: 'Choose a Brand',
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedBrand = val;
-                          });
-                        },
                       ),
                       const SizedBox(height: 32),
                       InputFieldAtom(

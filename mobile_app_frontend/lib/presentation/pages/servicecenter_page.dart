@@ -100,7 +100,7 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
       // Step 2: Call nearby API using Dio
       final dio = Dio();
       final response = await dio.get(
-        'http://10.10.13.168:5039/api/servicecenters/nearby',
+        'http://192.168.8.186:5039/api/servicecenters/nearby',
         queryParameters: {
           'lat': lat,
           'lng': lng,
@@ -143,7 +143,7 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
               .createAppointmentAndReturnId(appointment, widget.token);
           // Fetch appointment details (cost estimation)
           final detailsResponse = await dio.get(
-            'http://10.10.13.168:5039/api/Appointment/customer/${widget.customerId}/vehicle/${widget.vehicleId}/details/$appointmentId',
+            'http://192.168.8.186:5039/api/Appointment/customer/${widget.customerId}/vehicle/${widget.vehicleId}/details/$appointmentId',
             options:
                 Options(headers: {'Authorization': 'Bearer ${widget.token}'}),
           );

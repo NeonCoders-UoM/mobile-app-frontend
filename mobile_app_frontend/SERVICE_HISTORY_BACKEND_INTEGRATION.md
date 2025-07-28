@@ -8,7 +8,7 @@ The Service History feature expects the following API endpoints to be implemente
 
 ### Base Configuration
 
-- **Base URL**: `http://10.10.13.168:5039/api` (configured in `lib/core/config/api_config.dart`)
+- **Base URL**: `http://192.168.8.186:5039/api` (configured in `lib/core/config/api_config.dart`)
 - **Content-Type**: `application/json`
 - **Timeout**: 30 seconds
 
@@ -218,7 +218,7 @@ This will test:
 1. **Start your .NET Backend**
 
    ```bash
-   # Make sure your backend is running on http://10.10.13.168:5039
+   # Make sure your backend is running on http://192.168.8.186:5039
    dotnet run
    ```
 
@@ -268,7 +268,7 @@ static const String baseUrl = 'https://your-api-domain.com/api';
 
 ```dart
 // Development
-static const String devBaseUrl = 'http://10.10.13.168:5039/api';
+static const String devBaseUrl = 'http://192.168.8.186:5039/api';
 
 // Staging
 static const String stagingBaseUrl = 'https://staging-api.your-domain.com/api';
@@ -330,10 +330,10 @@ The frontend handles the following scenarios:
 
 ```bash
 # Test direct API access
-curl -X GET "http://10.10.13.168:5039/api/ServiceHistory/Vehicle/1" -H "Accept: application/json"
+curl -X GET "http://192.168.8.186:5039/api/ServiceHistory/Vehicle/1" -H "Accept: application/json"
 
 # Check if backend is running
-curl -X GET "http://10.10.13.168:5039/api/ServiceHistory" -H "Accept: application/json"
+curl -X GET "http://192.168.8.186:5039/api/ServiceHistory" -H "Accept: application/json"
 ```
 
 ## 📞 Support

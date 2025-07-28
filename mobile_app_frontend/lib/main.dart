@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (_) => VehicleProvider(
-            VehicleRepository('http://10.10.13.168:5039'), // TODO: Replace with actual base URL
+            VehicleRepository('http://192.168.8.186:5039'), // TODO: Replace with actual base URL
           ),
         ),
       ],
