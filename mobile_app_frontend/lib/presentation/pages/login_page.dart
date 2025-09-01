@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
-import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
+
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
@@ -8,6 +8,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/text_field.dar
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_field_state.dart';
 import 'package:mobile_app_frontend/presentation/pages/register_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/forgot_password_page.dart';
 import 'package:mobile_app_frontend/services/auth_service.dart';
 import 'package:mobile_app_frontend/core/services/local_storage.dart';
 
@@ -91,6 +92,13 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  void _navigateToForgotPassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,6 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                   controller: _passwordController,
                   keyboardType: TextInputType.visiblePassword,
                   state: _passwordFieldState,
+                  obscureText: _obscurePassword,
                   showTrailingIcon: true,
                   trailingIcon: _obscurePassword
                       ? Icons.visibility_off
@@ -138,6 +147,23 @@ class _LoginPageState extends State<LoginPage> {
                     setState(() =>
                         _passwordFieldState = InputFieldState.defaultState);
                   },
+                ),
+                const SizedBox(height: 8),
+                
+                // Forgot Password Link
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _navigateToForgotPassword,
+                    child: const Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -154,46 +180,10 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: _handleLogin,
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Center(
-                  child: Text(
-                    'Or Sign in with',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Colors.white54),
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {
-                          // TODO: Google sign in
-                        },
-                        icon: const Icon(Icons.g_mobiledata, size: 28),
-                        label: const Text('Google'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Colors.white54),
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {},
-                        icon: const Icon(Icons.apple, size: 28),
-                        label: const Text('Apple'),
-                      ),
-                    ),
-                  ],
-                ),
+
+                
+
+                
                 const SizedBox(height: 24),
                 Center(
                   child: Row(

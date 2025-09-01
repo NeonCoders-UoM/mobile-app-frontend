@@ -34,7 +34,7 @@ class LocalStorageService {
       };
     }
 
-    print('❌ No auth data found in storage');
+    // Removed debug print to avoid confusion
     return null;
   }
 
@@ -69,7 +69,7 @@ class LocalStorageService {
       };
     }
 
-    print('❌ No payment context found in storage');
+    // Removed debug print to avoid confusion
     return null;
   }
 
