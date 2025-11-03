@@ -9,7 +9,8 @@ class CustomButton extends StatefulWidget {
   final String label; // Button text
   final ButtonType type; // Primary, Secondary, or Text
   final ButtonSize size; // Small, Medium, or Large
-  final VoidCallback onTap; // Callback for when the button is tapped
+  final VoidCallback?
+      onTap; // Callback for when the button is tapped (nullable)
   final double? customWidth; // Optional custom width
   final double? customHeight; // Optional custom height
   final IconData? leadingIcon; // Optional leading icon
@@ -22,7 +23,7 @@ class CustomButton extends StatefulWidget {
     required this.label,
     required this.type,
     required this.size,
-    required this.onTap,
+    this.onTap,
     this.customWidth,
     this.customHeight,
     this.leadingIcon,
@@ -99,7 +100,7 @@ class _CustomButtonState extends State<CustomButton> {
         return AppColors.neutral100;
       case ButtonType.text:
         return Colors.transparent;
-      case ButtonType.danger: // Add handling for danger type
+      case ButtonType.danger:
         if (_currentState == ButtonState.active)
           return AppColors.states['overdue']!.withOpacity(0.8);
         if (_currentState == ButtonState.hover)
@@ -116,7 +117,7 @@ class _CustomButtonState extends State<CustomButton> {
         return AppColors.primary200;
       case ButtonType.text:
         return Colors.transparent;
-      case ButtonType.danger: // Add handling for danger type
+      case ButtonType.danger:
         return AppColors.states['overdue']!;
     }
   }
@@ -133,7 +134,7 @@ class _CustomButtonState extends State<CustomButton> {
         if (_currentState == ButtonState.active) return AppColors.primary100;
         if (_currentState == ButtonState.hover) return AppColors.primary300;
         return AppColors.primary200;
-      case ButtonType.danger: // Add handling for danger type
+      case ButtonType.danger:
         return AppColors.neutral100;
     }
   }
@@ -151,7 +152,7 @@ class _CustomButtonState extends State<CustomButton> {
         return AppColors.neutral300.withOpacity(0.3);
       case ButtonType.text:
         return AppColors.neutral300.withOpacity(0.3);
-      case ButtonType.danger: // Add handling for danger type
+      case ButtonType.danger:
         return AppColors.states['overdue']!.withOpacity(0.3);
     }
   }
@@ -182,7 +183,7 @@ class _CustomButtonState extends State<CustomButton> {
           setState(() {
             _currentState = ButtonState.active; // Active state on tap
           });
-          widget.onTap(); // Trigger the callback
+          widget.onTap?.call(); // Trigger the callback
         },
         splashColor: _getSplashColor(), // Ripple effect color
         borderRadius:
@@ -207,10 +208,15 @@ class _CustomButtonState extends State<CustomButton> {
                 ),
                 const SizedBox(width: 8.0), // Space between icon and text
               ],
-              // Button Label
-              Text(
-                widget.label,
-                style: _getTextStyle(),
+              // Button Label with truncation
+              Flexible(
+                child: Text(
+                  widget.label,
+                  style: _getTextStyle(),
+                  overflow: TextOverflow
+                      .ellipsis, // Truncate with ellipsis if too long
+                  maxLines: 1, // Ensure single line
+                ),
               ),
               // Trailing Icon (if enabled and provided)
               if (widget.showTrailingIcon && widget.trailingIcon != null) ...[

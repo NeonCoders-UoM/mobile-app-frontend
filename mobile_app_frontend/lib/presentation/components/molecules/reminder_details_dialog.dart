@@ -18,6 +18,7 @@ class ReminderDetailsDialog extends StatelessWidget {
   final VoidCallback onDelete;
   final Map<String, dynamic> reminder; // Add the full reminder data
   final int index;
+  final String? token; // Add token parameter
 
   const ReminderDetailsDialog({
     Key? key,
@@ -31,6 +32,7 @@ class ReminderDetailsDialog extends StatelessWidget {
     required this.onDelete,
     required this.reminder,
     required this.index,
+    this.token, // Add token to constructor
   }) : super(key: key);
 
   // Helper method to get status text and color
@@ -85,32 +87,43 @@ class ReminderDetailsDialog extends StatelessWidget {
         children: [
           // Title and Status Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title ?? 'Untitled',
-                style: AppTextStyles.textLgSemibold.copyWith(
-                  color: AppColors.neutral100,
+              Expanded(
+                flex: 2,
+                child: Text(
+                  title,
+                  style: AppTextStyles.textLgSemibold.copyWith(
+                    color: AppColors.neutral100,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
-              Row(
-                children: [
-                  Container(
-                    width: 11.0,
-                    height: 11.0,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: statusInfo.color,
+              const SizedBox(width: 8.0),
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 11.0,
+                      height: 11.0,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: statusInfo.color,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4.0),
-                  Text(
-                    statusInfo.label,
-                    style: AppTextStyles.textXsmRegular.copyWith(
-                      color: statusInfo.color,
+                    const SizedBox(width: 4.0),
+                    Flexible(
+                      child: Text(
+                        statusInfo.label,
+                        style: AppTextStyles.textXsmRegular.copyWith(
+                          color: statusInfo.color,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -138,6 +151,7 @@ class ReminderDetailsDialog extends StatelessWidget {
                       builder: (context) => EditReminderPage(
                         reminder: reminder,
                         index: index,
+                        token: token,
                       ),
                     ),
                   );

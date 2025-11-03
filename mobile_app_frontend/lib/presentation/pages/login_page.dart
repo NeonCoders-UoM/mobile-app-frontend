@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
+
+import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
+import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/text_field.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_field_state.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
-import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
+import 'package:mobile_app_frontend/presentation/pages/register_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/forgot_password_page.dart';
+import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'package:mobile_app_frontend/core/services/local_storage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -17,6 +23,9 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+  final _authService = AuthService();
+
   InputFieldState _emailFieldState = InputFieldState.defaultState;
   InputFieldState _passwordFieldState = InputFieldState.defaultState;
 
@@ -26,23 +35,68 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void _handleLogin() {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        _emailFieldState = email.isEmpty
-            ? InputFieldState.error
-            : InputFieldState.defaultState;
-        _passwordFieldState = password.isEmpty
-            ? InputFieldState.error
-            : InputFieldState.defaultState;
-      });
+  Future<void> _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
       return;
     }
 
-    print('Logging in with email: $email and password: $password');
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result = await _authService.loginCustomer(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (result != null) {
+      final token = result['token'];
+      final customerId = result['customerId'];
+
+      // Save authentication data to local storage
+      await LocalStorageService.saveAuthData(
+        token: token,
+        customerId: customerId,
+      );
+
+      print('💾 Authentication data saved after login');
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VehicleDetailsHomePage(
+            customerId: customerId,
+            token: token,
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Invalid credentials or email not verified')),
+      );
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _navigateToRegister() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const RegisterPage()),
+    );
+  }
+
+  void _navigateToForgotPassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+    );
   }
 
   @override
@@ -83,6 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                   controller: _passwordController,
                   keyboardType: TextInputType.visiblePassword,
                   state: _passwordFieldState,
+                  obscureText: _obscurePassword,
                   showTrailingIcon: true,
                   trailingIcon: _obscurePassword
                       ? Icons.visibility_off
@@ -92,6 +147,23 @@ class _LoginPageState extends State<LoginPage> {
                     setState(() =>
                         _passwordFieldState = InputFieldState.defaultState);
                   },
+                ),
+                const SizedBox(height: 8),
+                
+                // Forgot Password Link
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _navigateToForgotPassword,
+                    child: const Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -108,48 +180,10 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: _handleLogin,
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Center(
-                  child: Text(
-                    'Or Signup with',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Colors.white54),
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {
-                          // TODO: Google sign in
-                        },
-                        icon: const Icon(Icons.g_mobiledata, size: 28),
-                        label: const Text('Google'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Colors.white54),
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {
-                          // TODO: Apple sign in
-                        },
-                        icon: const Icon(Icons.apple, size: 28),
-                        label: const Text('Apple'),
-                      ),
-                    ),
-                  ],
-                ),
+
+                
+
+                
                 const SizedBox(height: 24),
                 Center(
                   child: Row(
@@ -160,9 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       GestureDetector(
-                        onTap: () {
-                          // Navigate to Signup Page
-                        },
+                        onTap: _navigateToRegister,
                         child: const Text(
                           'Get Started',
                           style: TextStyle(
