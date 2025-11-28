@@ -35,6 +35,7 @@ class PaymentRepository {
       options: Options(headers: {'Authorization': 'Bearer $token'}),
       data: {
         'appointmentId': appointmentId,
+        'customerId': customerId,
         'vehicleId': vehicleId,
         'userEmail': userEmail,
         'userName': userName,
