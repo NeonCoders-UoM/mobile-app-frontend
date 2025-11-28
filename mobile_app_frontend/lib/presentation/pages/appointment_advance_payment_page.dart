@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
@@ -10,8 +9,7 @@ import 'package:mobile_app_frontend/data/models/advance_payment_model.dart';
 import 'package:mobile_app_frontend/data/repositories/payment_repository.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_payment_success_page.dart';
 import 'package:dio/dio.dart';
-import 'dart:convert';
-import 'dart:html' as html;
+import 'package:payhere_mobilesdk_flutter/payhere_mobilesdk_flutter.dart';
 
 class AppointmentAdvancePaymentPage extends StatefulWidget {
   final int customerId;
@@ -92,35 +90,69 @@ class _AppointmentAdvancePaymentPageState
         token: widget.token,
       );
 
-      if (kIsWeb) {
-        // For web, redirect to PayHere
-        final payHereUrl = sessionData['payHereUrl'];
-        final paymentFields =
-            sessionData['paymentFields'] as Map<String, dynamic>;
+      // Use PayHere mobile SDK for in-app payment
+      final paymentFields = sessionData['paymentFields'] as Map<String, dynamic>;
+      
+      // Prepare payment object for PayHere SDK
+      final paymentObject = {
+        "sandbox": true,
+        "merchant_id": paymentFields['merchant_id'],
+        "notify_url": paymentFields['notify_url'],
+        "order_id": paymentFields['order_id'],
+        "items": paymentFields['items'],
+        "amount": paymentFields['amount'],
+        "currency": paymentFields['currency'],
+        "first_name": paymentFields['first_name'],
+        "last_name": paymentFields['last_name'] ?? '',
+        "email": paymentFields['email'],
+        "phone": paymentFields['phone'],
+        "address": paymentFields['address'],
+        "city": paymentFields['city'],
+        "country": paymentFields['country'],
+        "hash": paymentFields['hash'],
+      };
 
-        // Create and submit form to PayHere
-        final form = html.FormElement();
-        form.method = 'POST';
-        form.action = payHereUrl;
+      setState(() {
+        isLoading = false;
+      });
 
-        paymentFields.forEach((key, value) {
-          final input = html.InputElement();
-          input.name = key;
-          input.value = value.toString();
-          form.append(input);
-        });
-
-        html.document.body!.append(form);
-        form.submit();
-        form.remove();
-      } else {
-        // For mobile, show payment method selection or use webview
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Payment gateway integration for mobile coming soon')),
-        );
-      }
+      // Start PayHere payment within the app
+      PayHere.startPayment(
+        paymentObject,
+        (paymentId) async {
+          // Payment successful
+          if (!mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => AppointmentPaymentSuccessPage(
+                appointmentId: widget.appointmentId,
+                customerId: widget.customerId,
+                vehicleId: widget.vehicleId,
+                token: widget.token,
+              ),
+            ),
+          );
+        },
+        (error) {
+          // Payment failed
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Payment failed: $error'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        },
+        () {
+          // Payment cancelled
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment cancelled'),
+            ),
+          );
+        },
+      );
     } catch (e) {
       setState(() {
         errorMessage = e.toString();
