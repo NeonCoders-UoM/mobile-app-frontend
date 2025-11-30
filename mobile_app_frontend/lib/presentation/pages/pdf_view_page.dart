@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
-import 'dart:html' as html;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_app_frontend/data/repositories/service_history_repository.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/enter_payment_details_page.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
@@ -234,7 +234,7 @@ class _PdfViewPageState extends State<PdfViewPage> {
   void _viewPdf() async {
     final url = _repository.getServiceHistoryPdfPreviewUrl(widget.vehicleId);
     if (kIsWeb) {
-      html.window.open(url, '_blank');
+      WebUtils.openUrlInNewTab(url);
     } else {
       if (await canLaunch(url)) {
         await launch(url);
@@ -254,12 +254,10 @@ class _PdfViewPageState extends State<PdfViewPage> {
         token: widget.token,
       );
       if (kIsWeb) {
-        final blob = html.Blob([pdfBytes], 'application/pdf');
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', 'service_history_${widget.vehicleId}.pdf')
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        WebUtils.downloadFile(
+          pdfBytes,
+          'service_history_${widget.vehicleId}.pdf',
+        );
       } else {
         // For mobile, you can use path_provider and open_file/share_plus to save and open the file
         // For now, just show a snackbar

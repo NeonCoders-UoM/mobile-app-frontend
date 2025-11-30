@@ -93,7 +93,7 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://localhost:5039/api/Services'), // <-- Replace with your backend URL
+            'http://192.168.8.161:5039/api/Services'), // Backend URL for actual devices
         headers: {
           'Content-Type': 'application/json',
           if (widget.token != null) 'Authorization': 'Bearer ${widget.token}',

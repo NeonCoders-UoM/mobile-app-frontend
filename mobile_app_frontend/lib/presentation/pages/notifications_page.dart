@@ -51,7 +51,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://localhost:5039/api/Notifications/Customer/${widget.customerId}'),
+            'http://192.168.8.161:5039/api/Notifications/Customer/${widget.customerId}'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://localhost:5039/api/Notifications/Customer/${widget.customerId}'),
+            'http://192.168.8.161:5039/api/Notifications/Customer/${widget.customerId}'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json',

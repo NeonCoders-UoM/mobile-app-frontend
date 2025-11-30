@@ -8,7 +8,7 @@ class NotificationService {
     required String token,
   }) async {
     final url = Uri.parse(
-        'http://localhost:5039/api/Notifications'); // <-- Replace with your backend URL
+        'http://192.168.8.161:5039/api/Notifications'); // Backend URL for actual devices
     // PRINT the data you are about to send
     print('Sending notification to backend: ' + notificationData.toString());
     final response = await http.post(
@@ -32,7 +32,7 @@ class NotificationService {
     required String token,
   }) async {
     final url = Uri.parse(
-        'http://localhost:5039/api/Notifications/$notificationId'); // <-- Replace with your backend URL
+        'http://192.168.8.161:5039/api/Notifications/$notificationId'); // Backend URL for actual devices
     final response = await http.delete(
       url,
       headers: {
@@ -52,7 +52,7 @@ class NotificationService {
     required String token,
   }) async {
     final url = Uri.parse(
-        'http://localhost:5039/api/Notifications/$notificationId/MarkAsRead');
+        'http://192.168.8.161:5039/api/Notifications/$notificationId/MarkAsRead');
     final response = await http.put(
       url,
       headers: {
@@ -71,7 +71,7 @@ class NotificationService {
     required String token,
   }) async {
     final url = Uri.parse(
-        'http://localhost:5039/api/Notifications/Customer/$customerId/MarkAllAsRead');
+        'http://192.168.8.161:5039/api/Notifications/Customer/$customerId/MarkAllAsRead');
     final response = await http.put(
       url,
       headers: {
@@ -89,7 +89,7 @@ class NotificationService {
     required String token,
   }) async {
     final url = Uri.parse(
-        'http://localhost:5039/api/Notifications/GenerateFromServiceReminders');
+        'http://192.168.8.161:5039/api/Notifications/GenerateFromServiceReminders');
     final response = await http.post(
       url,
       headers: {

@@ -17,9 +17,37 @@ pluginManagement {
 }
 
 plugins {
-    id "com.android.application" version "8.1.1" apply false
-    id "com.android.library" version "8.1.1" apply false
-    id "org.jetbrains.kotlin.android" version "1.9.0" apply false
+    id "com.android.application" version "8.6.0" apply false
+    id "com.android.library" version "8.6.0" apply false
+    id "org.jetbrains.kotlin.android" version "2.0.0" apply false
 }
 
 include ":app"
+
+// Manually include plugin modules since Flutter Gradle plugin isn't doing it
+include ":file_picker"
+project(":file_picker").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/file_picker-10.3.7/android")
+
+include ":flutter_pdfview"
+project(":flutter_pdfview").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_pdfview-1.4.3/android")
+
+include ":flutter_plugin_android_lifecycle"
+project(":flutter_plugin_android_lifecycle").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.28/android")
+
+include ":geolocator_android"
+project(":geolocator_android").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/geolocator_android-4.6.2/android")
+
+include ":google_maps_flutter_android"
+project(":google_maps_flutter_android").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/google_maps_flutter_android-2.17.0/android")
+
+include ":path_provider_android"
+project(":path_provider_android").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/path_provider_android-2.2.16/android")
+
+include ":payhere_mobilesdk_flutter"
+project(":payhere_mobilesdk_flutter").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/payhere_mobilesdk_flutter-3.2.1/android")
+
+include ":shared_preferences_android"
+project(":shared_preferences_android").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_android-2.4.9/android")
+
+include ":url_launcher_android"
+project(":url_launcher_android").projectDir = new File("C:/Users/Hello/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher_android-6.3.16/android")

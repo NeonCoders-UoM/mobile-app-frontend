@@ -52,30 +52,57 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
       "merchant_secret":
           "MzQxNjgzNzU1NTE2ODA1MjMzMzM0MjkwNzU3OTIyMjMxMTY0NjcyNQ==",
       "notify_url":
-          "https://sandbox.payhere.lk/notify", // Your server notify endpoint (must be publicly accessible)
+          "http://192.168.8.161:5039/api/payhere/notify", // Your server notify endpoint (must be publicly accessible)
       "order_id":
           "vehicle_${widget.vehicleId}_${DateTime.now().millisecondsSinceEpoch}",
       "items": "Service History PDF",
       "amount": "500.00",
       "currency": "LKR",
-      "first_name": widget.customerName,
-      "last_name": "", // Optional
+      "first_name": widget.customerName.split(' ').first,
+      "last_name": widget.customerName.split(' ').length > 1
+          ? widget.customerName.split(' ').sublist(1).join(' ')
+          : "",
       "email": widget.customerEmail,
-      "phone": "0771234567", // Optional
-      "address": "Colombo",
+      "phone": "0771234567",
+      "address": "No.1, Galle Road",
       "city": "Colombo",
       "country": "Sri Lanka",
-      "delivery_address": "Colombo",
-      "delivery_city": "Colombo",
-      "delivery_country": "Sri Lanka",
-      "custom_1": "",
-      "custom_2": ""
     };
+
+    // Debug logging
+    print('🔍 ========== PAYHERE PAYMENT DEBUG ==========');
+    print('🔍 Merchant ID: ${paymentObject["merchant_id"]}');
+    print(
+        '🔍 Merchant Secret: ${paymentObject["merchant_secret"]?.toString().substring(0, 10)}...');
+    print('🔍 Notify URL: ${paymentObject["notify_url"]}');
+    print('🔍 Order ID: ${paymentObject["order_id"]}');
+    print('🔍 Amount: ${paymentObject["amount"]} ${paymentObject["currency"]}');
+    print(
+        '🔍 Customer: ${paymentObject["first_name"]} ${paymentObject["last_name"]}');
+    print('🔍 Email: ${paymentObject["email"]}');
+    print('🔍 ==========================================');
+
+    // Validation: Check if merchant secret is still placeholder
+    if (paymentObject["merchant_secret"] ==
+        "YOUR_ACTUAL_MERCHANT_SECRET_HERE") {
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              '⚠️ Please update merchant secret in payhere_payment_page.dart!'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 5),
+        ),
+      );
+      print('❌ ERROR: Merchant secret not configured!');
+      return;
+    }
 
     setState(() {
       _isProcessing = true;
     });
 
+    print('🚀 Initiating PayHere payment...');
     PayHere.startPayment(
       paymentObject,
       (paymentId) async {

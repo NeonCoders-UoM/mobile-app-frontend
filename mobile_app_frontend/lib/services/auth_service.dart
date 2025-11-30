@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String _baseUrl = 'http://localhost:5039/api';
+  final String _baseUrl = 'http://192.168.8.161:5039/api';
 
   Future<bool> registerCustomer({
     required String firstName,
@@ -429,7 +429,8 @@ class AuthService {
         print('✅ Forgot password OTP sent successfully');
         return true;
       } else {
-        print('❌ Forgot password failed: ${response.statusCode} ${response.body}');
+        print(
+            '❌ Forgot password failed: ${response.statusCode} ${response.body}');
         return false;
       }
     } catch (e) {
@@ -464,7 +465,8 @@ class AuthService {
         print('✅ Password reset successfully');
         return true;
       } else {
-        print('❌ Password reset failed: ${response.statusCode} ${response.body}');
+        print(
+            '❌ Password reset failed: ${response.statusCode} ${response.body}');
         return false;
       }
     } catch (e) {
@@ -490,7 +492,8 @@ class AuthService {
         print('✅ Forgot password OTP resent successfully');
         return true;
       } else {
-        print('❌ Resend forgot password OTP failed: ${response.statusCode} ${response.body}');
+        print(
+            '❌ Resend forgot password OTP failed: ${response.statusCode} ${response.body}');
         return false;
       }
     } catch (e) {

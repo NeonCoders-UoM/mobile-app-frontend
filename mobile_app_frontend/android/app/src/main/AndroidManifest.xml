@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.mobile_app_frontend">
 
     <!-- Permissions -->
@@ -17,7 +18,8 @@
     <application
         android:label="mobile_app_frontend"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        tools:replace="android:label">
 
         <!-- Google Maps API Key -->
         <meta-data

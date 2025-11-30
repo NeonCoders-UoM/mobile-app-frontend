@@ -101,7 +101,7 @@ class _ServiceCenterPageState extends State<ServiceCenterPage> {
       // Step 2: Call nearby API using Dio with appointment date
       final dio = Dio();
       final response = await dio.get(
-        'http://localhost:5039/api/servicecenters/nearby',
+        'http://192.168.8.161:5039/api/servicecenters/nearby',
         queryParameters: {
           'lat': lat,
           'lng': lng,

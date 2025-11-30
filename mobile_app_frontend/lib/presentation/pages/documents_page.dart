@@ -1,6 +1,5 @@
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:convert';
-import 'dart:html' as html;
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 
@@ -17,6 +16,7 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_html/flutter_html.dart';
+import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
 
 class Document {
   final int documentId;
@@ -93,7 +93,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> fetchVehicleDetails() async {
     final url =
-        'http://localhost:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
+        'http://192.168.8.161:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -114,7 +114,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> fetchDocuments() async {
     final url =
-        'http://localhost:5039/api/documents/listByVehicle/${widget.customerId}/${widget.vehicleId}';
+        'http://192.168.8.161:5039/api/documents/listByVehicle/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -140,12 +140,14 @@ class _DocumentsPageState extends State<DocumentsPage> {
     try {
       final response = await http.get(Uri.parse(downloadUrl));
       if (response.statusCode == 200) {
-        final blob = html.Blob([response.bodyBytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', fileName)
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        if (kIsWeb) {
+          WebUtils.downloadFile(response.bodyBytes, fileName);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Download not supported on mobile yet')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -163,7 +165,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Future<void> deleteDocument(
       int documentId, String fileName, String title) async {
     final url =
-        'http://localhost:5039/api/documents/delete?documentId=$documentId';
+        'http://192.168.8.161:5039/api/documents/delete?documentId=$documentId';
     try {
       final response = await http.delete(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -228,9 +230,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
   void previewDocument(
       String fileUrl, String title, String fileName, int documentId) {
     final previewUrl =
-        'http://localhost:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
+        'http://192.168.8.161:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
     final downloadUrl =
-        'http://localhost:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
+        'http://192.168.8.161:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
 
     final fileExtension = fileName.toLowerCase().split('.').last;
     final isSupportedType =
@@ -454,7 +456,8 @@ class FullScreenDocumentPreview extends StatelessWidget {
       body: isImage
           ? Image.network(previewUrl)
           : Html(
-              data: '<iframe src="$previewUrl" width="100%" height="600px" style="border:none;"></iframe>',
+              data:
+                  '<iframe src="$previewUrl" width="100%" height="600px" style="border:none;"></iframe>',
             ),
     );
   }
@@ -515,7 +518,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
 
     setState(() => isUploading = true);
 
-    final url = 'http://localhost:5039/api/documents/upload';
+    final url = 'http://192.168.8.161:5039/api/documents/upload';
     final request = http.MultipartRequest('POST', Uri.parse(url));
 
     request.fields['customerId'] = widget.customerId.toString();

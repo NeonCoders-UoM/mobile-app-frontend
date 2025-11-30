@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.mobile_app_frontend"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -16,7 +16,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
@@ -35,10 +35,25 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Manually add all plugin projects since Flutter Gradle plugin isn't providing them
+    implementation project(':file_picker')
+    implementation project(':flutter_pdfview')
+    implementation project(':flutter_plugin_android_lifecycle')
+    implementation project(':geolocator_android')
+    implementation project(':google_maps_flutter_android')
+    implementation project(':path_provider_android')
+    implementation project(':payhere_mobilesdk_flutter')
+    implementation project(':shared_preferences_android')
+    implementation project(':url_launcher_android')
 }

@@ -1,10 +1,12 @@
 class ApiConfig {
   // Backend API base URL
   // Change this to your actual backend URL
-  static const String baseUrl = 'http://localhost:5039/api';
+  // For actual devices, use your computer's local IP: 192.168.8.161
+  // For web/emulator, use localhost
+  static const String baseUrl = 'http://192.168.8.161:5039/api';
 
   // Alternative configurations for different environments
-  static const String devBaseUrl = 'http://localhost:5039/api';
+  static const String devBaseUrl = 'http://192.168.8.161:5039/api';
   static const String stagingBaseUrl =
       'https://staging-api.your-domain.com/api';
   static const String prodBaseUrl = 'https://api.your-domain.com/api';

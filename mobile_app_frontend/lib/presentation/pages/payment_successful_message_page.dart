@@ -1,5 +1,5 @@
-import 'dart:html' as html;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
@@ -8,6 +8,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/successful-mes
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 import 'package:mobile_app_frontend/data/repositories/service_history_repository.dart';
 import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
+import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
 import 'package:mobile_app_frontend/core/services/local_storage.dart';
 
 class PaymentSuccessfulMessagePage extends StatefulWidget {
@@ -62,12 +63,17 @@ class _PaymentSuccessfulMessagePageState
         token: widget.token,
       );
 
-      final blob = html.Blob([pdfBytes], 'application/pdf');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'service_history_${widget.vehicleId}.pdf')
-        ..click();
-      html.Url.revokeObjectUrl(url);
+      if (kIsWeb) {
+        WebUtils.downloadFile(
+          pdfBytes,
+          'service_history_${widget.vehicleId}.pdf',
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Download not supported on mobile yet')),
+        );
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

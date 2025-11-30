@@ -10,7 +10,7 @@ import 'package:mobile_app_frontend/presentation/components/molecules/service_hi
 import 'package:mobile_app_frontend/presentation/pages/add_unverified_service_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/payhere_payment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/payment_success_page.dart';
-import 'dart:html' as html;
+import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
@@ -56,9 +56,10 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
       final uri = Uri.base;
       final orderIdFromUrl = uri.queryParameters['order_id'];
       if (orderIdFromUrl != null && orderIdFromUrl.isNotEmpty) {
-        html.window
-                .localStorage['service_history_order_id_${widget.vehicleId}'] =
-            orderIdFromUrl;
+        WebUtils.setLocalStorage(
+          'service_history_order_id_${widget.vehicleId}',
+          orderIdFromUrl,
+        );
         _orderId = orderIdFromUrl;
       }
     }
@@ -90,11 +91,10 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
   Future<void> _checkPaymentStatus() async {
     // Try to get orderId from local storage (web) or state
     String? orderId = _orderId;
-    if (orderId == null &&
-        html.window.localStorage
-            .containsKey('service_history_order_id_${widget.vehicleId}')) {
-      orderId = html
-          .window.localStorage['service_history_order_id_${widget.vehicleId}'];
+    if (orderId == null && kIsWeb) {
+      orderId = WebUtils.getLocalStorage(
+        'service_history_order_id_${widget.vehicleId}',
+      );
     }
     if (orderId == null) {
       setState(() {
@@ -104,7 +104,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
     }
     final response = await http.get(
       Uri.parse(
-          'http://localhost:5039/api/payhere/payment-status?orderId=$orderId'),
+          'http://192.168.8.161:5039/api/payhere/payment-status?orderId=$orderId'),
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -147,12 +147,10 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
           .downloadServiceHistoryPdf(widget.vehicleId, token: widget.token);
 
       if (kIsWeb) {
-        final blob = html.Blob([pdfBytes], 'application/pdf');
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', 'service_history_${widget.vehicleId}.pdf')
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        WebUtils.downloadFile(
+          pdfBytes,
+          'service_history_${widget.vehicleId}.pdf',
+        );
       } else {
         // Implement mobile file saving / opening if needed
         ScaffoldMessenger.of(context).showSnackBar(
@@ -176,7 +174,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
     if (kIsWeb) {
       // 1. Call backend to create PayHere session
       final response = await http.post(
-        Uri.parse('http://localhost:5039/api/payhere/create-session'),
+        Uri.parse('http://192.168.8.161:5039/api/payhere/create-session'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'vehicleId': widget.vehicleId,
@@ -190,25 +188,18 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
         final paymentFields = data['paymentFields'] as Map<String, dynamic>;
         final orderId = data['orderId'];
         // Store orderId for later payment status checks
-        html.window
-                .localStorage['service_history_order_id_${widget.vehicleId}'] =
-            orderId;
+        WebUtils.setLocalStorage(
+          'service_history_order_id_${widget.vehicleId}',
+          orderId,
+        );
         setState(() {
           _orderId = orderId;
         });
         // 2. Create and submit a form to PayHere
-        final form = html.FormElement();
-        form.method = 'POST';
-        form.action = payHereUrl;
-        paymentFields.forEach((key, value) {
-          final input = html.InputElement();
-          input.name = key;
-          input.value = value.toString();
-          form.append(input);
-        });
-        html.document.body!.append(form);
-        form.submit();
-        form.remove();
+        final fields = Map<String, String>.fromEntries(
+          paymentFields.entries.map((e) => MapEntry(e.key, e.value.toString())),
+        );
+        WebUtils.submitForm(payHereUrl, fields);
         // 3. After payment, user will be redirected to /payment-success?order_id=...
         //    You need to handle this in your frontend router/page.
         // Optionally, you can navigate to PaymentSuccessPage manually if you want to support SPA routing.
