@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/payment_service.dart';
 
 /// Example screen for itemized service payment
-/// 
+///
 /// This demonstrates how to pay for multiple service items
 /// (parts + labor) in a single payment
 class ItemizedPaymentScreen extends StatefulWidget {
@@ -226,7 +226,8 @@ class _ItemizedPaymentScreenState extends State<ItemizedPaymentScreen> {
                         const SizedBox(height: 16),
 
                         // Items List
-                        ...widget.serviceItems.map((item) => _buildItemCard(item)),
+                        ...widget.serviceItems
+                            .map((item) => _buildItemCard(item)),
 
                         const Divider(height: 32, thickness: 2),
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/payment_service.dart';
 
 /// Example payment screen for service appointments
-/// 
+///
 /// This demonstrates how to integrate PayHere payment in your app
 class PaymentScreen extends StatefulWidget {
   final String appointmentId;

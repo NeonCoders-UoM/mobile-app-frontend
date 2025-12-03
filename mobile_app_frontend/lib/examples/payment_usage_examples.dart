@@ -105,7 +105,8 @@ void processQuickPayment(BuildContext context, CustomerInfo customer) async {
 }
 
 // Example 4: Recurring subscription payment
-void processRecurringPayment(BuildContext context, CustomerInfo customer) async {
+void processRecurringPayment(
+    BuildContext context, CustomerInfo customer) async {
   await PaymentService.makeRecurringPayment(
     orderId: "SUB-${DateTime.now().millisecondsSinceEpoch}",
     description: "Monthly Premium Membership",

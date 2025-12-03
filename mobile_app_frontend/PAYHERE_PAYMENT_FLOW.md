@@ -83,6 +83,7 @@
 ## Payment Types Flow
 
 ### 1. One-Time Payment
+
 ```
 User → Payment Form → PayHere SDK → Payment → Success/Error
                                       ↓
@@ -90,17 +91,19 @@ User → Payment Form → PayHere SDK → Payment → Success/Error
 ```
 
 ### 2. Itemized Payment
+
 ```
 User → Service Items List → Calculate Total → PayHere SDK → Payment
               ↓
      Item 1: Oil Change
-     Item 2: Brake Service  
+     Item 2: Brake Service
      Item 3: Labor
               ↓
          Total Amount
 ```
 
 ### 3. Recurring Payment
+
 ```
 User → Subscription Form → Set Recurrence → PayHere SDK
                               ↓
@@ -112,6 +115,7 @@ User → Subscription Form → Set Recurrence → PayHere SDK
 ```
 
 ### 4. Hold-on-Card (Authorization)
+
 ```
 User → Authorization → PayHere SDK → Card Hold → Success
                                          ↓
@@ -121,6 +125,7 @@ User → Authorization → PayHere SDK → Card Hold → Success
 ```
 
 ### 5. Tokenization (Save Card)
+
 ```
 User → Save Card → PayHere SDK → Card Tokenized → Token ID
                                         ↓
@@ -308,27 +313,32 @@ Your Backend Endpoint (notify_url)
 ## Quick Reference
 
 ### Payment Methods
+
 - ✅ Credit/Debit Cards (Visa, Mastercard, Amex)
 - ✅ Mobile Banking (Sri Lankan banks)
 - ✅ Digital Wallets
 
 ### Currencies Supported
+
 - LKR (Sri Lankan Rupee)
 - USD (US Dollar)
 - GBP, EUR, AUD (and more)
 
 ### Supported Platforms
+
 - ✅ Android (API 17+)
 - ✅ iOS (11.0+)
 - ✅ Flutter (1.20.0+)
 
 ### Transaction Limits
+
 - Check with PayHere for merchant-specific limits
 - Default: LKR 1.00 to LKR 1,000,000 per transaction
 
 ---
 
 For implementation details, see:
+
 - `PAYHERE_QUICK_START.md` - Get started quickly
 - `PAYHERE_INTEGRATION_COMPLETE.md` - Complete documentation
 - `lib/examples/payment_usage_examples.dart` - Code examples
