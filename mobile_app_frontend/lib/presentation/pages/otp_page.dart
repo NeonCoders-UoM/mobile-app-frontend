@@ -38,6 +38,7 @@ class _OtpPageState extends State<OtpPage> {
   String message = "OTP expired. Please request a new code.";
   Timer? _timer;
   final _authService = AuthService();
+  final GlobalKey<OtpInputFieldState> _otpInputKey = GlobalKey<OtpInputFieldState>();
 
   @override
   void initState() {
@@ -76,13 +77,21 @@ class _OtpPageState extends State<OtpPage> {
   void _resendCode() {
     setState(() {
       otpValues = List.filled(6, '');
+      status = OtpStatus.initial;
+      message = "OTP expired. Please request a new code.";
     });
+    // Clear the OTP input fields and focus the first field
+    _otpInputKey.currentState?.clearAllFields();
     _startCountdown();
   }
 
   Future<void> _submitOtp() async {
     String enteredOtp = otpValues.join();
     final success = await _authService.verifyOtp(widget.email, enteredOtp);
+    
+    // Check if widget is still mounted before using context
+    if (!mounted) return;
+    
     if (success) {
       // ✅ Navigate with data to PersonaldetailsPage
       Navigator.pushReplacement(
@@ -134,6 +143,7 @@ class _OtpPageState extends State<OtpPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               OtpInputField(
+                key: _otpInputKey,
                 status: status,
                 otpValues: otpValues,
                 message: message,

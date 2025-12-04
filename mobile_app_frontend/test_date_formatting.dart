@@ -27,7 +27,7 @@ void testDateScenarios() {
     try {
       final model = FuelEfficiencyModel(
         vehicleId: 1,
-        fuelDate: testDate,
+        date: testDate, // changed from fuelDate to date
         fuelAmount: 40.0,
         notes: 'Test ${i + 1}',
       );

@@ -19,6 +19,9 @@ import 'package:mobile_app_frontend/presentation/pages/personal_details_page.dar
 import 'package:mobile_app_frontend/presentation/pages/notifications_page.dart';
 import 'package:mobile_app_frontend/presentation/components/vehicle_switcher.dart';
 import 'package:mobile_app_frontend/state/providers/vehicle_provider.dart';
+import 'package:mobile_app_frontend/data/repositories/vehicle_repository.dart';
+import 'package:mobile_app_frontend/core/models/vehicle.dart';
+import 'package:mobile_app_frontend/core/services/local_storage.dart';
 
 class VehicleDetailsHomePage extends StatefulWidget {
   final int customerId;
@@ -95,9 +98,10 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
     );
   }
 
-  void _performLogout() {
-    // Clear any stored tokens or session data
-    // TODO: Implement actual logout logic (clear SharedPreferences, etc.)
+  void _performLogout() async {
+    // Clear stored tokens and session data
+    await LocalStorageService.clearAuthData();
+    print('🗑️ Authentication data cleared during logout');
 
     // Navigate to login page and clear navigation stack
     Navigator.of(context).pushAndRemoveUntil(
@@ -111,22 +115,86 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
     return Consumer<VehicleProvider>(
       builder: (context, vehicleProvider, child) {
         final selectedVehicle = vehicleProvider.selectedVehicle;
-        if (vehicleProvider.vehicles.isEmpty) {
+        final isLoading = vehicleProvider.isLoading;
+        final vehicles = vehicleProvider.vehicles;
+
+        // Show loading screen while vehicles are being loaded
+        if (isLoading) {
           return const Scaffold(
             backgroundColor: AppColors.neutral400,
             body: Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
             ),
           );
         }
+
+        // Show message if no vehicles are available
+        if (vehicles.isEmpty) {
+          return Scaffold(
+            backgroundColor: AppColors.neutral400,
+            body: SafeArea(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.directions_car_outlined,
+                      size: 64,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No vehicles found',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Please add a vehicle to get started',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Show add vehicle dialog
+                        showDialog(
+                          context: context,
+                          builder: (context) => AddVehicleDialog(
+                            customerId: widget.customerId,
+                            token: widget.token,
+                          ),
+                        );
+                      },
+                      child: const Text('Add Vehicle'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Show error if no vehicle is selected (shouldn't happen with our logic)
         if (selectedVehicle == null) {
           return const Scaffold(
             backgroundColor: AppColors.neutral400,
             body: Center(
-              child: Text('No vehicles found. Please add a vehicle.'),
+              child: Text(
+                'Error: No vehicle selected',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           );
         }
+
         return Scaffold(
           backgroundColor: AppColors.neutral400,
           body: SafeArea(
@@ -135,7 +203,8 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                 children: [
                   // --- Modern AppBar Section ---
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -247,11 +316,9 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               VehicleDetailRow(
-                                  label: "Brand",
-                                  value: selectedVehicle.brand),
+                                  label: "Brand", value: selectedVehicle.brand),
                               VehicleDetailRow(
-                                  label: "Model",
-                                  value: selectedVehicle.model),
+                                  label: "Model", value: selectedVehicle.model),
                               VehicleDetailRow(
                                   label: "Chassis Number",
                                   value: selectedVehicle.chassisNumber),
@@ -312,6 +379,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                               vehicleRegistration:
                                   selectedVehicle.registrationNumber,
                               token: widget.token,
+                              customerId: widget.customerId,
                             )),
                         _iconWithLabel(
                             context,

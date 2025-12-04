@@ -7,9 +7,7 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
+
 import 'package:mobile_app_frontend/presentation/pages/account_deleted_page.dart';
 import 'package:mobile_app_frontend/services/auth_service.dart';
 
@@ -24,6 +22,13 @@ class DeleteAccountPage extends StatefulWidget {
 class _DeleteAccountPageState extends State<DeleteAccountPage> {
   final TextEditingController _passwordController = TextEditingController();
   InputFieldState _passwordFieldState = InputFieldState.defaultState;
+  bool _obscurePassword = true;
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
 
   @override
   void dispose() {
@@ -68,7 +73,12 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 state: _passwordFieldState,
                 placeholder: 'Password',
                 label: 'Enter your password',
-                obscureText: true,
+                obscureText: _obscurePassword,
+                showTrailingIcon: true,
+                trailingIcon: _obscurePassword
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+                onTrailingIconTap: _togglePasswordVisibility,
               ),
               SizedBox(
                 height: 32,

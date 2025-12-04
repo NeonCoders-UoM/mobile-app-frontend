@@ -1,10 +1,12 @@
 class ApiConfig {
   // Backend API base URL
   // Change this to your actual backend URL
-  static const String baseUrl = 'http://192.168.8.186:5039/api';
+  // For actual devices, use your computer's local IP: 192.168.8.161
+  // For web/emulator, use localhost
+  static const String baseUrl = 'http://192.168.8.161:5039/api';
 
   // Alternative configurations for different environments
-  static const String devBaseUrl = 'http://192.168.8.186:5039/api';
+  static const String devBaseUrl = 'http://192.168.8.161:5039/api';
   static const String stagingBaseUrl =
       'https://staging-api.your-domain.com/api';
   static const String prodBaseUrl = 'https://api.your-domain.com/api';
@@ -39,6 +41,22 @@ class ApiConfig {
 
   // Emergency Call Center endpoints
   static const String emergencyCallCenterEndpoint = '/EmergencyCallCenter';
+
+  // Feedback endpoints
+  static const String feedbackEndpoint = '/Feedback';
+  static const String feedbackByIdEndpoint = '/Feedback/{id}';
+  static const String feedbackByCustomerEndpoint =
+      '/Feedback/Customer/{customerId}';
+  static const String feedbackByServiceCenterEndpoint =
+      '/Feedback/ServiceCenter/{serviceCenterId}';
+  static const String feedbackStatsEndpoint = '/Feedback/Stats';
+
+  // Service Center endpoints
+  static const String serviceCentersEndpoint = '/ServiceCenters';
+  static const String serviceCentersByIdEndpoint = '/ServiceCenters/{id}';
+  static const String serviceCentersByStatusEndpoint =
+      '/ServiceCenters/status/{status}';
+  static const String serviceCentersNearbyEndpoint = '/ServiceCenters/nearby';
 
   // Get the current environment's base URL
   static String get currentBaseUrl {
@@ -131,6 +149,37 @@ class ApiConfig {
       '$currentBaseUrl/FuelEfficiency/vehicle/$vehicleId/chart/$year';
 
   static String addFuelEfficiencyUrl() => '$currentBaseUrl/FuelEfficiency';
+
+  // Feedback URL builders
+  static String getFeedbackUrl() => '$currentBaseUrl/Feedback';
+  static String getFeedbackByIdUrl(int id) => '$currentBaseUrl/Feedback/$id';
+  static String getFeedbackByCustomerUrl(int customerId) =>
+      '$currentBaseUrl/Feedback/Customer/$customerId';
+  static String getFeedbackByServiceCenterUrl(int serviceCenterId) =>
+      '$currentBaseUrl/Feedback/ServiceCenter/$serviceCenterId';
+  static String getFeedbackStatsUrl({int? serviceCenterId}) =>
+      '$currentBaseUrl/Feedback/Stats${serviceCenterId != null ? '?serviceCenterId=$serviceCenterId' : ''}';
+
+  // Service Center URL builders
+  static String getServiceCentersUrl() => '$currentBaseUrl/ServiceCenters';
+  static String getServiceCenterByIdUrl(int id) =>
+      '$currentBaseUrl/ServiceCenters/$id';
+  static String getServiceCentersByStatusUrl(String status) =>
+      '$currentBaseUrl/ServiceCenters/status/$status';
+  static String getServiceCentersNearbyUrl(
+      {double? lat, double? lng, List<int>? serviceIds}) {
+    final queryParams = <String, String>{};
+    if (lat != null) queryParams['lat'] = lat.toString();
+    if (lng != null) queryParams['lng'] = lng.toString();
+    if (serviceIds != null) {
+      for (int i = 0; i < serviceIds.length; i++) {
+        queryParams['serviceIds[$i]'] = serviceIds[i].toString();
+      }
+    }
+    return Uri.parse('$currentBaseUrl/ServiceCenters/nearby')
+        .replace(queryParameters: queryParams)
+        .toString();
+  }
 
   static String updateFuelEfficiencyUrl(int id) =>
       '$currentBaseUrl/FuelEfficiency/$id';

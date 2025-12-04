@@ -215,7 +215,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 
   Future<void> fetchVehicleDetails() async {
-    final url = 'http://192.168.8.186:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
+    final url =
+        'http://192.168.8.161:5039/api/vehicles/info/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -236,7 +237,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> fetchDocuments() async {
     final url =
-        'http://192.168.8.186:5039/api/documents/listByVehicle/${widget.customerId}/${widget.vehicleId}';
+        'http://192.168.8.161:5039/api/documents/listByVehicle/${widget.customerId}/${widget.vehicleId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -382,7 +383,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
 
     final url =
-        'http://192.168.8.186:5039/api/documents/delete?documentId=$documentId';
+        'http://192.168.8.161:5039/api/documents/delete?documentId=$documentId';
     try {
       final response = await http.delete(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -628,9 +629,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
   void previewDocument(
       String fileUrl, String title, String fileName, int documentId, Document document) {
     final previewUrl =
-        'http://192.168.8.186:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
+        'http://192.168.8.161:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
     final downloadUrl =
-        'http://192.168.8.186:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
+        'http://192.168.8.161:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=attachment';
 
     final fileExtension = fileName.toLowerCase().split('.').last;
     final isSupportedType =
@@ -1531,7 +1532,7 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
 
     setState(() => isUploading = true);
 
-    final url = 'http://192.168.8.186:5039/api/documents/upload';
+    final url = 'http://192.168.8.161:5039/api/documents/upload';
     final request = http.MultipartRequest('POST', Uri.parse(url));
 
     request.fields['customerId'] = widget.customerId.toString();

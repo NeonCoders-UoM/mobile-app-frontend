@@ -7,6 +7,7 @@ class ServiceHistoryCard extends StatelessWidget {
   final String description;
   final String date;
   final bool isVerified;
+  final VoidCallback? onEdit;
 
   const ServiceHistoryCard({
     Key? key,
@@ -14,6 +15,7 @@ class ServiceHistoryCard extends StatelessWidget {
     required this.description,
     required this.date,
     this.isVerified = true,
+    this.onEdit,
   }) : super(key: key);
 
   @override
@@ -47,6 +49,14 @@ class ServiceHistoryCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (onEdit != null) ...[
+                      IconButton(
+                        icon:
+                            const Icon(Icons.edit, color: AppColors.primary200),
+                        tooltip: 'Edit Service Record',
+                        onPressed: onEdit,
+                      ),
+                    ],
                     // Verification Badge
                     if (!isVerified) ...[
                       const SizedBox(width: 8.0),
@@ -63,6 +73,27 @@ class ServiceHistoryCard extends StatelessWidget {
                           'Unverified',
                           style: AppTextStyles.textXsmRegular.copyWith(
                             color: AppColors.neutral600,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (isVerified) ...[
+                      const SizedBox(width: 8.0),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 4.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors
+                              .states['ok'], // Use a green color for verified
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: Text(
+                          'Verified',
+                          style: AppTextStyles.textXsmRegular.copyWith(
+                            color: AppColors.neutral100,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

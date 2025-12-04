@@ -8,6 +8,14 @@ import 'package:mobile_app_frontend/presentation/components/molecules/backend_co
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/service_history_card.dart';
 import 'package:mobile_app_frontend/presentation/pages/add_unverified_service_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/payhere_payment_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/payment_success_page.dart';
+import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'pdf_view_page.dart';
+import 'edit_service_history_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/pdf_view_page.dart';
 import 'dart:io';
 
@@ -16,13 +24,15 @@ class ServiceHistoryPage extends StatefulWidget {
   final String vehicleName;
   final String vehicleRegistration;
   final String? token;
+  final int? customerId;
 
   const ServiceHistoryPage({
     Key? key,
-    this.vehicleId = 1, // Default vehicle ID
+    this.vehicleId = 1,
     this.vehicleName = 'Mustang 1977',
     this.vehicleRegistration = 'AB89B395',
     this.token,
+    this.customerId,
   }) : super(key: key);
 
   @override
@@ -34,10 +44,28 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
   List<ServiceHistoryModel> _serviceHistory = [];
   bool _isLoading = true;
 
+  // Payment status logic
+  String? _paymentStatus; // 'Paid', 'Pending', etc.
+  String? _orderId;
+  bool get _hasPaid => _paymentStatus == 'Paid';
+
   @override
   void initState() {
     super.initState();
+    // Check for order_id in URL (web)
+    if (kIsWeb) {
+      final uri = Uri.base;
+      final orderIdFromUrl = uri.queryParameters['order_id'];
+      if (orderIdFromUrl != null && orderIdFromUrl.isNotEmpty) {
+        WebUtils.setLocalStorage(
+          'service_history_order_id_${widget.vehicleId}',
+          orderIdFromUrl,
+        );
+        _orderId = orderIdFromUrl;
+      }
+    }
     _loadServiceHistory();
+    _checkPaymentStatus();
   }
 
   Future<void> _loadServiceHistory() async {
@@ -61,6 +89,37 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
       );
       setState(() {
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _checkPaymentStatus() async {
+    // Try to get orderId from local storage (web) or state
+    String? orderId = _orderId;
+    if (orderId == null && kIsWeb) {
+      orderId = WebUtils.getLocalStorage(
+        'service_history_order_id_${widget.vehicleId}',
+      );
+    }
+    if (orderId == null) {
+      setState(() {
+        _paymentStatus = null;
+      });
+      return;
+    }
+    final response = await http.get(
+      Uri.parse(
+          'http://192.168.8.161:5039/api/payhere/payment-status?orderId=$orderId'),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        _paymentStatus = data['status'];
+        _orderId = orderId;
+      });
+    } else {
+      setState(() {
+        _paymentStatus = null;
       });
     }
   }
@@ -89,17 +148,21 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
       _isLoading = true;
     });
     try {
-      final pdfBytes = await _serviceHistoryRepository.downloadServiceHistoryPdf(
-        widget.vehicleId,
-        token: widget.token,
-      );
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/service_history_${widget.vehicleId}.pdf');
-      await file.writeAsBytes(pdfBytes);
-      // TODO: Use a package like `open_file` or `share_plus` to open or share the file
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('PDF saved to ${file.path}')),
-      );
+      final pdfBytes = await _serviceHistoryRepository
+          .downloadServiceHistoryPdf(widget.vehicleId, token: widget.token);
+
+      if (kIsWeb) {
+        WebUtils.downloadFile(
+          pdfBytes,
+          'service_history_${widget.vehicleId}.pdf',
+        );
+      } else {
+        // Implement mobile file saving / opening if needed
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('PDF downloaded (handle file saving on mobile).')),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to download PDF: $e')),
@@ -111,22 +174,79 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
     }
   }
 
+  /// This function triggers the payment flow and then downloads PDF after success.
+  Future<void> _startPaymentFlow() async {
+    if (kIsWeb) {
+      // 1. Call backend to create PayHere session
+      final response = await http.post(
+        Uri.parse('http://192.168.8.161:5039/api/payhere/create-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'vehicleId': widget.vehicleId,
+          'userEmail': 'testuser@example.com', // TODO: use actual user email
+          'userName': 'Test User', // TODO: use actual user name
+        }),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final payHereUrl = data['payHereUrl'];
+        final paymentFields = data['paymentFields'] as Map<String, dynamic>;
+        final orderId = data['orderId'];
+        // Store orderId for later payment status checks
+        WebUtils.setLocalStorage(
+          'service_history_order_id_${widget.vehicleId}',
+          orderId,
+        );
+        setState(() {
+          _orderId = orderId;
+        });
+        // 2. Create and submit a form to PayHere
+        final fields = Map<String, String>.fromEntries(
+          paymentFields.entries.map((e) => MapEntry(e.key, e.value.toString())),
+        );
+        WebUtils.submitForm(payHereUrl, fields);
+        // 3. After payment, user will be redirected to /payment-success?order_id=...
+        //    You need to handle this in your frontend router/page.
+        // Optionally, you can navigate to PaymentSuccessPage manually if you want to support SPA routing.
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentSuccessPage(vehicleId: widget.vehicleId)));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed to initiate payment: ${response.body}')),
+        );
+      }
+      return;
+    }
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PayHerePaymentPage(
+          vehicleId: widget.vehicleId,
+          customerEmail:
+              "testuser@example.com", // TODO: replace with actual user email
+          customerName: "Test User", // TODO: replace with actual user name
+          customerId: widget.customerId,
+          token: widget.token,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      // Payment successful - download the PDF
+      await _downloadServiceHistoryPdf();
+      // After download, update payment status and button
+      await _checkPaymentStatus();
+    } else if (result == false) {
+      // Payment failed or cancelled - show message or handle accordingly
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Payment cancelled or failed.')),
+      );
+    }
+    // If result is null, do nothing (user backed out)
+  }
+
   String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return '${date.day}, ${months[date.month - 1]}, ${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 
   Widget _buildServiceRecord(ServiceHistoryModel service) {
@@ -139,6 +259,47 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
     );
   }
 
+  Widget _buildServiceHistoryList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_serviceHistory.isEmpty) {
+      return const Center(child: Text('No service history records found.'));
+    }
+    return Expanded(
+      child: ListView.builder(
+        itemCount: _serviceHistory.length,
+        itemBuilder: (context, index) {
+          final service = _serviceHistory[index];
+          return ServiceHistoryCard(
+            title: service.serviceTitle,
+            description: service.serviceDescription,
+            date: _formatDate(service.serviceDate),
+            isVerified: service.isVerified,
+            onEdit: service.isVerified
+                ? null
+                : () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditServiceHistoryPage(
+                          service: service,
+                          vehicleName: widget.vehicleName,
+                          vehicleRegistration: widget.vehicleRegistration,
+                          token: widget.token,
+                        ),
+                      ),
+                    );
+                    if (result == true) {
+                      _loadServiceHistory();
+                    }
+                  },
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,9 +307,6 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
       appBar: const CustomAppBar(title: 'Service History'),
       body: Column(
         children: [
-          // Backend Connection Status
-          const BackendConnectionWidget(),
-
           // Add Service Button
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -173,7 +331,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
               ),
             ),
           ),
-          // View PDF Button
+          // Pay/View PDF Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: SizedBox(
@@ -181,20 +339,27 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
               child: ElevatedButton.icon(
                 onPressed: _isLoading
                     ? null
-                    : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PdfViewPage(
-                              vehicleId: widget.vehicleId,
-                              token: widget.token,
-                            ),
-                          ),
-                        );
-                      },
-                icon: const Icon(Icons.visibility, color: Colors.white),
+                    : _hasPaid
+                        ? _downloadServiceHistoryPdf
+                        : _startPaymentFlow,
+                icon: Icon(_hasPaid ? Icons.visibility : Icons.lock_open,
+                    color: Colors.white),
+
+//                     : () {
+//                         Navigator.push(
+//                           context,
+//                           MaterialPageRoute(
+//                             builder: (context) => PdfViewPage(
+//                               vehicleId: widget.vehicleId,
+//                               token: widget.token,
+//                             ),
+//                           ),
+//                         );
+//                       },
+//                 icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+
                 label: Text(
-                  'View Service History PDF',
+                  _hasPaid ? 'View Service History PDF' : 'Pay & Download PDF',
                   style: AppTextStyles.textMdSemibold.copyWith(
                     color: Colors.white,
                   ),
@@ -209,55 +374,8 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
               ),
             ),
           ),
-
           // Service History List
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primary200,
-                    ),
-                  )
-                : _serviceHistory.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.history,
-                              size: 64,
-                              color: AppColors.neutral200,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No Service History',
-                              style: AppTextStyles.textLgSemibold.copyWith(
-                                color: AppColors.neutral100,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Add your first service record to get started',
-                              style: AppTextStyles.textSmRegular.copyWith(
-                                color: AppColors.neutral200,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadServiceHistory,
-                        color: AppColors.primary200,
-                        backgroundColor: AppColors.neutral400,
-                        child: ListView.builder(
-                          itemCount: _serviceHistory.length,
-                          itemBuilder: (context, index) {
-                            return _buildServiceRecord(_serviceHistory[index]);
-                          },
-                        ),
-                      ),
-          ),
+          _buildServiceHistoryList(),
         ],
       ),
     );

@@ -6,15 +6,11 @@ import 'package:mobile_app_frontend/presentation/components/atoms/cost_estimate_
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
-import 'package:mobile_app_frontend/presentation/pages/advanced_payment_required_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/appointment_advance_payment_page.dart';
+
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/servicecenter_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
-import 'package:mobile_app_frontend/data/repositories/service_center_repository.dart';
-import 'package:mobile_app_frontend/data/models/service_model.dart';
 import 'package:dio/dio.dart';
-import 'package:mobile_app_frontend/data/repositories/appointment_repository.dart';
-import 'package:mobile_app_frontend/data/models/appointment_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:math';
 
@@ -68,7 +64,7 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
       int customerId, int vehicleId, String token) async {
     final dio = Dio();
     final response = await dio.get(
-      'http://192.168.8.186:5039/api/Customers/$customerId/vehicles/$vehicleId',
+      'http://192.168.8.161:5039/api/Customers/$customerId/vehicles/$vehicleId',
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
     if (response.statusCode == 200 && response.data != null) {
@@ -85,7 +81,7 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
     try {
       final dio = Dio();
       final response = await dio.get(
-        'http://192.168.8.186:5039/api/Appointment/customer/${widget.customerId}/vehicle/${widget.vehicleId}/details/${widget.appointmentId}',
+        'http://192.168.8.161:5039/api/Appointment/customer/${widget.customerId}/vehicle/${widget.vehicleId}/details/${widget.appointmentId}',
         options: Options(headers: {'Authorization': 'Bearer ${widget.token}'}),
       );
       final data = response.data;
@@ -117,7 +113,7 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
       if (serviceCenterId.isNotEmpty) {
         try {
           final scResponse = await dio.get(
-            'http://192.168.8.186:5039/api/ServiceCenters/$serviceCenterId',
+            'http://192.168.8.161:5039/api/ServiceCenters/$serviceCenterId',
             options:
                 Options(headers: {'Authorization': 'Bearer ${widget.token}'}),
           );
@@ -248,10 +244,13 @@ class _CostEstimatePageState extends State<CostEstimatePage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => AppointmentPage(
+                                    builder: (context) =>
+                                        AppointmentAdvancePaymentPage(
                                       customerId: widget.customerId,
                                       vehicleId: widget.vehicleId,
                                       token: widget.token,
+                                      appointmentId: widget.appointmentId,
+                                      totalCost: totalCost,
                                     ),
                                   ),
                                 )

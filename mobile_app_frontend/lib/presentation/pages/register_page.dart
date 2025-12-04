@@ -167,6 +167,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: _passwordController,
                   keyboardType: TextInputType.visiblePassword,
                   state: _passwordFieldState,
+                  obscureText: _obscurePassword,
                   showTrailingIcon: true,
                   trailingIcon: _obscurePassword
                       ? Icons.visibility_off
@@ -193,46 +194,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Center(
-                  child: Text(
-                    'Or Signup with',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Colors.white54),
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {
-                          // TODO: Google sign in
-                        },
-                        icon: const Icon(Icons.g_mobiledata, size: 28),
-                        label: const Text('Google'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Colors.white54),
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {
-                          // TODO: Apple sign in
-                        },
-                        icon: const Icon(Icons.apple, size: 28),
-                        label: const Text('Apple'),
-                      ),
-                    ),
-                  ],
-                ),
+                
                 const SizedBox(height: 24),
                 Center(
                   child: Row(

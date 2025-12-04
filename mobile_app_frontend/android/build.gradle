@@ -2,9 +2,13 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()  // optional
+        maven {
+            url "https://repo.repsy.io/mvn/payhere/payhere-mobilesdk-android/"
+        }
+        maven { url 'https://jitpack.io' }
     }
 }
-
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"

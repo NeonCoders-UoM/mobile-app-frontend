@@ -10,6 +10,7 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_fi
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicle_deleted_page.dart';
 import 'package:mobile_app_frontend/state/providers/vehicle_provider.dart';
+import 'package:mobile_app_frontend/presentation/pages/login_page.dart'; // or next step
 
 class DeleteVehiclePage extends StatefulWidget {
   final int customerId;

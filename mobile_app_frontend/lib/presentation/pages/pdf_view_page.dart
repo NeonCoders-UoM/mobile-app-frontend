@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:typed_data';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_app_frontend/data/repositories/service_history_repository.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/enter_payment_details_page.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
 import 'dart:io';
 
 class PdfContentPage extends StatefulWidget {
@@ -240,6 +244,21 @@ class _PdfViewPageState extends State<PdfViewPage> {
   final ServiceHistoryRepository _repository = ServiceHistoryRepository();
   bool _isLoading = false;
 
+  void _viewPdf() async {
+    final url = _repository.getServiceHistoryPdfPreviewUrl(widget.vehicleId);
+    if (kIsWeb) {
+      WebUtils.openUrlInNewTab(url);
+    } else {
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open PDF preview.')),
+        );
+      }
+    }
+  }
+
   Future<void> _downloadPdf() async {
     setState(() => _isLoading = true);
     try {
@@ -247,13 +266,19 @@ class _PdfViewPageState extends State<PdfViewPage> {
         widget.vehicleId,
         token: widget.token,
       );
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/service_history_${widget.vehicleId}.pdf');
-      await file.writeAsBytes(pdfBytes);
-      // TODO: Use a package like `open_file` or `share_plus` to open or share the file
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('PDF saved to ${file.path}')),
-      );
+      if (kIsWeb) {
+        WebUtils.downloadFile(
+          pdfBytes,
+          'service_history_${widget.vehicleId}.pdf',
+        );
+      } else {
+        // For mobile, you can use path_provider and open_file/share_plus to save and open the file
+        // For now, just show a snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('PDF downloaded (handle file saving on mobile).')),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to download PDF: $e')),

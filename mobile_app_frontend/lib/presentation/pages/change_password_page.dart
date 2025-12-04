@@ -8,15 +8,14 @@ import 'package:mobile_app_frontend/presentation/components/molecules/custom_app
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/input_field_state.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/services/auth_service.dart';
-import 'dart:convert'; // Added for jsonEncode
-import 'package:http/http.dart' as http; // Added for http
+
 import 'package:mobile_app_frontend/presentation/pages/password_changed_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   final int customerId;
   final String token;
-  const ChangePasswordPage({super.key, required this.customerId, required this.token});
+  const ChangePasswordPage(
+      {super.key, required this.customerId, required this.token});
 
   @override
   State<ChangePasswordPage> createState() => _ChangePasswordPageState();
@@ -31,6 +30,28 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   InputFieldState _currentPasswordFieldState = InputFieldState.defaultState;
   InputFieldState _newPasswordFieldState = InputFieldState.defaultState;
   InputFieldState _retypeNewPasswordFieldState = InputFieldState.defaultState;
+  
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureRetypePassword = true;
+
+  void _toggleCurrentPasswordVisibility() {
+    setState(() {
+      _obscureCurrentPassword = !_obscureCurrentPassword;
+    });
+  }
+
+  void _toggleNewPasswordVisibility() {
+    setState(() {
+      _obscureNewPassword = !_obscureNewPassword;
+    });
+  }
+
+  void _toggleRetypePasswordVisibility() {
+    setState(() {
+      _obscureRetypePassword = !_obscureRetypePassword;
+    });
+  }
 
   @override
   void dispose() {
@@ -65,24 +86,39 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               InputFieldAtom(
                   controller: _currentPasswordController,
                   state: _currentPasswordFieldState,
-                  obscureText: true,
-                  placeholder: 'Current password'),
+                  obscureText: _obscureCurrentPassword,
+                  placeholder: 'Current password',
+                  showTrailingIcon: true,
+                  trailingIcon: _obscureCurrentPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  onTrailingIconTap: _toggleCurrentPasswordVisibility),
               SizedBox(
                 height: 24,
               ),
               InputFieldAtom(
                   controller: _newPasswordController,
                   state: _newPasswordFieldState,
-                  obscureText: true,
-                  placeholder: 'New password'),
+                  obscureText: _obscureNewPassword,
+                  placeholder: 'New password',
+                  showTrailingIcon: true,
+                  trailingIcon: _obscureNewPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  onTrailingIconTap: _toggleNewPasswordVisibility),
               SizedBox(
                 height: 24,
               ),
               InputFieldAtom(
                   controller: _retypeNewPasswordController,
                   state: _retypeNewPasswordFieldState,
-                  obscureText: true,
-                  placeholder: 'Retype new password'),
+                  obscureText: _obscureRetypePassword,
+                  placeholder: 'Retype new password',
+                  showTrailingIcon: true,
+                  trailingIcon: _obscureRetypePassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  onTrailingIconTap: _toggleRetypePasswordVisibility),
               SizedBox(
                 height: 48,
               ),
@@ -104,7 +140,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       _retypeNewPasswordFieldState = InputFieldState.error;
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('New passwords do not match'), backgroundColor: Colors.red),
+                      const SnackBar(
+                          content: Text('New passwords do not match'),
+                          backgroundColor: Colors.red),
                     );
                     return;
                   }
@@ -113,7 +151,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       _newPasswordFieldState = InputFieldState.error;
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Password must be at least 6 characters'), backgroundColor: Colors.red),
+                      const SnackBar(
+                          content:
+                              Text('Password must be at least 6 characters'),
+                          backgroundColor: Colors.red),
                     );
                     return;
                   }
@@ -133,7 +174,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Failed to change password'), backgroundColor: Colors.red),
+                      const SnackBar(
+                          content: Text('Failed to change password'),
+                          backgroundColor: Colors.red),
                     );
                   }
                 },
@@ -146,6 +189,4 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       ),
     );
   }
-
-  
 }

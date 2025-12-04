@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String _baseUrl = 'http://192.168.8.186:5039/api';
+  final String _baseUrl = 'http://192.168.8.161:5039/api';
 
   Future<bool> registerCustomer({
     required String firstName,
@@ -483,6 +483,97 @@ class AuthService {
     } catch (e) {
       print('❌ Error fetching vehicle details: $e');
       return null;
+    }
+  }
+
+  // Forgot Password Methods
+  Future<bool> forgotPassword(String email) async {
+    try {
+      final url = Uri.parse('$_baseUrl/Auth/forgot-password');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      print('🔑 Forgot password request for email: $email');
+      print('🔍 Response Code: ${response.statusCode}');
+      print('🔍 Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('✅ Forgot password OTP sent successfully');
+        return true;
+      } else {
+        print(
+            '❌ Forgot password failed: ${response.statusCode} ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error in forgot password: $e');
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    try {
+      final url = Uri.parse('$_baseUrl/Auth/reset-password');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'otp': otp,
+          'newPassword': newPassword,
+          'confirmPassword': newPassword, // Add confirmPassword field
+        }),
+      );
+
+      print('🔑 Reset password for email: $email');
+      print('🔍 Response Code: ${response.statusCode}');
+      print('🔍 Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('✅ Password reset successfully');
+        return true;
+      } else {
+        print(
+            '❌ Password reset failed: ${response.statusCode} ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error in reset password: $e');
+      return false;
+    }
+  }
+
+  Future<bool> resendForgotPasswordOtp(String email) async {
+    try {
+      final url = Uri.parse('$_baseUrl/Auth/resend-forgot-password-otp');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(email),
+      );
+
+      print('🔑 Resend forgot password OTP for email: $email');
+      print('🔍 Response Code: ${response.statusCode}');
+      print('🔍 Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('✅ Forgot password OTP resent successfully');
+        return true;
+      } else {
+        print(
+            '❌ Resend forgot password OTP failed: ${response.statusCode} ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error in resend forgot password OTP: $e');
+      return false;
     }
   }
 

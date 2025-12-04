@@ -8,6 +8,34 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/custom_app_bar.dart';
 import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_header.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class Service {
+  final int serviceId;
+  final String serviceName;
+  final String description;
+  final double basePrice;
+  final String category;
+
+  Service({
+    required this.serviceId,
+    required this.serviceName,
+    required this.description,
+    required this.basePrice,
+    required this.category,
+  });
+
+  factory Service.fromJson(Map<String, dynamic> json) {
+    return Service(
+      serviceId: json['serviceId'],
+      serviceName: json['serviceName'],
+      description: json['description'],
+      basePrice: (json['basePrice'] as num).toDouble(),
+      category: json['category'],
+    );
+  }
+}
 
 class AddUnverifiedServicePage extends StatefulWidget {
   final int vehicleId;
@@ -46,26 +74,50 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
   final ServiceHistoryRepository _serviceHistoryRepository =
       ServiceHistoryRepository();
 
-  // Common service types for dropdown
-  final List<String> _commonServices = [
-    'Oil Change',
-    'Brake Service',
-    'Tire Replacement',
-    'Air Filter Replacement',
-    'Battery Replacement',
-    'Transmission Service',
-    'Coolant Flush',
-    'Wheel Alignment',
-    'Engine Diagnostic',
-    'Spark Plug Replacement',
-    'Belt Replacement',
-    'Suspension Repair',
-    'Exhaust Repair',
-    'AC Service',
-    'Custom Service',
-  ];
+  List<Service> _services = [];
+  Service? _selectedService;
+  bool _servicesLoading = true;
+  String? _servicesError;
 
-  String? _selectedServiceType;
+  @override
+  void initState() {
+    super.initState();
+    _fetchServices();
+  }
+
+  Future<void> _fetchServices() async {
+    setState(() {
+      _servicesLoading = true;
+      _servicesError = null;
+    });
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'http://192.168.8.161:5039/api/Services'), // Backend URL for actual devices
+        headers: {
+          'Content-Type': 'application/json',
+          if (widget.token != null) 'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _services = data.map((json) => Service.fromJson(json)).toList();
+          _servicesLoading = false;
+        });
+      } else {
+        setState(() {
+          _servicesError = 'Failed to load services';
+          _servicesLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _servicesError = e.toString();
+        _servicesLoading = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -135,9 +187,8 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
       }
 
       // Create the service title based on selection
-      String serviceTitle = _selectedServiceType == 'Custom Service'
-          ? _serviceTitleController.text.trim()
-          : _selectedServiceType ?? _serviceTitleController.text.trim();
+      String serviceTitle =
+          _selectedService?.serviceName ?? _serviceTitleController.text.trim();
 
       // Create unverified service record
       final unverifiedService = ServiceHistoryModel.unverified(
@@ -189,6 +240,70 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Replace the service type dropdown with the dynamic one
+    Widget serviceDropdown;
+    if (_servicesLoading) {
+      serviceDropdown = const Center(child: CircularProgressIndicator());
+    } else if (_servicesError != null) {
+      serviceDropdown = Text(
+        'Error: ${_servicesError!}',
+        style: const TextStyle(color: Colors.red),
+      );
+    } else {
+      serviceDropdown = DropdownButtonFormField<Service>(
+        value: _selectedService,
+        hint: Text(
+          'Select service',
+          style: AppTextStyles.textSmSemibold.copyWith(
+            color: AppColors.neutral200,
+          ),
+        ),
+        items: _services.map((service) {
+          return DropdownMenuItem<Service>(
+            value: service,
+            child: Text(
+              service.serviceName,
+              style: AppTextStyles.textSmRegular.copyWith(
+                color: AppColors.neutral100,
+              ),
+            ),
+          );
+        }).toList(),
+        onChanged: (Service? newValue) {
+          setState(() {
+            _selectedService = newValue;
+            if (newValue != null) {
+              _serviceTitleController.text = newValue.serviceName;
+            }
+          });
+        },
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.transparent,
+          border: OutlineInputBorder(
+            borderSide: const BorderSide(color: AppColors.neutral200),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: AppColors.neutral200),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: AppColors.neutral200, width: 2),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        dropdownColor: AppColors.neutral400,
+        iconEnabledColor: AppColors.neutral100,
+        validator: (value) {
+          if (value == null) {
+            return 'Please select a service';
+          }
+          return null;
+        },
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.neutral400,
       appBar: const CustomAppBar(
@@ -242,74 +357,19 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                     ),
                     const SizedBox(height: 32.0),
 
-                    // Service Type Dropdown
+                    // Service
                     Text(
-                      'Service Type',
+                      'Service',
                       style: AppTextStyles.textSmRegular.copyWith(
                         color: AppColors.neutral100,
                       ),
                     ),
                     const SizedBox(height: 8.0),
-                    DropdownButtonFormField<String>(
-                      value: _selectedServiceType,
-                      hint: Text(
-                        'Select service type',
-                        style: AppTextStyles.textSmSemibold.copyWith(
-                          color: AppColors.neutral200,
-                        ),
-                      ),
-                      items: _commonServices.map((String service) {
-                        return DropdownMenuItem<String>(
-                          value: service,
-                          child: Text(
-                            service,
-                            style: AppTextStyles.textSmRegular.copyWith(
-                              color: AppColors.neutral100,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedServiceType = newValue;
-                          // Clear custom service title if not custom
-                          if (newValue != 'Custom Service') {
-                            _serviceTitleController.clear();
-                          }
-                        });
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        border: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColors.neutral200),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColors.neutral200),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                              color: AppColors.neutral200, width: 2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      dropdownColor: AppColors.neutral400,
-                      iconEnabledColor: AppColors.neutral100,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a service type';
-                        }
-                        return null;
-                      },
-                    ),
+                    serviceDropdown,
                     const SizedBox(height: 16.0),
 
                     // Custom Service Title (only if Custom Service is selected)
-                    if (_selectedServiceType == 'Custom Service') ...[
+                    if (_selectedService == null) ...[
                       Text(
                         'Custom Service Title',
                         style: AppTextStyles.textSmRegular.copyWith(
@@ -346,7 +406,7 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                           ),
                         ),
                         validator: (value) {
-                          if (_selectedServiceType == 'Custom Service' &&
+                          if (_selectedService == null &&
                               (value == null || value.isEmpty)) {
                             return 'Please enter a service title';
                           }
