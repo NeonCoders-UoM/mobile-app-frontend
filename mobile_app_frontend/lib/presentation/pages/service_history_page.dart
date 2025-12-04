@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path_provider/path_provider.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/data/models/service_history_model.dart';
@@ -16,6 +16,8 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'pdf_view_page.dart';
 import 'edit_service_history_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/pdf_view_page.dart';
+import 'dart:io';
 
 class ServiceHistoryPage extends StatefulWidget {
   final int vehicleId;
@@ -38,8 +40,7 @@ class ServiceHistoryPage extends StatefulWidget {
 }
 
 class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
-  final ServiceHistoryRepository _serviceHistoryRepository =
-      ServiceHistoryRepository();
+  final ServiceHistoryRepository _serviceHistoryRepository = ServiceHistoryRepository();
   List<ServiceHistoryModel> _serviceHistory = [];
   bool _isLoading = true;
 
@@ -73,15 +74,19 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
         _isLoading = true;
       });
 
-      final serviceHistory = await _serviceHistoryRepository
-          .getServiceHistory(widget.vehicleId, token: widget.token);
+      final serviceHistory = await _serviceHistoryRepository.getServiceHistory(
+        widget.vehicleId,
+        token: widget.token,
+      );
 
       setState(() {
         _serviceHistory = serviceHistory;
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading service history: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading service history: $e')),
+      );
       setState(() {
         _isLoading = false;
       });

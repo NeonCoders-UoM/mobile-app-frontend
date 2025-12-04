@@ -406,7 +406,11 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                           ),
                         ),
                         _iconWithLabel(context, "assets/icons/delete.svg",
-                            "Delete", const DeleteVehiclePage()),
+                            "Delete", DeleteVehiclePage(
+                              customerId: widget.customerId,
+                              vehicleId: selectedVehicle.vehicleId,
+                              token: widget.token,
+                            )),
                       ],
                     ),
                   ),
