@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
@@ -40,7 +41,8 @@ class ServiceHistoryPage extends StatefulWidget {
 }
 
 class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
-  final ServiceHistoryRepository _serviceHistoryRepository = ServiceHistoryRepository();
+  final ServiceHistoryRepository _serviceHistoryRepository =
+      ServiceHistoryRepository();
   List<ServiceHistoryModel> _serviceHistory = [];
   bool _isLoading = true;
 

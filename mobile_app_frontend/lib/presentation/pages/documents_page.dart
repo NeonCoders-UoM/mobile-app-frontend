@@ -156,25 +156,20 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 
   Future<void> _initializeCamera() async {
+    // Don't reinitialize if camera is already initialized
+    if (_cameraController != null && _cameraController!.value.isInitialized) {
+      print('Camera already initialized, skipping...');
+      return;
+    }
+
     try {
       final cameraStatus = await Permission.camera.request();
       print('Camera permission status: $cameraStatus');
       if (cameraStatus.isPermanentlyDenied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Camera permission is permanently denied. Please enable it in settings.',
-              textAlign: TextAlign.center,
-            ),
-            action: SnackBarAction(
-              label: 'Settings',
-              onPressed: () => openAppSettings(),
-            ),
-          ),
-        );
+        print('Camera permission permanently denied - will use image picker only');
         return;
       } else if (cameraStatus != PermissionStatus.granted) {
-        print('Camera permission not granted');
+        print('Camera permission not granted - will use image picker only');
         return;
       }
 
@@ -194,16 +189,13 @@ class _DocumentsPageState extends State<DocumentsPage> {
           setState(() {});
         }
       } else {
-        print('No cameras available');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No cameras available on this device.', textAlign: TextAlign.center)),
-        );
+        print('No cameras available - will use image picker only');
       }
     } catch (e) {
-      print('Error initializing camera: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error initializing camera: $e', textAlign: TextAlign.center)),
-      );
+      // Camera initialization failed - not critical, we can use image_picker
+      print('Camera initialization failed (will use image picker only): $e');
+      _cameraController = null;
+      _cameras = null;
     }
   }
 
@@ -268,6 +260,14 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Future<void> downloadFile(String downloadUrl, String fileName) async {
     if (_isDownloading) return;
     _isDownloading = true;
+
+    // Show download started notification
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Downloading $fileName...', textAlign: TextAlign.center),
+        duration: const Duration(seconds: 2),
+      ),
+    );
 
     try {
       if (Platform.isAndroid) {
@@ -418,10 +418,13 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 
   Future<void> _uploadFromCamera() async {
+    print('===== SMART SCAN CLICKED - Starting camera upload =====');
+    
     final cameraStatus = await Permission.camera.request();
     print('Camera permission status: $cameraStatus');
 
     if (cameraStatus.isPermanentlyDenied) {
+      print('ERROR: Camera permission permanently denied');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -436,114 +439,127 @@ class _DocumentsPageState extends State<DocumentsPage> {
       );
       return;
     } else if (cameraStatus != PermissionStatus.granted) {
+      print('WARNING: Camera permission not granted');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Camera permission denied', textAlign: TextAlign.center)),
-      );
-      return;
-    }
-
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Camera not available', textAlign: TextAlign.center)),
-      );
-      return;
-    }
-
-    final XFile? image = await Navigator.of(context).push<XFile>(
-      MaterialPageRoute(
-        builder: (context) => CameraPreviewScreen(
-          controller: _cameraController!,
-          onPictureTaken: (XFile image) {
-            Navigator.of(context).pop(image);
-          },
+        const SnackBar(
+          content: Text('Camera permission is required for Smart Scan', textAlign: TextAlign.center),
         ),
-      ),
+      );
+      return;
+    }
+
+    print('SUCCESS: Camera permission granted, opening camera via image_picker...');
+    
+    // Use image_picker to capture from camera
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
     );
 
-    if (image != null) {
-      // Show preview dialog to verify the captured image
-      final bool? shouldUpload = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: AppColors.neutral400,
-            title: const Text(
-              'Review Captured Document',
-              style: TextStyle(color: AppColors.neutral150),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Please review your captured document:',
-                  style: TextStyle(color: AppColors.neutral100),
+    if (image == null) {
+      print('User cancelled camera capture');
+      return;
+    }
+
+    print('Image captured: ${image.path}');
+
+    // Show preview dialog to verify the captured image
+    final bool? shouldUpload = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.neutral400,
+          title: const Text(
+            'Review Captured Document',
+            style: TextStyle(color: AppColors.neutral150),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Please review your captured document:',
+                style: TextStyle(color: AppColors.neutral100),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                constraints: const BoxConstraints(
+                  maxHeight: 400,
+                  maxWidth: double.infinity,
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  constraints: const BoxConstraints(
-                    maxHeight: 400,
-                    maxWidth: double.infinity,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.neutral300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      File(image.path),
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.neutral300),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Is this image clear and suitable for upload?',
-                  style: TextStyle(color: AppColors.neutral100),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text(
-                  'Retake',
-                  style: TextStyle(color: AppColors.neutral200),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    File(image.path),
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text(
-                  'Upload',
-                  style: TextStyle(color: AppColors.primary200),
-                ),
+              const SizedBox(height: 16),
+              const Text(
+                'Is this image clear and suitable for upload?',
+                style: TextStyle(color: AppColors.neutral100),
+                textAlign: TextAlign.center,
               ),
             ],
-          );
-        },
-      );
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                print('User chose to retake image');
+                Navigator.of(context).pop(false);
+              },
+              child: const Text(
+                'Retake',
+                style: TextStyle(color: AppColors.neutral200),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                print('User confirmed image for upload');
+                Navigator.of(context).pop(true);
+              },
+              child: const Text(
+                'Upload',
+                style: TextStyle(color: AppColors.primary200),
+              ),
+            ),
+          ],
+        );
+      },
+    );
 
-      // If user wants to retake, return early
-      if (shouldUpload != true) {
-        return;
-      }
+    print('Upload decision: $shouldUpload');
 
-      final fileBytes = await File(image.path).readAsBytes();
-      final fileName = 'scanned_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-      await showDialog(
-        context: context,
-        builder: (context) => UploadDocumentDialog(
-          customerId: widget.customerId,
-          vehicleId: widget.vehicleId,
-          fileName: fileName,
-          fileBytes: fileBytes,
-          onUploadSuccess: fetchDocuments,
-        ),
-      );
+    // If user wants to retake, return early
+    if (shouldUpload != true) {
+      print('Upload cancelled by user');
+      return;
     }
+
+    print('Reading file bytes from: ${image.path}');
+    final fileBytes = await File(image.path).readAsBytes();
+    print('File bytes read: ${fileBytes.length} bytes');
+    final fileName = 'scanned_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    print('Generated file name: $fileName');
+
+    print('Opening upload dialog...');
+    await showDialog(
+      context: context,
+      builder: (context) => UploadDocumentDialog(
+        customerId: widget.customerId,
+        vehicleId: widget.vehicleId,
+        fileName: fileName,
+        fileBytes: fileBytes,
+        onUploadSuccess: fetchDocuments,
+      ),
+    );
+    print('Upload dialog closed');
   }
 
   Future<void> _uploadFromFilePicker() async {
@@ -998,17 +1014,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
               DocumentActionButton(
                 label: 'Smart Scan',
                 icon: Icons.document_scanner_outlined,
-                onTap: (_cameraController != null &&
-                        _cameraController!.value.isInitialized)
-                    ? () => uploadDocument(fromCamera: true)
-                    : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                                'Camera not available. Please check permissions or device capabilities.', textAlign: TextAlign.center),
-                          ),
-                        );
-                      },
+                onTap: () => uploadDocument(fromCamera: true),
                 backgroundColor: AppColors.neutral450,
                 textColor: AppColors.neutral100,
                 iconColor: AppColors.neutral100,
@@ -1555,19 +1561,24 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
       final response = await request.send();
       if (response.statusCode == 200) {
         widget.onUploadSuccess();
-        Navigator.of(context).pop();
+        // Show snackbar first
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:
                   Text('Document "${widget.fileName}" uploaded successfully', textAlign: TextAlign.center)),
         );
+        // Delay closing dialog so snackbar shows
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       } else {
         final responseBody = await response.stream.bytesToString();
         print('Upload failed for ${widget.fileName}: $responseBody');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  'Failed to upload document:  {response.statusCode} $responseBody', textAlign: TextAlign.center)),
+                  'Failed to upload document: ${response.statusCode} $responseBody', textAlign: TextAlign.center)),
         );
       }
     } catch (e) {

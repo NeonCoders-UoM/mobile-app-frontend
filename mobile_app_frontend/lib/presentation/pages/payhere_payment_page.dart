@@ -76,7 +76,8 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
 
     final paymentObject = {
       "sandbox": true,
-      "merchant_id": paymentFields['merchant_id'], // Use backend merchant ID (same as appointment)
+      "merchant_id": paymentFields[
+          'merchant_id'], // Use backend merchant ID (same as appointment)
       "merchant_secret":
           "NjEyMTA2MDk3Mjg1MDExODAwMjc5NTUwNTk1MjEwNTg3OTg0MA==", // Updated to match backend
       "notify_url":

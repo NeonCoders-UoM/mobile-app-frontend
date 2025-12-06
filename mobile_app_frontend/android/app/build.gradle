@@ -46,14 +46,10 @@ flutter {
 }
 
 dependencies {
-    // Manually add all plugin projects since Flutter Gradle plugin isn't providing them
-    implementation project(':file_picker')
-    implementation project(':flutter_pdfview')
-    implementation project(':flutter_plugin_android_lifecycle')
-    implementation project(':geolocator_android')
-    implementation project(':google_maps_flutter_android')
-    implementation project(':path_provider_android')
-    implementation project(':payhere_mobilesdk_flutter')
-    implementation project(':shared_preferences_android')
-    implementation project(':url_launcher_android')
+    // New plugins for camera and document upload functionality
+    implementation project(':camera_android_camerax')
+    implementation project(':permission_handler_android')
+    implementation project(':device_info_plus')
+    implementation project(':share_plus')
+    implementation project(':image_picker_android')
 }
