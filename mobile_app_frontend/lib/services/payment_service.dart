@@ -1,20 +1,22 @@
 import 'package:payhere_mobilesdk_flutter/payhere_mobilesdk_flutter.dart';
 
 /// Payment service for integrating PayHere payment gateway
-/// 
+///
 /// Before using this service:
 /// 1. Whitelist your app package name in PayHere dashboard
 /// 2. Get your Merchant ID and Merchant Secret
 /// 3. Update the constants below with your credentials
 class PaymentService {
   // TODO: Replace with your actual credentials from PayHere dashboard
-  static const String merchantId = "1211149"; // Your Merchant ID
-  static const String merchantSecret = "YOUR_MERCHANT_SECRET_HERE"; // From PayHere dashboard
+  static const String merchantId = "1233023"; // Your Merchant ID
+  static const String merchantSecret =
+      "NjEyMTA2MDk3Mjg1MDExODAwMjc5NTUwNTk1MjEwNTg3OTg0MA=="; // From PayHere dashboard (verify this matches your app's secret)
   static const bool sandboxMode = true; // Set to false for production
-  static const String notifyUrl = "https://your-backend-server.com/payhere/notify";
+  static const String notifyUrl =
+      "https://d2ba38d700ef.ngrok-free.app/api/payhere/notify"; // Your ngrok URL from backend
 
   /// One-time payment for services
-  /// 
+  ///
   /// Example usage:
   /// ```dart
   /// await PaymentService.makeServicePayment(
@@ -102,14 +104,14 @@ class PaymentService {
   }
 
   /// Payment with itemized details
-  /// 
+  ///
   /// Example usage:
   /// ```dart
   /// List<PaymentItem> items = [
   ///   PaymentItem(itemNumber: "SRV001", name: "Oil Change", amount: 5000.0, quantity: 1),
   ///   PaymentItem(itemNumber: "PART001", name: "Air Filter", amount: 2000.0, quantity: 2),
   /// ];
-  /// 
+  ///
   /// CustomerInfo customer = CustomerInfo(
   ///   firstName: "Jane",
   ///   lastName: "Smith",
@@ -118,7 +120,7 @@ class PaymentService {
   ///   address: "456 Road",
   ///   city: "Kandy",
   /// );
-  /// 
+  ///
   /// await PaymentService.makeItemizedPayment(
   ///   orderId: "ORD-12345",
   ///   items: items,
@@ -196,7 +198,7 @@ class PaymentService {
   }
 
   /// Recurring payment for subscriptions (e.g., monthly service packages)
-  /// 
+  ///
   /// Example usage:
   /// ```dart
   /// await PaymentService.makeRecurringPayment(
@@ -266,7 +268,7 @@ class PaymentService {
 
   /// Hold-on-Card (Authorization) - Hold charges for later capture
   /// Use PayHere Capture API from backend to capture the held amount
-  /// 
+  ///
   /// Example usage:
   /// ```dart
   /// await PaymentService.authorizePayment(
@@ -328,7 +330,7 @@ class PaymentService {
 
   /// Preapproval (Tokenization) - Save card for later charging
   /// Use PayHere Charging API from backend to charge the tokenized card
-  /// 
+  ///
   /// Example usage:
   /// ```dart
   /// await PaymentService.tokenizeCard(

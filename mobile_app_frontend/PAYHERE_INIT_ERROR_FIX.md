@@ -1,6 +1,7 @@
 # PayHere "Init Payment method call failed" - TROUBLESHOOTING GUIDE
 
 ## 🔴 Error Detected
+
 ```
 D/PaymentMethodFragment( 3868): Init Payment method call failed
 ```
@@ -8,7 +9,9 @@ D/PaymentMethodFragment( 3868): Init Payment method call failed
 ## ✅ FIXES APPLIED
 
 ### 1. Fixed notify_url
+
 **Problem:** You were using PayHere's own URL instead of your backend
+
 ```dart
 // ❌ WRONG
 "notify_url": "https://sandbox.payhere.lk/notify"
@@ -18,7 +21,9 @@ D/PaymentMethodFragment( 3868): Init Payment method call failed
 ```
 
 ### 2. Fixed Merchant Secret Format
+
 **Problem:** Merchant secret appeared to be base64 encoded
+
 ```dart
 // ❌ WRONG (base64 encoded)
 "merchant_secret": "MzQxNjgzNzU1NTE2ODA1MjMzMzM0MjkwNzU3OTIyMjMxMTY0NjcyNQ=="
@@ -28,6 +33,7 @@ D/PaymentMethodFragment( 3868): Init Payment method call failed
 ```
 
 ### 3. Cleaned Up Payment Object
+
 Removed unnecessary fields and improved name splitting.
 
 ## 🚨 ACTION REQUIRED - DO THIS NOW!
@@ -35,13 +41,16 @@ Removed unnecessary fields and improved name splitting.
 ### Step 1: Get Your ACTUAL Merchant Secret
 
 1. **Login to PayHere Sandbox:**
+
    - Go to: https://sandbox.payhere.lk/
    - Login with your merchant account
 
 2. **Navigate to Settings:**
+
    - Click on **Settings** > **Domains & Credentials**
 
 3. **Find/Add Your App:**
+
    - Look for your app package: `com.example.mobile_app_frontend`
    - If not found, click **"Add Domain/App"**
    - Select **"App"**
@@ -58,11 +67,13 @@ Removed unnecessary fields and improved name splitting.
 Open: `lib/presentation/pages/payhere_payment_page.dart`
 
 Find line ~50 and replace:
+
 ```dart
 "merchant_secret": "YOUR_ACTUAL_MERCHANT_SECRET_HERE",
 ```
 
 With your actual secret:
+
 ```dart
 "merchant_secret": "your_copied_merchant_secret_from_payhere_dashboard",
 ```
@@ -70,16 +81,18 @@ With your actual secret:
 ### Step 3: Verify Your Backend Endpoint
 
 Make sure this endpoint exists and is running:
+
 ```
 http://192.168.8.161:5039/api/payhere/notify
 ```
 
 **Backend should handle:**
+
 ```javascript
 // Example Node.js/Express
-app.post('/api/payhere/notify', (req, res) => {
-  console.log('Payment notification received:', req.body);
-  
+app.post("/api/payhere/notify", (req, res) => {
+  console.log("Payment notification received:", req.body);
+
   const {
     merchant_id,
     order_id,
@@ -92,14 +105,15 @@ app.post('/api/payhere/notify', (req, res) => {
   // 1. Verify MD5 signature (important for security!)
   // 2. Update your database based on status_code
   // 3. Send confirmation email if needed
-  
-  res.status(200).send('OK');
+
+  res.status(200).send("OK");
 });
 ```
 
 ## 🧪 TESTING STEPS
 
 ### Test 1: Verify Credentials
+
 ```dart
 // Add these debug prints in your payment page before PayHere.startPayment()
 print('🔍 Merchant ID: ${paymentObject["merchant_id"]}');
@@ -109,14 +123,18 @@ print('🔍 Amount: ${paymentObject["amount"]}');
 ```
 
 ### Test 2: Check Network
+
 Make sure your device can reach your backend:
+
 ```bash
 # From your device's browser, try:
 http://192.168.8.161:5039/api/payhere/status
 ```
 
 ### Test 3: Validate Payment Object
+
 Add validation before calling PayHere:
+
 ```dart
 // Add this before PayHere.startPayment()
 if (paymentObject["merchant_secret"] == "YOUR_ACTUAL_MERCHANT_SECRET_HERE") {
@@ -144,22 +162,25 @@ if (paymentObject["merchant_secret"] == "YOUR_ACTUAL_MERCHANT_SECRET_HERE") {
 ## 🔍 DEBUGGING COMMANDS
 
 ### View Full Logs
+
 ```bash
 # Run this in terminal to see detailed PayHere logs
 flutter run -d XNSNW19B26000520 -v
 ```
 
 ### Check Network Traffic
+
 Add this to your payment page to log the full payment object:
+
 ```dart
 import 'dart:convert';
 
 void _startPayment() async {
   // ... existing code ...
-  
+
   print('📦 Full payment object:');
   print(jsonEncode(paymentObject));
-  
+
   // Then call PayHere.startPayment()
 }
 ```
@@ -174,7 +195,9 @@ When you fix the merchant secret and notify_url, you should see:
 4. **Test payment succeeds** with sandbox card
 
 ### Test Card Numbers (Sandbox)
+
 Use these for testing:
+
 - **Card Number:** 4916 2172 1144 8659
 - **Expiry:** Any future date (e.g., 12/25)
 - **CVV:** Any 3 digits (e.g., 123)
@@ -185,15 +208,18 @@ Use these for testing:
 If you still get "Init Payment method call failed" after updating merchant secret:
 
 1. **Double-check your merchant secret:**
+
    - Copy it again from PayHere dashboard
    - Make sure no extra spaces or characters
    - Verify it matches your merchant ID
 
 2. **Verify app package name:**
+
    - Check AndroidManifest.xml: `com.example.mobile_app_frontend`
    - This MUST match what's whitelisted in PayHere
 
 3. **Try with minimal payment object:**
+
    ```dart
    final paymentObject = {
      "sandbox": true,

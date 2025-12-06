@@ -91,13 +91,17 @@ class _AppointmentAdvancePaymentPageState
       );
 
       // Use PayHere mobile SDK for in-app payment
-      final paymentFields = sessionData['paymentFields'] as Map<String, dynamic>;
-      
+      final paymentFields =
+          sessionData['paymentFields'] as Map<String, dynamic>;
+
       // Prepare payment object for PayHere SDK
       final paymentObject = {
         "sandbox": true,
         "merchant_id": paymentFields['merchant_id'],
-        "notify_url": paymentFields['notify_url'],
+        "merchant_secret":
+            "NjEyMTA2MDk3Mjg1MDExODAwMjc5NTUwNTk1MjEwNTg3OTg0MA==", // App-specific merchant secret
+        "notify_url":
+            "https://d2ba38d700ef.ngrok-free.app/api/payhere/notify", // Your ngrok URL
         "order_id": paymentFields['order_id'],
         "items": paymentFields['items'],
         "amount": paymentFields['amount'],
@@ -109,17 +113,29 @@ class _AppointmentAdvancePaymentPageState
         "address": paymentFields['address'],
         "city": paymentFields['city'],
         "country": paymentFields['country'],
-        "hash": paymentFields['hash'],
       };
+
+      // Debug logging
+      print('🔍 ========== APPOINTMENT PAYMENT DEBUG ==========');
+      print('🔍 Merchant ID: ${paymentObject["merchant_id"]}');
+      print(
+          '🔍 Merchant Secret: ${paymentObject["merchant_secret"]?.toString().substring(0, 10)}...');
+      print('🔍 Notify URL: ${paymentObject["notify_url"]}');
+      print('🔍 Order ID: ${paymentObject["order_id"]}');
+      print(
+          '🔍 Amount: ${paymentObject["amount"]} ${paymentObject["currency"]}');
+      print('🔍 ==========================================');
 
       setState(() {
         isLoading = false;
       });
 
+      print('🚀 Starting PayHere payment for appointment...');
       // Start PayHere payment within the app
       PayHere.startPayment(
         paymentObject,
         (paymentId) async {
+          print('✅ Appointment payment successful! Payment ID: $paymentId');
           // Payment successful
           if (!mounted) return;
           Navigator.of(context).pushReplacement(
@@ -134,6 +150,7 @@ class _AppointmentAdvancePaymentPageState
           );
         },
         (error) {
+          print('❌ Appointment payment failed: $error');
           // Payment failed
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -144,6 +161,7 @@ class _AppointmentAdvancePaymentPageState
           );
         },
         () {
+          print('❌ Appointment payment cancelled by user');
           // Payment cancelled
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -154,10 +172,20 @@ class _AppointmentAdvancePaymentPageState
         },
       );
     } catch (e) {
+      print('❌ Error in payment flow: $e');
       setState(() {
         errorMessage = e.toString();
         isLoading = false;
       });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

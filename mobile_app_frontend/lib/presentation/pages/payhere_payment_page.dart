@@ -4,6 +4,8 @@ import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/payment_successful_message_page.dart';
 import 'package:mobile_app_frontend/core/services/local_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class PayHerePaymentPage extends StatefulWidget {
   final int vehicleId;
@@ -46,27 +48,50 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
       print('💾 Authentication data saved before payment redirect');
     }
 
+    // Create PayHere session via backend (same as appointment payment)
+    print('🔄 Creating PayHere session via backend...');
+    final response = await http.post(
+      Uri.parse('http://192.168.8.161:5039/api/payhere/create-session'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'vehicleId': widget.vehicleId,
+        'userEmail': widget.customerEmail,
+        'userName': widget.customerName,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to create payment session: ${response.body}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final sessionData = jsonDecode(response.body);
+    final paymentFields = sessionData['paymentFields'] as Map<String, dynamic>;
+
     final paymentObject = {
       "sandbox": true,
-      "merchant_id": "1230582",
+      "merchant_id": paymentFields['merchant_id'], // Use backend merchant ID (same as appointment)
       "merchant_secret":
-          "MzQxNjgzNzU1NTE2ODA1MjMzMzM0MjkwNzU3OTIyMjMxMTY0NjcyNQ==",
+          "NjEyMTA2MDk3Mjg1MDExODAwMjc5NTUwNTk1MjEwNTg3OTg0MA==", // Updated to match backend
       "notify_url":
-          "http://192.168.8.161:5039/api/payhere/notify", // Your server notify endpoint (must be publicly accessible)
-      "order_id":
-          "vehicle_${widget.vehicleId}_${DateTime.now().millisecondsSinceEpoch}",
-      "items": "Service History PDF",
-      "amount": "500.00",
-      "currency": "LKR",
-      "first_name": widget.customerName.split(' ').first,
-      "last_name": widget.customerName.split(' ').length > 1
-          ? widget.customerName.split(' ').sublist(1).join(' ')
-          : "",
-      "email": widget.customerEmail,
-      "phone": "0771234567",
-      "address": "No.1, Galle Road",
-      "city": "Colombo",
-      "country": "Sri Lanka",
+          "https://d2ba38d700ef.ngrok-free.app/api/payhere/notify", // Your current ngrok URL
+      "order_id": paymentFields['order_id'], // Use order_id from backend
+      "items": paymentFields['items'],
+      "amount": paymentFields['amount'],
+      "currency": paymentFields['currency'],
+      "first_name": paymentFields['first_name'],
+      "last_name": paymentFields['last_name'] ?? '',
+      "email": paymentFields['email'],
+      "phone": paymentFields['phone'],
+      "address": paymentFields['address'],
+      "city": paymentFields['city'],
+      "country": paymentFields['country'],
     };
 
     // Debug logging
@@ -81,22 +106,6 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
         '🔍 Customer: ${paymentObject["first_name"]} ${paymentObject["last_name"]}');
     print('🔍 Email: ${paymentObject["email"]}');
     print('🔍 ==========================================');
-
-    // Validation: Check if merchant secret is still placeholder
-    if (paymentObject["merchant_secret"] ==
-        "YOUR_ACTUAL_MERCHANT_SECRET_HERE") {
-      setState(() => _isProcessing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              '⚠️ Please update merchant secret in payhere_payment_page.dart!'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 5),
-        ),
-      );
-      print('❌ ERROR: Merchant secret not configured!');
-      return;
-    }
 
     setState(() {
       _isProcessing = true;

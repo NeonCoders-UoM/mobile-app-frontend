@@ -3,22 +3,26 @@
 ## ✅ Setup Completed
 
 ### 1. Dependencies Added
+
 - ✅ `payhere_mobilesdk_flutter: ^3.2.0` added to `pubspec.yaml`
 - ✅ Flutter dependencies installed (`flutter pub get` completed)
 
 ### 2. Android Configuration
+
 - ✅ PayHere Maven repository added to `android/build.gradle`
 - ✅ AndroidManifest.xml configured with tools namespace and replace attribute
 - ✅ ProGuard rules created at `android/app/proguard-rules.pro`
 - ✅ Build configuration updated to use ProGuard rules in release mode
 
 ### 3. iOS Configuration
+
 - ⚠️ CocoaPods installation required (only on macOS)
 - 📝 Run `pod install` in the `ios` directory when building on macOS
 
 ## 📋 Next Steps
 
 ### Step 1: Whitelist Your App Package Name
+
 1. Login to your PayHere Merchant Account
 2. Navigate to **Settings > Domains & Credentials**
 3. Click **'Add Domain/App'** button
@@ -30,7 +34,9 @@
 > **Note**: If using a PayHere Live Merchant Account, your App Package Name must be manually reviewed & approved. Allow up to one business day for this review process.
 
 ### Step 2: Get Your Merchant Credentials
+
 You'll need these values for payment integration:
+
 - **Merchant ID**: Get from PayHere dashboard (e.g., "1211149")
 - **Merchant Secret**: From Step 1 above (unique hash for this app)
 - **Sandbox Mode**: Set to `true` for testing, `false` for production
@@ -50,7 +56,7 @@ class PaymentService {
   static const String merchantId = "1211149"; // Your Merchant ID
   static const String merchantSecret = "YOUR_MERCHANT_SECRET_HERE"; // From Step 1
   static const bool sandboxMode = true; // Set to false for production
-  
+
   // One-time payment for service appointments
   static Future<void> makeServicePayment({
     required String orderId,
@@ -432,6 +438,7 @@ void payForService() {
 ## 🔔 Important Notes
 
 ### Backend Integration
+
 To receive payment notifications and verify payments, you need to set up a backend endpoint:
 
 1. Create an endpoint that accepts POST requests (set as `notify_url`)
@@ -443,30 +450,35 @@ To receive payment notifications and verify payments, you need to set up a backe
    - Preapproval: https://support.payhere.lk/api-&-mobile-sdk/payhere-checkout#4-preapproval-notification
 
 ### Testing
+
 1. Use `"sandbox": true` for testing
 2. Use PayHere sandbox merchant credentials
 3. Test with PayHere test card numbers (available in PayHere docs)
 4. Switch to production credentials and set `"sandbox": false` for live deployment
 
 ### Security
+
 - **Never** hardcode production merchant credentials in the app
 - Store sensitive credentials in environment variables or secure backend
 - Always verify payment status from your backend
 - Implement proper error handling and logging
 
 ## 🎯 Platform Support
+
 - ✅ Android: API Level 17+
 - ✅ iOS: iOS 11.0+
 - ✅ Flutter: 1.20.0+
 - ✅ Null Safety: Supported (v3.2.0+)
 
 ## 📚 Additional Resources
+
 - [PayHere Flutter SDK Documentation](https://pub.dev/packages/payhere_mobilesdk_flutter)
 - [PayHere GitHub Repository](https://github.com/PayHereLK/payhere-mobilesdk-flutter)
 - [PayHere API Documentation](https://support.payhere.lk/api-&-mobile-sdk)
 - [PayHere Merchant Dashboard](https://www.payhere.lk/merchant)
 
 ## ✅ Integration Checklist
+
 - [x] PayHere SDK added to pubspec.yaml
 - [x] Flutter dependencies installed
 - [x] Android Maven repository configured

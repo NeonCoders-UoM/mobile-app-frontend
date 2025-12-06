@@ -7,12 +7,14 @@ All PayHere SDK integration setup has been completed for your Flutter mobile app
 ### Files Created/Modified:
 
 1. **Android Configuration:**
+
    - ✅ `android/build.gradle` - PayHere Maven repository added
    - ✅ `android/app/build.gradle` - ProGuard configuration added
    - ✅ `android/app/proguard-rules.pro` - ProGuard rules created
    - ✅ `android/app/src/main/AndroidManifest.xml` - Already configured
 
 2. **Flutter/Dart Files:**
+
    - ✅ `pubspec.yaml` - PayHere SDK dependency added
    - ✅ `lib/services/payment_service.dart` - Complete payment service
    - ✅ `lib/screens/payment_screen.dart` - Simple payment UI
@@ -42,12 +44,13 @@ Open `lib/services/payment_service.dart` and update:
 static const String merchantId = "YOUR_MERCHANT_ID"; // e.g., "1211149"
 static const String merchantSecret = "YOUR_MERCHANT_SECRET"; // From Step 1
 static const bool sandboxMode = true; // Keep true for testing
-static const String notifyUrl = "YOUR_BACKEND_URL/payhere/notify";
+static const String notifyUrl = "https://d2ba38d700ef.ngrok-free.app/api/payhere/notify";
 ```
 
 ### Step 3: Use in Your App
 
 **Simple payment:**
+
 ```dart
 import 'screens/payment_screen.dart';
 
@@ -65,6 +68,7 @@ Navigator.push(
 ```
 
 **Direct payment without UI:**
+
 ```dart
 import 'services/payment_service.dart';
 
@@ -87,31 +91,41 @@ await PaymentService.makeServicePayment(
 ## 📱 Payment Types Available
 
 ### 1. One-Time Payment
+
 For single service appointments or purchases.
+
 ```dart
 PaymentService.makeServicePayment(...)
 ```
 
 ### 2. Itemized Payment
+
 For multiple items/services in one payment.
+
 ```dart
 PaymentService.makeItemizedPayment(...)
 ```
 
 ### 3. Recurring Payment
+
 For subscriptions and monthly packages.
+
 ```dart
 PaymentService.makeRecurringPayment(...)
 ```
 
 ### 4. Hold-on-Card
+
 Authorize payment now, capture later.
+
 ```dart
 PaymentService.authorizePayment(...)
 ```
 
 ### 5. Tokenization
+
 Save card for future charging.
+
 ```dart
 PaymentService.tokenizeCard(...)
 ```
@@ -119,12 +133,14 @@ PaymentService.tokenizeCard(...)
 ## 🧪 Testing
 
 ### Test in Sandbox Mode:
+
 1. Ensure `sandboxMode = true` in payment_service.dart
 2. Use PayHere test merchant ID
 3. Use PayHere test card numbers (see PayHere docs)
 4. No real money will be charged
 
 ### PayHere Test Cards:
+
 - See [PayHere Testing Guide](https://support.payhere.lk/api-&-mobile-sdk/test-payment)
 
 ## 🔒 Backend Setup (Important!)
@@ -133,7 +149,7 @@ You **must** create a backend endpoint to receive payment notifications:
 
 ```javascript
 // Example Node.js endpoint
-app.post('/payhere/notify', (req, res) => {
+app.post("/payhere/notify", (req, res) => {
   const {
     merchant_id,
     order_id,
@@ -149,11 +165,12 @@ app.post('/payhere/notify', (req, res) => {
   // 3. Update your database
   // 4. Send confirmation email
 
-  res.status(200).send('OK');
+  res.status(200).send("OK");
 });
 ```
 
 **Notification formats:**
+
 - [One-time payments](https://support.payhere.lk/api-&-mobile-sdk/payhere-checkout#2-one-time-payment-notification)
 - [Recurring payments](https://support.payhere.lk/api-&-mobile-sdk/payhere-checkout#3-recurring-payment-notification)
 - [Preapproval](https://support.payhere.lk/api-&-mobile-sdk/payhere-checkout#4-preapproval-notification)
@@ -172,6 +189,7 @@ app.post('/payhere/notify', (req, res) => {
 ## 🎯 Next Steps
 
 1. **Test the integration:**
+
    ```bash
    flutter run -d YOUR_DEVICE
    ```
@@ -198,8 +216,9 @@ app.post('/payhere/notify', (req, res) => {
 ## 💡 Usage Examples
 
 Check `lib/examples/payment_usage_examples.dart` for:
+
 - Simple appointment payment
-- Itemized service payment  
+- Itemized service payment
 - Direct payment calls
 - Recurring subscriptions
 - Card tokenization
