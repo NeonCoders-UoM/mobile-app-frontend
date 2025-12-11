@@ -104,7 +104,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
           content: Text(
             'Are you sure you want to logout?',
             style: AppTextStyles.textSmRegular.copyWith(
-              color: AppColors.neutral200,
+              color: AppColors.neutral100,
             ),
           ),
           actions: [
@@ -115,7 +115,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
               child: Text(
                 'Cancel',
                 style: AppTextStyles.textSmMedium.copyWith(
-                  color: AppColors.neutral200,
+                  color: AppColors.neutral100,
                 ),
               ),
             ),
@@ -435,8 +435,8 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                         // Grid of Feature Cards
                         GridView.count(
                           crossAxisCount: 4,
-                          mainAxisSpacing: 14,
-                          crossAxisSpacing: 14,
+                          mainAxisSpacing: 20,
+                          crossAxisSpacing: 15,
                           childAspectRatio: 0.75,
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
@@ -665,33 +665,33 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
         );
       },
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.neutral300.withOpacity(0.6),
-              AppColors.neutral300.withOpacity(0.35),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppColors.neutral200.withOpacity(0.3),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 12,
-              offset: const Offset(0, 5),
-            ),
-            BoxShadow(
-              color: AppColors.primary300.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
+        // decoration: BoxDecoration(
+        //   gradient: LinearGradient(
+        //     begin: Alignment.topCenter,
+        //     end: Alignment.bottomCenter,
+        //     colors: [
+        //       AppColors.neutral300.withOpacity(0.6),
+        //       AppColors.neutral300.withOpacity(0.35),
+        //     ],
+        //   ),
+        //   borderRadius: BorderRadius.circular(20),
+        //   border: Border.all(
+        //     color: AppColors.neutral200.withOpacity(0.3),
+        //     width: 1.5,
+        //   ),
+        //   boxShadow: [
+        //     BoxShadow(
+        //       color: Colors.black.withOpacity(0.12),
+        //       blurRadius: 12,
+        //       offset: const Offset(0, 5),
+        //     ),
+        //     BoxShadow(
+        //       color: AppColors.primary300.withOpacity(0.05),
+        //       blurRadius: 20,
+        //       offset: const Offset(0, 8),
+        //     ),
+        //   ],
+        // ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -701,33 +701,33 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                 MaterialPageRoute(builder: (context) => destinationScreen),
               );
             },
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(8),
             splashColor: AppColors.primary300.withOpacity(0.2),
             highlightColor: AppColors.primary300.withOpacity(0.1),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          AppColors.primary300.withOpacity(0.35),
-                          AppColors.primary200.withOpacity(0.20),
+                          AppColors.neutral300.withOpacity(0.6),
+                          AppColors.neutral300.withOpacity(0.35),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(15),
                       border: Border.all(
-                        color: AppColors.primary200.withOpacity(0.3),
+                        color: AppColors.neutral300.withOpacity(0.6),
                         width: 1,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary300.withOpacity(0.25),
+                          color: AppColors.neutral300.withOpacity(0.6),
                           blurRadius: 10,
                           offset: const Offset(0, 3),
                         ),
@@ -735,11 +735,11 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                     ),
                     child: SvgPicture.asset(
                       assetPath,
-                      height: 28,
+                      height: 30,
                       color: AppColors.neutral100,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 7),
                   Flexible(
                     child: Text(
                       label,

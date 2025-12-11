@@ -10,6 +10,9 @@ import 'package:mobile_app_frontend/data/repositories/service_history_repository
 import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
 import 'package:mobile_app_frontend/core/services/local_storage.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class PaymentSuccessfulMessagePage extends StatefulWidget {
   final int customerId;
@@ -57,39 +60,135 @@ class _PaymentSuccessfulMessagePageState
     setState(() => isDownloading = true);
 
     try {
+      print('📥 Starting PDF download...');
+      print('🆔 Vehicle ID: ${widget.vehicleId}');
+      print(
+          '🔑 Token: ${widget.token.substring(0, widget.token.length > 20 ? 20 : widget.token.length)}...');
+
       final pdfBytes =
           await ServiceHistoryRepository().downloadServiceHistoryPdf(
         widget.vehicleId,
         token: widget.token,
       );
 
+      print('✅ PDF bytes received: ${pdfBytes.length}');
+
       if (kIsWeb) {
+        print('🌐 Initiating web download...');
         WebUtils.downloadFile(
           pdfBytes,
           'service_history_${widget.vehicleId}.pdf',
         );
+        print('✅ Web download initiated');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Download not supported on mobile yet')),
-        );
+        // Mobile platform (Android/iOS)
+        print('📱 Mobile platform detected - saving to device');
+        
+        // Request storage permission
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          print('📋 Requesting storage permission...');
+          status = await Permission.storage.request();
+        }
+
+        // For Android 13+ (API 33+), use photos permission instead
+        if (Platform.isAndroid) {
+          var photosStatus = await Permission.photos.status;
+          if (!photosStatus.isGranted) {
+            print('📋 Requesting photos permission (Android 13+)...');
+            photosStatus = await Permission.photos.request();
+          }
+        }
+
+        // Get the downloads directory
+        Directory? directory;
+        if (Platform.isAndroid) {
+          directory = Directory('/storage/emulated/0/Download');
+          if (!await directory.exists()) {
+            directory = await getExternalStorageDirectory();
+          }
+        } else if (Platform.isIOS) {
+          directory = await getApplicationDocumentsDirectory();
+        }
+
+        if (directory == null) {
+          throw Exception('Could not access storage directory');
+        }
+
+        // Create file path
+        final fileName = 'service_history_${widget.vehicleId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final filePath = '${directory.path}/$fileName';
+        
+        print('💾 Saving to: $filePath');
+
+        // Write file
+        final file = File(filePath);
+        await file.writeAsBytes(pdfBytes);
+        
+        print('✅ File saved successfully');
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('PDF saved to Downloads/$fileName'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'OK',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
+            ),
+          );
+        }
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PDF downloaded successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PDF downloaded successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to download PDF: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      print('❌ PDF Download Error: $e');
+      print('❌ Error type: ${e.runtimeType}');
+
+      String errorMessage = 'Failed to download PDF';
+      if (e.toString().contains('Payment required')) {
+        errorMessage = 'Payment verification failed. Please contact support.';
+      } else if (e.toString().contains('Authentication failed')) {
+        errorMessage = 'Session expired. Please log in again.';
+      } else if (e.toString().contains('Network error')) {
+        errorMessage = 'Network connection error. Please check your internet.';
+      } else if (e.toString().contains('storage') || e.toString().contains('permission')) {
+        errorMessage = 'Storage permission denied. Please enable storage access in settings.';
+      } else if (e.toString().contains('Exception:')) {
+        // Extract the actual error message
+        errorMessage = e.toString().replaceAll('Exception:', '').trim();
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: _downloadPdf,
+            ),
+          ),
+        );
+      }
     } finally {
-      setState(() => isDownloading = false);
+      if (mounted) {
+        setState(() => isDownloading = false);
+      }
     }
   }
 
