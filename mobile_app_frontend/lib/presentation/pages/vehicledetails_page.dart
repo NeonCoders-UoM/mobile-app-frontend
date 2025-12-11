@@ -80,77 +80,143 @@ class _VehicledetailsPageState extends State<VehicledetailsPage> {
       ),
       backgroundColor: AppColors.neutral400,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-          child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 36),
-                InputFieldAtom(
-                  label: 'Registration Number/License Plate',
-                  placeholder: 'Registration Number',
-                  controller: _registrationNumberController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
+                const SizedBox(height: 8),
+                // Header Section
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary300.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.directions_car,
+                          size: 48,
+                          color: AppColors.primary200,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Register Your Vehicle',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.neutral100,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Please provide your vehicle information',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.neutral200,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Chassis Number',
-                  placeholder: 'Chassis Number',
-                  controller: _chassisNumberController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
+
+                // Form Section with Card
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral300.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.neutral300.withOpacity(0.5),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InputFieldAtom(
+                        label: 'Registration Number/License Plate',
+                        placeholder: 'e.g., CAB-1234',
+                        controller: _registrationNumberController,
+                        keyboardType: TextInputType.text,
+                        state: InputFieldState.defaultState,
+                      ),
+                      const SizedBox(height: 24),
+                      InputFieldAtom(
+                        label: 'Chassis Number',
+                        placeholder: 'Enter chassis number',
+                        controller: _chassisNumberController,
+                        keyboardType: TextInputType.text,
+                        state: InputFieldState.defaultState,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InputFieldAtom(
+                              label: 'Category',
+                              placeholder: 'e.g., Sedan',
+                              controller: _categoryController,
+                              keyboardType: TextInputType.text,
+                              state: InputFieldState.defaultState,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: InputFieldAtom(
+                              label: 'Fuel Type',
+                              placeholder: 'e.g., Petrol',
+                              controller: _fuelTypeController,
+                              keyboardType: TextInputType.text,
+                              state: InputFieldState.defaultState,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      CustomDropdownField(
+                        label: "Vehicle Brand",
+                        items: ["Honda", "Benz", "BMW"],
+                        hintText: 'Select your vehicle brand',
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedBrand = val;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      InputFieldAtom(
+                        label: 'Model',
+                        placeholder: 'e.g., Civic, C-Class',
+                        controller: _modelController,
+                        keyboardType: TextInputType.text,
+                        state: InputFieldState.defaultState,
+                      ),
+                    ],
+                  ),
                 ),
+
                 const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Category',
-                  placeholder: 'Category',
-                  controller: _categoryController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                CustomDropdownField(
-                  label: "Vehicle Brand",
-                  items: ["Honda", "Benz", "BMW"],
-                  hintText: 'Choose a Brand',
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedBrand = val;
-                    });
-                  },
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Model',
-                  placeholder: 'Model',
-                  controller: _modelController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Fuel Type',
-                  placeholder: 'Fuel Type',
-                  controller: _fuelTypeController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 72),
-                Align(
-                  alignment: Alignment.bottomCenter,
+
+                // Action Button
+                Center(
                   child: SizedBox(
-                    width: 220,
-                    height: 48,
+                    width: double.infinity,
+                    height: 56,
                     child: CustomButton(
-                      label: 'Confirm',
+                      label: 'Confirm & Continue',
                       type: ButtonType.primary,
                       size: ButtonSize.medium,
                       onTap: _handleNext,
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),

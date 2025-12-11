@@ -98,6 +98,9 @@ flutter:
     - assets/icons/homegif.gif
     - assets/images/start_car_bg.png
     - assets/images/mustang_top.png
+    - assets/images/homenew.png
+    - assets/images/homenew1.png
+    - assets/images/homenew2.png
     - assets/images/mustang.png
     - assets/images/Mustang.svg
     - assets/images/emergency.png
