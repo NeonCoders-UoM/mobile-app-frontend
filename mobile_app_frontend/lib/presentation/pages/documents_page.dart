@@ -106,8 +106,8 @@ class Document {
       fileUrl: json['fileUrl'],
       documentType: json['documentType'],
       displayName: json['displayName'],
-      expirationDate: json['expirationDate'] != null 
-          ? DateTime.parse(json['expirationDate']) 
+      expirationDate: json['expirationDate'] != null
+          ? DateTime.parse(json['expirationDate'])
           : null,
     );
   }
@@ -134,7 +134,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
   String? vehicleModel;
   String? chassisNumber;
   bool _isDownloading = false;
-  final TextEditingController expirationDateController = TextEditingController();
+  final TextEditingController expirationDateController =
+      TextEditingController();
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
 
@@ -166,7 +167,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
       final cameraStatus = await Permission.camera.request();
       print('Camera permission status: $cameraStatus');
       if (cameraStatus.isPermanentlyDenied) {
-        print('Camera permission permanently denied - will use image picker only');
+        print(
+            'Camera permission permanently denied - will use image picker only');
         return;
       } else if (cameraStatus != PermissionStatus.granted) {
         print('Camera permission not granted - will use image picker only');
@@ -246,7 +248,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
       print('Error loading documents: $e');
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading documents: $e', textAlign: TextAlign.center)),
+        SnackBar(
+            content: Text('Error loading documents: $e',
+                textAlign: TextAlign.center)),
       );
     }
   }
@@ -287,8 +291,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text(
-                  'Permission denied. Please enable it in settings to download files.',
-                  textAlign: TextAlign.center,
+                'Permission denied. Please enable it in settings to download files.',
+                textAlign: TextAlign.center,
               ),
               action: SnackBarAction(
                 label: 'Settings',
@@ -309,7 +313,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
         print('Downloads directory: $directory');
         if (directory == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Unable to access downloads directory', textAlign: TextAlign.center)),
+            const SnackBar(
+                content: Text('Unable to access downloads directory',
+                    textAlign: TextAlign.center)),
           );
           return;
         }
@@ -322,19 +328,24 @@ class _DocumentsPageState extends State<DocumentsPage> {
         print('File exists after writing: ${await file.exists()}');
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File downloaded to $filePath', textAlign: TextAlign.center)),
+          SnackBar(
+              content: Text('File downloaded to $filePath',
+                  textAlign: TextAlign.center)),
         );
       } else {
         print('Response body: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Failed to download file: ${response.statusCode}', textAlign: TextAlign.center)),
+              content: Text('Failed to download file: ${response.statusCode}',
+                  textAlign: TextAlign.center)),
         );
       }
     } catch (e) {
       print('Error downloading file: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error downloading file: $e', textAlign: TextAlign.center)),
+        SnackBar(
+            content: Text('Error downloading file: $e',
+                textAlign: TextAlign.center)),
       );
     } finally {
       _isDownloading = false;
@@ -391,20 +402,26 @@ class _DocumentsPageState extends State<DocumentsPage> {
           documents.removeWhere((doc) => doc.documentId == documentId);
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Document "$title" deleted successfully', textAlign: TextAlign.center)),
+          SnackBar(
+              content: Text('Document "$title" deleted successfully',
+                  textAlign: TextAlign.center)),
         );
       } else {
         final responseBody =
             response.body.isNotEmpty ? response.body : 'Unknown server error';
         print('Delete failed for document $documentId ($title): $responseBody');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete "$title": $responseBody', textAlign: TextAlign.center)),
+          SnackBar(
+              content: Text('Failed to delete "$title": $responseBody',
+                  textAlign: TextAlign.center)),
         );
       }
     } catch (e) {
       print('Error deleting document $documentId ($title): $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting "$title": $e', textAlign: TextAlign.center)),
+        SnackBar(
+            content: Text('Error deleting "$title": $e',
+                textAlign: TextAlign.center)),
       );
     }
   }
@@ -419,7 +436,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   Future<void> _uploadFromCamera() async {
     print('===== SMART SCAN CLICKED - Starting camera upload =====');
-    
+
     final cameraStatus = await Permission.camera.request();
     print('Camera permission status: $cameraStatus');
 
@@ -442,14 +459,16 @@ class _DocumentsPageState extends State<DocumentsPage> {
       print('WARNING: Camera permission not granted');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Camera permission is required for Smart Scan', textAlign: TextAlign.center),
+          content: Text('Camera permission is required for Smart Scan',
+              textAlign: TextAlign.center),
         ),
       );
       return;
     }
 
-    print('SUCCESS: Camera permission granted, opening camera via image_picker...');
-    
+    print(
+        'SUCCESS: Camera permission granted, opening camera via image_picker...');
+
     // Use image_picker to capture from camera
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
@@ -545,7 +564,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
     print('Reading file bytes from: ${image.path}');
     final fileBytes = await File(image.path).readAsBytes();
     print('File bytes read: ${fileBytes.length} bytes');
-    final fileName = 'scanned_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final fileName =
+        'scanned_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
     print('Generated file name: $fileName');
 
     print('Opening upload dialog...');
@@ -571,7 +591,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
         print('Storage permission status: $storageStatus');
         if (storageStatus != PermissionStatus.granted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Storage or photo permission denied', textAlign: TextAlign.center)),
+            const SnackBar(
+                content: Text('Storage or photo permission denied',
+                    textAlign: TextAlign.center)),
           );
           return;
         }
@@ -585,7 +607,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
     if (result == null || result.files.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No file selected', textAlign: TextAlign.center)),
+        const SnackBar(
+            content: Text('No file selected', textAlign: TextAlign.center)),
       );
       return;
     }
@@ -598,7 +621,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
     if (file.size > 10 * 1024 * 1024) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('File size exceeds 10MB limit', textAlign: TextAlign.center)),
+        const SnackBar(
+            content: Text('File size exceeds 10MB limit',
+                textAlign: TextAlign.center)),
       );
       return;
     }
@@ -611,13 +636,17 @@ class _DocumentsPageState extends State<DocumentsPage> {
           fileBytes = await fileFromPath.readAsBytes();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Selected file does not exist', textAlign: TextAlign.center)),
+            const SnackBar(
+                content: Text('Selected file does not exist',
+                    textAlign: TextAlign.center)),
           );
           return;
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to read file: $e', textAlign: TextAlign.center)),
+          SnackBar(
+              content:
+                  Text('Failed to read file: $e', textAlign: TextAlign.center)),
         );
         return;
       }
@@ -625,7 +654,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
       fileBytes = file.bytes!;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to read file', textAlign: TextAlign.center)),
+        const SnackBar(
+            content: Text('Failed to read file', textAlign: TextAlign.center)),
       );
       return;
     }
@@ -642,8 +672,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
     );
   }
 
-  void previewDocument(
-      String fileUrl, String title, String fileName, int documentId, Document document) {
+  void previewDocument(String fileUrl, String title, String fileName,
+      int documentId, Document document) {
     final previewUrl =
         'http://192.168.8.161:5039/api/documents/download?fileUrl=${Uri.encodeComponent(fileUrl)}&mode=inline';
     final downloadUrl =
@@ -700,7 +730,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
               print('Updating document with ID: $documentId');
               print('Display name: $displayName');
               print('Expiration date: $expirationDate');
-              
+
               final url = '${ApiConfig.baseUrl}/documents/edit/${documentId}';
               final requestBody = {
                 'documentType': document.documentType,
@@ -708,9 +738,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
                 'expirationDate': expirationDate?.toIso8601String(),
                 'vehicleId': widget.vehicleId,
               };
-              
+
               print('Request body: ${jsonEncode(requestBody)}');
-              
+
               // Try with different content type and additional headers
               final response = await http.put(
                 Uri.parse(url),
@@ -723,7 +753,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
               print('Response status code: ${response.statusCode}');
               print('Response body: ${response.body}');
-              
+
               if (response.statusCode == 200 || response.statusCode == 204) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -735,13 +765,17 @@ class _DocumentsPageState extends State<DocumentsPage> {
                   ),
                 );
                 // Refresh the documents list
-                                    fetchDocuments();
+                fetchDocuments();
               } else {
-                final responseBody = response.body.isNotEmpty ? response.body : 'Unknown server error';
-                print('Update failed with status: ${response.statusCode}, body: $responseBody');
-                
+                final responseBody = response.body.isNotEmpty
+                    ? response.body
+                    : 'Unknown server error';
+                print(
+                    'Update failed with status: ${response.statusCode}, body: $responseBody');
+
                 // Try POST method as fallback if PUT fails
-                if (response.statusCode == 405) { // Method Not Allowed
+                if (response.statusCode == 405) {
+                  // Method Not Allowed
                   print('PUT method not allowed, trying POST...');
                   final postResponse = await http.post(
                     Uri.parse(url),
@@ -751,11 +785,12 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     },
                     body: jsonEncode(requestBody),
                   );
-                  
+
                   print('POST response status: ${postResponse.statusCode}');
                   print('POST response body: ${postResponse.body}');
-                  
-                  if (postResponse.statusCode == 200 || postResponse.statusCode == 204) {
+
+                  if (postResponse.statusCode == 200 ||
+                      postResponse.statusCode == 204) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
@@ -768,7 +803,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     fetchDocuments();
                     return;
                   } else {
-                    final postResponseBody = postResponse.body.isNotEmpty ? postResponse.body : 'Unknown server error';
+                    final postResponseBody = postResponse.body.isNotEmpty
+                        ? postResponse.body
+                        : 'Unknown server error';
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -781,13 +818,14 @@ class _DocumentsPageState extends State<DocumentsPage> {
                   }
                 } else if (response.statusCode == 404) {
                   // Try using the upload endpoint with update flag
-                  print('Update endpoint not found, trying upload endpoint with update flag...');
+                  print(
+                      'Update endpoint not found, trying upload endpoint with update flag...');
                   final uploadUrl = '${ApiConfig.baseUrl}/documents/upload';
                   final updateRequestBody = {
                     ...requestBody,
                     'isUpdate': true,
                   };
-                  
+
                   final uploadResponse = await http.post(
                     Uri.parse(uploadUrl),
                     headers: {
@@ -796,11 +834,14 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     },
                     body: jsonEncode(updateRequestBody),
                   );
-                  
-                  print('Upload endpoint response status: ${uploadResponse.statusCode}');
-                  print('Upload endpoint response body: ${uploadResponse.body}');
-                  
-                  if (uploadResponse.statusCode == 200 || uploadResponse.statusCode == 204) {
+
+                  print(
+                      'Upload endpoint response status: ${uploadResponse.statusCode}');
+                  print(
+                      'Upload endpoint response body: ${uploadResponse.body}');
+
+                  if (uploadResponse.statusCode == 200 ||
+                      uploadResponse.statusCode == 204) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
@@ -813,7 +854,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     fetchDocuments();
                     return;
                   } else {
-                    final uploadResponseBody = uploadResponse.body.isNotEmpty ? uploadResponse.body : 'Unknown server error';
+                    final uploadResponseBody = uploadResponse.body.isNotEmpty
+                        ? uploadResponse.body
+                        : 'Unknown server error';
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -958,8 +1001,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
                                     child: ListTile(
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          vertical: 4, horizontal: 24),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              vertical: 4, horizontal: 24),
                                       tileColor: AppColors.neutral450,
                                       title: Text(
                                         title,
@@ -1077,7 +1121,8 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                           widget.onPictureTaken(image);
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error capturing image: $e')),
+                            SnackBar(
+                                content: Text('Error capturing image: $e')),
                           );
                         }
                       },
@@ -1186,8 +1231,8 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
       if (!isSupportedType) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content:
-                  Text('File type (.$fileExtension) is not supported for sharing')),
+              content: Text(
+                  'File type (.$fileExtension) is not supported for sharing')),
         );
         return;
       }
@@ -1205,8 +1250,8 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content:
-                    Text('Failed to download file for sharing: ${response.statusCode}')),
+                content: Text(
+                    'Failed to download file for sharing: ${response.statusCode}')),
           );
           return;
         }
@@ -1229,11 +1274,14 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
   void _showEditDialog() {
     String? newDisplayName = widget.displayName;
     DateTime? newExpirationDate = widget.expirationDate;
-    final TextEditingController displayNameController = TextEditingController(text: widget.displayName ?? '');
-    final TextEditingController expirationDateController = TextEditingController();
-    
+    final TextEditingController displayNameController =
+        TextEditingController(text: widget.displayName ?? '');
+    final TextEditingController expirationDateController =
+        TextEditingController();
+
     if (newExpirationDate != null) {
-      expirationDateController.text = DateFormat('yyyy-MM-dd').format(newExpirationDate);
+      expirationDateController.text =
+          DateFormat('yyyy-MM-dd').format(newExpirationDate);
     }
 
     showDialog(
@@ -1257,7 +1305,8 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
                     labelStyle: TextStyle(color: AppColors.neutral200),
                   ),
                   style: const TextStyle(color: AppColors.neutral200),
-                  onChanged: (value) => newDisplayName = value.isEmpty ? null : value,
+                  onChanged: (value) =>
+                      newDisplayName = value.isEmpty ? null : value,
                 ),
                 const SizedBox(height: 16),
               ],
@@ -1296,10 +1345,12 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
                       },
                     );
                     if (selectedDate != null) {
-                      if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+                      if (selectedDate.isBefore(
+                          DateTime.now().subtract(const Duration(days: 1)))) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Expired documents can not add', textAlign: TextAlign.center),
+                            content: Text('Expired documents can not add',
+                                textAlign: TextAlign.center),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -1307,7 +1358,8 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
                       }
                       setState(() {
                         newExpirationDate = selectedDate;
-                        expirationDateController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+                        expirationDateController.text =
+                            DateFormat('yyyy-MM-dd').format(selectedDate);
                       });
                     }
                   },
@@ -1326,7 +1378,8 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
             TextButton(
               onPressed: () {
                 // Validate that expiration date is provided for documents that require it
-                if ([1, 2, 3, 4, 5].contains(widget.documentType) && newExpirationDate == null) {
+                if ([1, 2, 3, 4, 5].contains(widget.documentType) &&
+                    newExpirationDate == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
@@ -1338,7 +1391,7 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
                   );
                   return;
                 }
-                
+
                 widget.onUpdate(newDisplayName, newExpirationDate);
                 Navigator.of(context).pop();
               },
@@ -1381,7 +1434,8 @@ class _FullScreenDocumentPreviewState extends State<FullScreenDocumentPreview> {
         backgroundColor: AppColors.neutral450,
         title: Text(
           widget.title,
-          style: AppTextStyles.textSmSemibold.copyWith(color: AppColors.neutral100),
+          style: AppTextStyles.textSmSemibold
+              .copyWith(color: AppColors.neutral100),
         ),
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppColors.neutral100),
@@ -1525,7 +1579,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
     return [1, 2, 3, 4, 5].contains(documentType);
   }
 
-  final TextEditingController expirationDateController = TextEditingController();
+  final TextEditingController expirationDateController =
+      TextEditingController();
 
   @override
   void dispose() {
@@ -1564,8 +1619,9 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
         // Show snackbar first
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content:
-                  Text('Document "${widget.fileName}" uploaded successfully', textAlign: TextAlign.center)),
+              content: Text(
+                  'Document "${widget.fileName}" uploaded successfully',
+                  textAlign: TextAlign.center)),
         );
         // Delay closing dialog so snackbar shows
         await Future.delayed(const Duration(milliseconds: 300));
@@ -1578,13 +1634,16 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  'Failed to upload document: ${response.statusCode} $responseBody', textAlign: TextAlign.center)),
+                  'Failed to upload document: ${response.statusCode} $responseBody',
+                  textAlign: TextAlign.center)),
         );
       }
     } catch (e) {
       print('Error uploading document ${widget.fileName}: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error uploading document: $e', textAlign: TextAlign.center)),
+        SnackBar(
+            content: Text('Error uploading document: $e',
+                textAlign: TextAlign.center)),
       );
     } finally {
       if (mounted) {
@@ -1595,7 +1654,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final requiresExp = documentType != null && requiresExpiration(documentType!);
+    final requiresExp =
+        documentType != null && requiresExpiration(documentType!);
 
     if (requiresExp && expirationDate != null) {
       expirationDateController.text =
@@ -1623,7 +1683,8 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                     .map((type) => DropdownMenuItem(
                           value: type['value'] as int,
                           child: Text(type['name'] as String,
-                              style: const TextStyle(color: AppColors.neutral200)),
+                              style:
+                                  const TextStyle(color: AppColors.neutral200)),
                         ))
                     .toList(),
                 onChanged: (value) {
@@ -1636,69 +1697,70 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                 validator: (value) =>
                     value == null ? 'Please select a document type' : null,
               ),
-                             if (documentType == 5) ...[
-                 const SizedBox(height: 16),
-                 TextFormField(
-                   decoration: const InputDecoration(
-                     labelText: 'Display Name (Optional)',
-                     labelStyle: TextStyle(color: AppColors.neutral200),
-                   ),
-                   style: const TextStyle(color: AppColors.neutral200),
-                   onChanged: (value) => displayName = value,
-                 ),
-               ],
+              if (documentType == 5) ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Display Name (Optional)',
+                    labelStyle: TextStyle(color: AppColors.neutral200),
+                  ),
+                  style: const TextStyle(color: AppColors.neutral200),
+                  onChanged: (value) => displayName = value,
+                ),
+              ],
               if (requiresExp) ...[
                 const SizedBox(height: 16),
-                                 TextFormField(
-                   controller: expirationDateController,
-                   decoration: const InputDecoration(
-                     labelText: 'Expiration Date',
-                     hintText: 'Select expiration date',
-                     labelStyle: TextStyle(color: AppColors.neutral200),
-                   ),
-                   style: const TextStyle(color: AppColors.neutral200),
-                   readOnly: true,
-                                                        onTap: () async {
-                     final selectedDate = await showDatePicker(
-                       context: context,
-                       initialDate: expirationDate ?? DateTime.now(),
-                       firstDate: DateTime.now(),
-                       lastDate: DateTime(2100),
-                       builder: (context, child) {
-                         return Theme(
-                           data: Theme.of(context).copyWith(
-                             colorScheme: const ColorScheme.dark(
-                               primary: AppColors.primary200,
-                               onPrimary: Colors.white,
-                               surface: AppColors.neutral450,
-                               onSurface: AppColors.neutral100,
-                               onSecondary: AppColors.neutral100,
-                               secondary: AppColors.neutral300,
-                             ),
-                             dialogBackgroundColor: AppColors.neutral400,
-                           ),
-                           child: child!,
-                         );
-                       },
-                     );
-                     if (selectedDate != null) {
-                       // Check if selected date is in the past
-                       if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           const SnackBar(
-                             content: Text('Expired documents can not add'),
-                             backgroundColor: Colors.red,
-                           ),
-                         );
-                         return;
-                       }
-                       setState(() {
-                         expirationDate = selectedDate;
-                         expirationDateController.text =
-                             DateFormat('yyyy-MM-dd').format(selectedDate);
-                       });
-                     }
-                   },
+                TextFormField(
+                  controller: expirationDateController,
+                  decoration: const InputDecoration(
+                    labelText: 'Expiration Date',
+                    hintText: 'Select expiration date',
+                    labelStyle: TextStyle(color: AppColors.neutral200),
+                  ),
+                  style: const TextStyle(color: AppColors.neutral200),
+                  readOnly: true,
+                  onTap: () async {
+                    final selectedDate = await showDatePicker(
+                      context: context,
+                      initialDate: expirationDate ?? DateTime.now(),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: AppColors.primary200,
+                              onPrimary: Colors.white,
+                              surface: AppColors.neutral450,
+                              onSurface: AppColors.neutral100,
+                              onSecondary: AppColors.neutral100,
+                              secondary: AppColors.neutral300,
+                            ),
+                            dialogBackgroundColor: AppColors.neutral400,
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (selectedDate != null) {
+                      // Check if selected date is in the past
+                      if (selectedDate.isBefore(
+                          DateTime.now().subtract(const Duration(days: 1)))) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Expired documents can not add'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() {
+                        expirationDate = selectedDate;
+                        expirationDateController.text =
+                            DateFormat('yyyy-MM-dd').format(selectedDate);
+                      });
+                    }
+                  },
                   validator: (value) {
                     if (requiresExp && (value == null || value.isEmpty)) {
                       return 'Expiration date is required';
@@ -1708,16 +1770,16 @@ class _UploadDocumentDialogState extends State<UploadDocumentDialog> {
                 ),
               ],
               const SizedBox(height: 16),
-                             isUploading
-                   ? const CircularProgressIndicator()
-                   : ElevatedButton(
-                       onPressed: submitForm,
-                       style: ElevatedButton.styleFrom(
-                         backgroundColor: AppColors.primary200,
-                         foregroundColor: Colors.white,
-                       ),
-                       child: const Text('Upload'),
-                     ),
+              isUploading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: submitForm,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary200,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Upload'),
+                    ),
             ],
           ),
         ),

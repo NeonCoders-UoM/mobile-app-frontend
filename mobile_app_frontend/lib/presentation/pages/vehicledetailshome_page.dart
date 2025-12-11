@@ -199,222 +199,234 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
           backgroundColor: AppColors.neutral400,
           body: SafeArea(
             child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // --- Modern AppBar Section ---
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Logout icon
-                        GestureDetector(
-                          onTap: _showLogoutDialog,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.neutral300.withOpacity(0.8),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.logout,
-                              color: AppColors.neutral100,
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                        // Vehicle Switcher
-                        VehicleSwitcher(
-                          customerId: widget.customerId,
-                          token: widget.token,
-                        ),
-                        Row(
-                          children: [
-                            // Notification bell icon
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => NotificationsPage(
-                                      customerId: widget.customerId,
-                                      token: widget.token,
-                                      vehicleId: selectedVehicle.vehicleId,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.neutral300.withOpacity(0.8),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.notifications,
-                                  color: AppColors.neutral100,
-                                  size: 24,
-                                ),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: Column(
+                  children: [
+                    // --- Modern AppBar Section ---
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Logout icon
+                          GestureDetector(
+                            onTap: _showLogoutDialog,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.neutral300.withOpacity(0.8),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.logout,
+                                color: AppColors.neutral100,
+                                size: 24,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            // Profile icon
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PersonalDetailsPage(
-                                      customerId: widget.customerId,
-                                      token: widget.token,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.neutral300.withOpacity(0.8),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.person,
-                                  color: AppColors.neutral100,
-                                  size: 24,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // --- Main Content ---
-                  VehicleHeader(
-                    vehicleName: selectedVehicle.registrationNumber,
-                    vehicleId: selectedVehicle.vehicleId.toString(),
-                  ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          height: 350,
-                          width: 180,
-                          child: Image.asset(
-                            'assets/images/mustang_top.png',
-                            fit: BoxFit.contain,
                           ),
-                        ),
-                        const SizedBox(width: 36),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              VehicleDetailRow(
-                                  label: "Brand", value: selectedVehicle.brand),
-                              VehicleDetailRow(
-                                  label: "Model", value: selectedVehicle.model),
-                              VehicleDetailRow(
-                                  label: "Chassis Number",
-                                  value: selectedVehicle.chassisNumber),
-                              VehicleDetailRow(
-                                  label: "Fuel Type",
-                                  value: selectedVehicle.fuel),
-                              VehicleDetailRow(
-                                  label: "Year",
-                                  value: selectedVehicle.year.toString()),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: GridView.count(
-                      crossAxisCount: 4,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 4,
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      children: [
-                        _iconWithLabel(
-                            context,
-                            "assets/icons/documents.svg",
-                            "Documents",
-                            DocumentsPage(
-                              customerId: widget.customerId,
-                              vehicleId: selectedVehicle.vehicleId,
-                            )),
-                        _iconWithLabel(
-                            context,
-                            "assets/icons/appointments.svg",
-                            "Appointments",
-                            AppointmentPage(
-                              customerId: widget.customerId,
-                              vehicleId: selectedVehicle.vehicleId,
-                              token: widget.token,
-                            )),
-                        _iconWithLabel(
-                            context,
-                            "assets/icons/fuel_efficiency.svg",
-                            "Fuel Efficiency",
-                            FuelSummaryPage(
-                              vehicleId: selectedVehicle.vehicleId,
-                              token: widget.token,
-                            )),
-                        _iconWithLabel(
-                            context,
-                            "assets/icons/service_history.svg",
-                            "Service History",
-                            ServiceHistoryPage(
-                              vehicleId: selectedVehicle.vehicleId,
-                              vehicleName: selectedVehicle.model,
-                              vehicleRegistration:
-                                  selectedVehicle.registrationNumber,
-                              token: widget.token,
-                              customerId: widget.customerId,
-                            )),
-                        _iconWithLabel(
-                            context,
-                            "assets/icons/set_reminders.svg",
-                            "Set Reminders",
-                            RemindersPage(
-                              vehicleId: selectedVehicle.vehicleId,
-                              token: widget.token,
-                              customerId: widget.customerId,
-                            )),
-                        _iconWithLabel(
-                            context,
-                            "assets/icons/emergency.svg",
-                            "Emergency",
-                            EmergencyservicePage(token: widget.token)),
-                        _iconWithLabel(
-                          context,
-                          "assets/icons/edit.svg",
-                          "Edit",
-                          EditVehicledetailsPage(
+                          // Vehicle Switcher
+                          VehicleSwitcher(
                             customerId: widget.customerId,
-                            vehicleId: selectedVehicle.vehicleId,
                             token: widget.token,
                           ),
-                        ),
-                        _iconWithLabel(context, "assets/icons/delete.svg",
-                            "Delete", DeleteVehiclePage(
+                          Row(
+                            children: [
+                              // Notification bell icon
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => NotificationsPage(
+                                        customerId: widget.customerId,
+                                        token: widget.token,
+                                        vehicleId: selectedVehicle.vehicleId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppColors.neutral300.withOpacity(0.8),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.notifications,
+                                    color: AppColors.neutral100,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Profile icon
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PersonalDetailsPage(
+                                        customerId: widget.customerId,
+                                        token: widget.token,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppColors.neutral300.withOpacity(0.8),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: AppColors.neutral100,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // --- Main Content ---
+                    VehicleHeader(
+                      vehicleName: selectedVehicle.registrationNumber,
+                      vehicleId: selectedVehicle.vehicleId.toString(),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 350,
+                            width: 180,
+                            child: Image.asset(
+                              'assets/images/mustang_top.png',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          const SizedBox(width: 36),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                VehicleDetailRow(
+                                    label: "Brand",
+                                    value: selectedVehicle.brand),
+                                VehicleDetailRow(
+                                    label: "Model",
+                                    value: selectedVehicle.model),
+                                VehicleDetailRow(
+                                    label: "Chassis Number",
+                                    value: selectedVehicle.chassisNumber),
+                                VehicleDetailRow(
+                                    label: "Fuel Type",
+                                    value: selectedVehicle.fuel),
+                                VehicleDetailRow(
+                                    label: "Year",
+                                    value: selectedVehicle.year.toString()),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4.0, vertical: 8.0),
+                      child: GridView.count(
+                        crossAxisCount: 4,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 4,
+                        childAspectRatio: 0.85,
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        children: [
+                          _iconWithLabel(
+                              context,
+                              "assets/icons/documents.svg",
+                              "Documents",
+                              DocumentsPage(
+                                customerId: widget.customerId,
+                                vehicleId: selectedVehicle.vehicleId,
+                              )),
+                          _iconWithLabel(
+                              context,
+                              "assets/icons/appointments.svg",
+                              "Appointments",
+                              AppointmentPage(
+                                customerId: widget.customerId,
+                                vehicleId: selectedVehicle.vehicleId,
+                                token: widget.token,
+                              )),
+                          _iconWithLabel(
+                              context,
+                              "assets/icons/fuel_efficiency.svg",
+                              "Fuel Efficiency",
+                              FuelSummaryPage(
+                                vehicleId: selectedVehicle.vehicleId,
+                                token: widget.token,
+                              )),
+                          _iconWithLabel(
+                              context,
+                              "assets/icons/service_history.svg",
+                              "Service History",
+                              ServiceHistoryPage(
+                                vehicleId: selectedVehicle.vehicleId,
+                                vehicleName: selectedVehicle.model,
+                                vehicleRegistration:
+                                    selectedVehicle.registrationNumber,
+                                token: widget.token,
+                                customerId: widget.customerId,
+                              )),
+                          _iconWithLabel(
+                              context,
+                              "assets/icons/set_reminders.svg",
+                              "Set Reminders",
+                              RemindersPage(
+                                vehicleId: selectedVehicle.vehicleId,
+                                token: widget.token,
+                                customerId: widget.customerId,
+                              )),
+                          _iconWithLabel(
+                              context,
+                              "assets/icons/emergency.svg",
+                              "Emergency",
+                              EmergencyservicePage(token: widget.token)),
+                          _iconWithLabel(
+                            context,
+                            "assets/icons/edit.svg",
+                            "Edit",
+                            EditVehicledetailsPage(
                               customerId: widget.customerId,
                               vehicleId: selectedVehicle.vehicleId,
                               token: widget.token,
-                            )),
-                      ],
+                            ),
+                          ),
+                          _iconWithLabel(
+                              context,
+                              "assets/icons/delete.svg",
+                              "Delete",
+                              DeleteVehiclePage(
+                                customerId: widget.customerId,
+                                vehicleId: selectedVehicle.vehicleId,
+                                token: widget.token,
+                              )),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -442,11 +454,16 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
             color: AppColors.neutral100,
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.textXsmRegular.copyWith(
-              color: AppColors.neutral100,
+          Flexible(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.textXsmRegular.copyWith(
+                color: AppColors.neutral100,
+                height: 1.2,
+              ),
             ),
           ),
         ],

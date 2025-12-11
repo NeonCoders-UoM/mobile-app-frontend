@@ -219,19 +219,30 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: _isProcessing ? null : _startPayment,
-                    icon: const Icon(Icons.lock_open, color: Colors.white),
-                    label: _isProcessing
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text('Pay & Download',
-                            style: AppTextStyles.textMdSemibold
-                                .copyWith(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary200,
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0)),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isProcessing ? null : _startPayment,
+                      icon: const Icon(Icons.lock_open, color: Colors.white),
+                      label: _isProcessing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text('Pay & Download',
+                              style: AppTextStyles.textMdSemibold
+                                  .copyWith(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary200,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 24.0),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0)),
+                      ),
                     ),
                   ),
                 ],
