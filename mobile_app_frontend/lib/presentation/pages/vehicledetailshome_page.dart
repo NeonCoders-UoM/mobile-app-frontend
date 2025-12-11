@@ -261,7 +261,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               // Logout icon
-                              _buildCircularIconButton(
+                              _buildSquareIconButton(
                                 icon: Icons.logout,
                                 onTap: _showLogoutDialog,
                               ),
@@ -273,7 +273,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                               Row(
                                 children: [
                                   // Notification bell icon
-                                  _buildCircularIconButton(
+                                  _buildSquareIconButton(
                                     icon: Icons.notifications_outlined,
                                     onTap: () {
                                       Navigator.push(
@@ -292,7 +292,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                                   ),
                                   const SizedBox(width: 12),
                                   // Profile icon
-                                  _buildCircularIconButton(
+                                  _buildSquareIconButton(
                                     icon: Icons.person_outline,
                                     onTap: () {
                                       Navigator.push(
@@ -533,7 +533,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
     );
   }
 
-  Widget _buildCircularIconButton({
+  Widget _buildSquareIconButton({
     required IconData icon,
     required VoidCallback onTap,
   }) {
@@ -542,12 +542,26 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.neutral300.withOpacity(0.6),
-          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.neutral300.withOpacity(0.6),
+              AppColors.neutral300.withOpacity(0.35),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: AppColors.neutral200.withOpacity(0.3),
-            width: 1,
+            width: 1.5,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
         child: Icon(
           icon,
@@ -570,7 +584,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.neutral400.withOpacity(0.5),
+        color: AppColors.neutral400.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -607,12 +621,8 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.neutral300.withOpacity(0.25),
+        color: AppColors.neutral300.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.neutral200.withOpacity(0.15),
-          width: 1,
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
