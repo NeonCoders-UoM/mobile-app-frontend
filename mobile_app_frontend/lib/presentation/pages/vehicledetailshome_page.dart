@@ -240,18 +240,9 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // --- Modern Header Section with Gradient ---
+                  // --- Modern Header Section ---
                   Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.primary300.withOpacity(0.2),
-                          AppColors.neutral400,
-                        ],
-                      ),
-                    ),
+                    color: AppColors.neutral400,
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
@@ -361,7 +352,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                                     alignment: Alignment.center,
                                     heightFactor: 0.75,
                                     child: SizedBox(
-                                      height: 400,
+                                      height: 250,
                                       child: Image.asset(
                                         'assets/images/homenew2.png',
                                         fit: BoxFit.contain,
@@ -372,156 +363,148 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                                 // const SizedBox(height: 8),
                                 // Vehicle Details Grid
                                 _buildDetailGrid(selectedVehicle),
+
+                                // Quick Actions Section
+                                const SizedBox(height: 24),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.neutral300
+                                            .withOpacity(0.6),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: AppColors.neutral200
+                                              .withOpacity(0.3),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        Icons.dashboard_customize_rounded,
+                                        color: AppColors.neutral100,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Quick Actions',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.neutral100,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Manage your vehicle',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.neutral200,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                // Grid of Feature Cards
+                                GridView.count(
+                                  crossAxisCount: 4,
+                                  mainAxisSpacing: 6,
+                                  crossAxisSpacing: 6,
+                                  childAspectRatio: 0.95,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  children: [
+                                    _buildFeatureCard(
+                                      context,
+                                      "assets/icons/documents.svg",
+                                      "Documents",
+                                      DocumentsPage(
+                                        customerId: widget.customerId,
+                                        vehicleId: selectedVehicle.vehicleId,
+                                      ),
+                                    ),
+                                    _buildFeatureCard(
+                                      context,
+                                      "assets/icons/appointments.svg",
+                                      "Appointment",
+                                      AppointmentPage(
+                                        customerId: widget.customerId,
+                                        vehicleId: selectedVehicle.vehicleId,
+                                        token: widget.token,
+                                      ),
+                                    ),
+                                    _buildFeatureCard(
+                                      context,
+                                      "assets/icons/fuel_efficiency.svg",
+                                      "Fuel",
+                                      FuelSummaryPage(
+                                        vehicleId: selectedVehicle.vehicleId,
+                                        token: widget.token,
+                                      ),
+                                    ),
+                                    _buildFeatureCard(
+                                      context,
+                                      "assets/icons/service_history.svg",
+                                      "Service",
+                                      ServiceHistoryPage(
+                                        vehicleId: selectedVehicle.vehicleId,
+                                        vehicleName: selectedVehicle.model,
+                                        vehicleRegistration:
+                                            selectedVehicle.registrationNumber,
+                                        token: widget.token,
+                                        customerId: widget.customerId,
+                                      ),
+                                    ),
+                                    _buildFeatureCard(
+                                      context,
+                                      "assets/icons/set_reminders.svg",
+                                      "Reminders",
+                                      RemindersPage(
+                                        vehicleId: selectedVehicle.vehicleId,
+                                        token: widget.token,
+                                        customerId: widget.customerId,
+                                      ),
+                                    ),
+                                    _buildFeatureCard(
+                                      context,
+                                      "assets/icons/emergency.svg",
+                                      "Emergency",
+                                      EmergencyservicePage(token: widget.token),
+                                    ),
+                                    _buildFeatureCard(
+                                      context,
+                                      "assets/icons/edit.svg",
+                                      "Edit",
+                                      EditVehicledetailsPage(
+                                        customerId: widget.customerId,
+                                        vehicleId: selectedVehicle.vehicleId,
+                                        token: widget.token,
+                                      ),
+                                    ),
+                                    _buildFeatureCard(
+                                      context,
+                                      "assets/icons/delete.svg",
+                                      "Delete",
+                                      DeleteVehiclePage(
+                                        customerId: widget.customerId,
+                                        vehicleId: selectedVehicle.vehicleId,
+                                        token: widget.token,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // --- Features Section ---
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.primary300.withOpacity(0.3),
-                                    AppColors.primary200.withOpacity(0.2),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Icons.dashboard_customize_rounded,
-                                color: AppColors.neutral100,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Quick Actions',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.neutral100,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                Text(
-                                  'Manage your vehicle',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.neutral200,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        // Grid of Feature Cards
-                        GridView.count(
-                          crossAxisCount: 4,
-                          mainAxisSpacing: 14,
-                          crossAxisSpacing: 14,
-                          childAspectRatio: 0.75,
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          children: [
-                            _buildFeatureCard(
-                              context,
-                              "assets/icons/documents.svg",
-                              "Documents",
-                              DocumentsPage(
-                                customerId: widget.customerId,
-                                vehicleId: selectedVehicle.vehicleId,
-                              ),
-                            ),
-                            _buildFeatureCard(
-                              context,
-                              "assets/icons/appointments.svg",
-                              "Appointment",
-                              AppointmentPage(
-                                customerId: widget.customerId,
-                                vehicleId: selectedVehicle.vehicleId,
-                                token: widget.token,
-                              ),
-                            ),
-                            _buildFeatureCard(
-                              context,
-                              "assets/icons/fuel_efficiency.svg",
-                              "Fuel",
-                              FuelSummaryPage(
-                                vehicleId: selectedVehicle.vehicleId,
-                                token: widget.token,
-                              ),
-                            ),
-                            _buildFeatureCard(
-                              context,
-                              "assets/icons/service_history.svg",
-                              "Service",
-                              ServiceHistoryPage(
-                                vehicleId: selectedVehicle.vehicleId,
-                                vehicleName: selectedVehicle.model,
-                                vehicleRegistration:
-                                    selectedVehicle.registrationNumber,
-                                token: widget.token,
-                                customerId: widget.customerId,
-                              ),
-                            ),
-                            _buildFeatureCard(
-                              context,
-                              "assets/icons/set_reminders.svg",
-                              "Reminders",
-                              RemindersPage(
-                                vehicleId: selectedVehicle.vehicleId,
-                                token: widget.token,
-                                customerId: widget.customerId,
-                              ),
-                            ),
-                            _buildFeatureCard(
-                              context,
-                              "assets/icons/emergency.svg",
-                              "Emergency",
-                              EmergencyservicePage(token: widget.token),
-                            ),
-                            _buildFeatureCard(
-                              context,
-                              "assets/icons/edit.svg",
-                              "Edit",
-                              EditVehicledetailsPage(
-                                customerId: widget.customerId,
-                                vehicleId: selectedVehicle.vehicleId,
-                                token: widget.token,
-                              ),
-                            ),
-                            _buildFeatureCard(
-                              context,
-                              "assets/icons/delete.svg",
-                              "Delete",
-                              DeleteVehiclePage(
-                                customerId: widget.customerId,
-                                vehicleId: selectedVehicle.vehicleId,
-                                token: widget.token,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                      ],
                     ),
                   ),
                 ],
@@ -550,7 +533,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
               AppColors.neutral300.withOpacity(0.35),
             ],
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: AppColors.neutral200.withOpacity(0.3),
             width: 1.5,
@@ -574,80 +557,111 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
 
   Widget _buildDetailGrid(vehicle) {
     final details = [
-      {'label': 'Brand', 'value': vehicle.brand},
-      {'label': 'Model', 'value': vehicle.model},
-      {'label': 'Year', 'value': vehicle.year.toString()},
-      {'label': 'Fuel Type', 'value': vehicle.fuel},
-      {'label': 'Chassis Number', 'value': vehicle.chassisNumber},
+      {
+        'label': 'Brand',
+        'value': vehicle.brand,
+        'icon': Icons.business_outlined
+      },
+      {
+        'label': 'Model',
+        'value': vehicle.model,
+        'icon': Icons.directions_car_outlined
+      },
+      {
+        'label': 'Year',
+        'value': vehicle.year.toString(),
+        'icon': Icons.calendar_today_outlined
+      },
+      {
+        'label': 'Fuel',
+        'value': vehicle.fuel,
+        'icon': Icons.local_gas_station_outlined
+      },
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.neutral400.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary200,
+            AppColors.primary300,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: AppColors.neutral200.withOpacity(0.25),
+          width: 1.5,
+        ),
       ),
-      child: Column(
+      child: Row(
         children: [
-          for (int i = 0; i < details.length; i += 2)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildDetailItem(
-                      details[i]['label']!,
-                      details[i]['value']!,
-                    ),
-                  ),
-                  if (i + 1 < details.length) ...[
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _buildDetailItem(
-                        details[i + 1]['label']!,
-                        details[i + 1]['value']!,
-                      ),
-                    ),
-                  ],
-                ],
+          for (int i = 0; i < details.length; i++) ...[
+            Expanded(
+              child: _buildDetailItem(
+                details[i]['label'] as String,
+                details[i]['value'] as String,
+                details[i]['icon'] as IconData,
               ),
             ),
+            if (i < details.length - 1)
+              Container(
+                width: 1,
+                height: 40,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.neutral100.withOpacity(0.0),
+                      AppColors.neutral100.withOpacity(0.3),
+                      AppColors.neutral100.withOpacity(0.0),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildDetailItem(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.neutral300.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: AppColors.neutral200,
-              fontWeight: FontWeight.w500,
-            ),
+  Widget _buildDetailItem(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          color: AppColors.neutral100.withOpacity(0.8),
+          size: 20,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            color: AppColors.neutral100,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.3,
           ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.neutral100,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            color: AppColors.neutral100,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.2,
           ),
-        ],
-      ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 
@@ -664,102 +678,56 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
           MaterialPageRoute(builder: (context) => destinationScreen),
         );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.neutral300.withOpacity(0.6),
-              AppColors.neutral300.withOpacity(0.35),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppColors.neutral200.withOpacity(0.3),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 12,
-              offset: const Offset(0, 5),
-            ),
-            BoxShadow(
-              color: AppColors.primary300.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => destinationScreen),
-              );
-            },
-            borderRadius: BorderRadius.circular(20),
-            splashColor: AppColors.primary300.withOpacity(0.2),
-            highlightColor: AppColors.primary300.withOpacity(0.1),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.primary300.withOpacity(0.35),
-                          AppColors.primary200.withOpacity(0.20),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.primary200.withOpacity(0.3),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary300.withOpacity(0.25),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: SvgPicture.asset(
-                      assetPath,
-                      height: 28,
-                      color: AppColors.neutral100,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Flexible(
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.neutral100,
-                        fontWeight: FontWeight.w600,
-                        height: 1.2,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.neutral300.withOpacity(0.6),
+                  AppColors.neutral300.withOpacity(0.35),
                 ],
+              ),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: AppColors.neutral200.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 12,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: SvgPicture.asset(
+              assetPath,
+              height: 28,
+              color: AppColors.neutral100,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Flexible(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10,
+                color: AppColors.neutral100,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+                letterSpacing: 0.2,
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
