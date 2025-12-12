@@ -211,16 +211,26 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.neutral500,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.neutral300.withOpacity(0.3),
+            AppColors.neutral300.withOpacity(0.15),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: AppColors.neutral200.withOpacity(0.25),
+          width: 1.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 20),
+              Icon(icon, color: AppColors.neutral100, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
@@ -275,12 +285,13 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.primary200
-                              : AppColors.neutral500,
-                          borderRadius: BorderRadius.circular(20),
+                              : AppColors.neutral300.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: isSelected
                                 ? AppColors.primary200
-                                : AppColors.neutral300,
+                                : AppColors.neutral200.withOpacity(0.3),
+                            width: 1.5,
                           ),
                         ),
                         child: Text(
@@ -383,9 +394,19 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
     return Container(
       height: 200,
       decoration: BoxDecoration(
-        color: AppColors.neutral500,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.neutral400),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.neutral300.withOpacity(0.3),
+            AppColors.neutral300.withOpacity(0.15),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: AppColors.neutral200.withOpacity(0.25),
+          width: 1.5,
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -393,7 +414,7 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
           Icon(
             Icons.local_gas_station_outlined,
             size: 48,
-            color: AppColors.neutral300,
+            color: AppColors.neutral100,
           ),
           const SizedBox(height: 16),
           Text(
@@ -415,7 +436,7 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.neutral600,
+      backgroundColor: AppColors.neutral400,
       appBar: CustomAppBar(
         title: 'Fuel Usage Summary',
         showTitle: true,
@@ -439,8 +460,11 @@ class FuelSummaryPageState extends State<FuelSummaryPage> {
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
                           color: Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: Colors.red,
+                            width: 1.5,
+                          ),
                         ),
                         child: Row(
                           children: [
