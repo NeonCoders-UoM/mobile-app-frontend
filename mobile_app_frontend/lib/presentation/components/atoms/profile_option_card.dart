@@ -28,33 +28,43 @@ class _ProfileOptionCardState extends State<ProfileOptionCard> {
         }
       },
       child: Container(
-        width: 400,
-        child: Card(
-          margin: EdgeInsets.zero,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: _isTapped
+                ? [
+                    AppColors.neutral300.withOpacity(0.4),
+                    AppColors.neutral300.withOpacity(0.25),
+                  ]
+                : [
+                    AppColors.neutral300.withOpacity(0.3),
+                    AppColors.neutral300.withOpacity(0.15),
+                  ],
           ),
-          color: _isTapped ? AppColors.neutral450 : AppColors.neutral400,
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  widget.text,
-                  style: AppTextStyles.textLgRegular.copyWith(
-                    color: AppColors.neutral150,
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: AppColors.neutral150,
-                ),
-              ],
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: AppColors.neutral200.withOpacity(0.25),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              widget.text,
+              style: AppTextStyles.textLgRegular.copyWith(
+                color: AppColors.neutral100,
+              ),
             ),
-          ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: AppColors.neutral100,
+            ),
+          ],
         ),
       ),
     );
