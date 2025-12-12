@@ -126,6 +126,36 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
         print(
             '📱 Retrieved payment context: ${paymentContext != null ? "✅" : "❌"}');
 
+        // Confirm payment with backend
+        try {
+          print('📤 Confirming payment with backend...');
+          print('   Order ID: ${paymentObject["order_id"]}');
+          print('   Payment ID: $paymentId');
+          
+          final confirmResponse = await http.post(
+            Uri.parse('http://192.168.8.161:5039/api/payhere/confirm-payment'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'orderId': paymentObject["order_id"],
+              'paymentNo': paymentId,
+              'statusCode': 2, // 2 = Success in PayHere
+            }),
+          );
+
+          if (confirmResponse.statusCode == 200) {
+            print('✅ Payment confirmed with backend successfully');
+            final confirmData = jsonDecode(confirmResponse.body);
+            print('   Backend response: ${confirmData['message']}');
+          } else {
+            print('⚠️ Backend confirmation failed: ${confirmResponse.statusCode}');
+            print('   Response: ${confirmResponse.body}');
+            // Continue anyway - user has paid, we'll handle this manually if needed
+          }
+        } catch (e) {
+          print('❌ Error confirming payment with backend: $e');
+          // Continue anyway - user has paid
+        }
+
         if (authData != null && paymentContext != null) {
           print('✅ Using saved authentication data');
           Navigator.of(context).pushReplacement(

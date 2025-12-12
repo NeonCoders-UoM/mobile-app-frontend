@@ -56,7 +56,8 @@ class _AddVehicledetailsPageState extends State<AddVehicledetailsPage> {
 
     try {
       // Add vehicle using the provider
-      final vehicleProvider = Provider.of<VehicleProvider>(context, listen: false);
+      final vehicleProvider =
+          Provider.of<VehicleProvider>(context, listen: false);
       await vehicleProvider.addVehicle(
         widget.customerId,
         {
@@ -76,7 +77,7 @@ class _AddVehicledetailsPageState extends State<AddVehicledetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vehicle added successfully')),
       );
-      
+
       // Navigate back to vehicle details home page
       Navigator.pushReplacement(
         context,
@@ -89,7 +90,7 @@ class _AddVehicledetailsPageState extends State<AddVehicledetailsPage> {
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to add vehicle: $e')),
       );
@@ -110,74 +111,163 @@ class _AddVehicledetailsPageState extends State<AddVehicledetailsPage> {
         showTitle: true,
         onBackPressed: () => Navigator.of(context).pop(),
       ),
-      backgroundColor: AppColors.neutral400,
+      backgroundColor: AppColors.neutral500,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-          child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 36),
-                InputFieldAtom(
-                  label: 'Registration Number/License Plate',
-                  placeholder: 'Registration Number',
-                  controller: _registrationNumberController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Chassis Number',
-                  placeholder: 'Chassis Number',
-                  controller: _chassisNumberController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Vehicle Brand',
-                  placeholder: 'Vehicle Brand',
-                  controller: _brandController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Model',
-                  placeholder: 'Model',
-                  controller: _modelController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 32),
-                InputFieldAtom(
-                  label: 'Fuel Type',
-                  placeholder: 'Fuel Type',
-                  controller: _fuelTypeController,
-                  keyboardType: TextInputType.text,
-                  state: InputFieldState.defaultState,
-                ),
-                const SizedBox(height: 72),
-                Align(
-                  alignment: Alignment.bottomCenter,
+                // Hero Section
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.primary200,
+                        AppColors.primary300,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary200.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      SizedBox(
-                        width: 220,
-                        height: 48,
-                        child: CustomButton(
-                          label: _isLoading ? 'Adding...' : 'Add Vehicle',
-                          type: ButtonType.primary,
-                          size: ButtonSize.medium,
-                          onTap: _isLoading ? null : _handleAdd,
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.directions_car,
+                          size: 48,
+                          color: AppColors.neutral100,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Add New Vehicle',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.neutral100,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Fill in the details below',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.neutral100.withOpacity(0.9),
+                        ),
+                      ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
+
+                // Form Card
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.neutral450,
+                        AppColors.neutral450.withOpacity(0.95),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InputFieldAtom(
+                        label: 'Registration Number/License Plate',
+                        placeholder: 'Registration Number',
+                        controller: _registrationNumberController,
+                        keyboardType: TextInputType.text,
+                        state: InputFieldState.defaultState,
+                      ),
+                      const SizedBox(height: 20),
+                      InputFieldAtom(
+                        label: 'Chassis Number',
+                        placeholder: 'Chassis Number',
+                        controller: _chassisNumberController,
+                        keyboardType: TextInputType.text,
+                        state: InputFieldState.defaultState,
+                      ),
+                      const SizedBox(height: 20),
+                      InputFieldAtom(
+                        label: 'Vehicle Brand',
+                        placeholder: 'Vehicle Brand',
+                        controller: _brandController,
+                        keyboardType: TextInputType.text,
+                        state: InputFieldState.defaultState,
+                      ),
+                      const SizedBox(height: 20),
+                      InputFieldAtom(
+                        label: 'Model',
+                        placeholder: 'Model',
+                        controller: _modelController,
+                        keyboardType: TextInputType.text,
+                        state: InputFieldState.defaultState,
+                      ),
+                      const SizedBox(height: 20),
+                      InputFieldAtom(
+                        label: 'Fuel Type',
+                        placeholder: 'Fuel Type',
+                        controller: _fuelTypeController,
+                        keyboardType: TextInputType.text,
+                        state: InputFieldState.defaultState,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Button
+                SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary200.withOpacity(0.4),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: CustomButton(
+                      label: _isLoading ? 'Adding...' : 'Add Vehicle',
+                      type: ButtonType.primary,
+                      size: ButtonSize.medium,
+                      onTap: _isLoading ? null : _handleAdd,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
               ],
             ),
           ),

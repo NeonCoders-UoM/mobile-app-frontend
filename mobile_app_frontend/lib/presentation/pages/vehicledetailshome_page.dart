@@ -104,7 +104,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
           content: Text(
             'Are you sure you want to logout?',
             style: AppTextStyles.textSmRegular.copyWith(
-              color: AppColors.neutral200,
+              color: AppColors.neutral100,
             ),
           ),
           actions: [
@@ -115,7 +115,7 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
               child: Text(
                 'Cancel',
                 style: AppTextStyles.textSmMedium.copyWith(
-                  color: AppColors.neutral200,
+                  color: AppColors.neutral100,
                 ),
               ),
             ),
