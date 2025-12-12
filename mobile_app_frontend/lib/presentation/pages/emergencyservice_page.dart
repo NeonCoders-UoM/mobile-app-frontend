@@ -79,19 +79,35 @@ class EmergencyservicePageState extends State<EmergencyservicePage> {
           children: [
             // Emergency Service Image
             Container(
-              height: 220,
+              height: 200,
               width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(6),
                 child: Image.asset(
                   'assets/images/emergency.png',
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      height: 220,
                       decoration: BoxDecoration(
-                        color: AppColors.neutral300,
-                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.primary300.withOpacity(0.3),
+                            AppColors.neutral300,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Center(
                         child: Column(
@@ -117,73 +133,154 @@ class EmergencyservicePageState extends State<EmergencyservicePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            // Service Name
-            Text(
-              _getEmergencyServiceName(),
-              style: AppTextStyles.displaySmBold.copyWith(
-                color: AppColors.neutral100,
-                fontSize: 28,
+            // Service Info Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.neutral300.withOpacity(0.4),
+                    AppColors.neutral300.withOpacity(0.2),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: AppColors.neutral200.withOpacity(0.3),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Service Name
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.primary200,
+                              AppColors.primary300,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: AppColors.primary300.withOpacity(0.4),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.local_hospital,
+                          color: AppColors.neutral100,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _getEmergencyServiceName(),
+                          style: AppTextStyles.displaySmBold.copyWith(
+                            color: AppColors.neutral100,
+                            fontSize: 24,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Location
+                  _buildInfoRow(
+                    Icons.location_on,
+                    _getEmergencyServiceLocation(),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Phone Number
+                  _buildInfoRow(
+                    Icons.phone,
+                    _getEmergencyServicePhone(),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 28),
 
-            // Location with Icon
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on,
-                  size: 18,
-                  color: AppColors.neutral200,
+            // Guidelines Section
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: AppColors.neutral300.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: AppColors.neutral200.withOpacity(0.25),
+                  width: 1.5,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  _getEmergencyServiceLocation(),
-                  style: AppTextStyles.textSmRegular.copyWith(
-                    color: AppColors.neutral200,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: AppColors.neutral100,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Emergency Guidelines',
+                        style: AppTextStyles.textLgBold.copyWith(
+                          color: AppColors.neutral100,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-
-            // Phone Number with Icon
-            Row(
-              children: [
-                Icon(
-                  Icons.phone,
-                  size: 18,
-                  color: AppColors.neutral200,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _getEmergencyServicePhone(),
-                  style: AppTextStyles.textSmRegular.copyWith(
-                    color: AppColors.neutral200,
+                  const SizedBox(height: 16),
+                  Text(
+                    _getEmergencyGuidelines(),
+                    style: AppTextStyles.textSmRegular.copyWith(
+                      color: AppColors.neutral100,
+                      height: 1.7,
+                      fontSize: 13,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 32),
 
-            // Guidelines Description
-            Text(
-              _getEmergencyGuidelines(),
-              style: AppTextStyles.textSmRegular.copyWith(
-                color: AppColors.neutral100,
-                height: 1.6,
-              ),
-            ),
-            const SizedBox(height: 40),
-
             // Call Button
             Center(
-              child: SizedBox(
-                width: 220,
-                height: 48,
+              child: Container(
+                width: 260,
+                height: 52,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary300.withOpacity(0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
                 child: CustomButton(
-                  label: 'Call',
+                  label: 'Call Emergency Service',
                   type: ButtonType.primary,
                   size: ButtonSize.medium,
                   onTap: () => _handleCall(_getEmergencyServicePhone()),
@@ -195,17 +292,20 @@ class EmergencyservicePageState extends State<EmergencyservicePage> {
             if (!_isBackendConnected && _emergencyCallCenters.isNotEmpty)
               Container(
                 margin: const EdgeInsets.only(top: 24),
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.states['ok']!.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.states['ok']!),
+                  color: AppColors.states['ok']!.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: AppColors.states['ok']!.withOpacity(0.4),
+                    width: 1.5,
+                  ),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.cloud_done,
-                        color: AppColors.states['ok']!, size: 20),
-                    const SizedBox(width: 8),
+                        color: AppColors.states['ok']!, size: 22),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Connected to emergency services (${_emergencyCallCenters.length} centers available)',
@@ -221,6 +321,39 @@ class EmergencyservicePageState extends State<EmergencyservicePage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.neutral300.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: AppColors.neutral200.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: AppColors.neutral100,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTextStyles.textSmRegular.copyWith(
+              color: AppColors.neutral100,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -249,33 +382,12 @@ class EmergencyservicePageState extends State<EmergencyservicePage> {
   String _getEmergencyGuidelines() {
     return '''Emergency Vehicle Service Guidelines:
 
-🚗 Before Calling:
-• Ensure you are in a safe location
-• Have your vehicle registration number ready
-• Note your exact location or nearest landmark
-• Check if you have spare tire and basic tools
-
 🔧 What We Provide:
 • 24/7 emergency roadside assistance
 • Professional certified mechanics
 • Towing services if repair isn't possible on-site
-• Battery jump-start and tire change services
-
-⚡ Emergency Situations:
-• Engine breakdown or overheating
-• Flat tire or battery issues
-• Fuel delivery service
-• Lockout assistance
-
-📞 When You Call:
-• Stay calm and describe the problem clearly
-• Provide your exact location
 • Mention if there are any safety concerns
 • Our team will arrive within 30-45 minutes
-
-💡 Safety First:
-• Turn on hazard lights
-• Move to a safe location if possible
-• Stay with your vehicle unless unsafe to do so''';
+''';
   }
 }
