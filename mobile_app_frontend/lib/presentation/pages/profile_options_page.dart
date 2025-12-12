@@ -24,12 +24,11 @@ class ProfileOptionPage extends StatelessWidget {
         title: 'Profile',
         showTitle: true,
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
         child: Column(
           children: [
-            SizedBox(
-              height: 12,
-            ),
+            const SizedBox(height: 24),
             ProfileOptionCard(
               text: 'Edit Personal Details',
               onTap: () async {
@@ -58,9 +57,7 @@ class ProfileOptionPage extends StatelessWidget {
                 }
               },
             ),
-            SizedBox(
-              height: 4,
-            ),
+            const SizedBox(height: 12),
             ProfileOptionCard(
               text: 'Delete Account',
               onTap: () async {
@@ -78,9 +75,7 @@ class ProfileOptionPage extends StatelessWidget {
                 }
               },
             ),
-            SizedBox(
-              height: 4,
-            ),
+            const SizedBox(height: 12),
             ProfileOptionCard(
               text: 'Change Password',
               onTap: () async {
@@ -103,9 +98,6 @@ class ProfileOptionPage extends StatelessWidget {
                   );
                 }
               },
-            ),
-            SizedBox(
-              height: 4,
             ),
           ],
         ),
