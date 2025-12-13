@@ -83,7 +83,7 @@ class _PaymentSuccessfulMessagePageState
       } else {
         // Mobile platform (Android/iOS)
         print('📱 Mobile platform detected - saving to device');
-        
+
         // Request storage permission
         var status = await Permission.storage.status;
         if (!status.isGranted) {
@@ -116,15 +116,16 @@ class _PaymentSuccessfulMessagePageState
         }
 
         // Create file path
-        final fileName = 'service_history_${widget.vehicleId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final fileName =
+            'service_history_${widget.vehicleId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
         final filePath = '${directory.path}/$fileName';
-        
+
         print('💾 Saving to: $filePath');
 
         // Write file
         final file = File(filePath);
         await file.writeAsBytes(pdfBytes);
-        
+
         print('✅ File saved successfully');
 
         if (mounted) {
@@ -164,8 +165,10 @@ class _PaymentSuccessfulMessagePageState
         errorMessage = 'Session expired. Please log in again.';
       } else if (e.toString().contains('Network error')) {
         errorMessage = 'Network connection error. Please check your internet.';
-      } else if (e.toString().contains('storage') || e.toString().contains('permission')) {
-        errorMessage = 'Storage permission denied. Please enable storage access in settings.';
+      } else if (e.toString().contains('storage') ||
+          e.toString().contains('permission')) {
+        errorMessage =
+            'Storage permission denied. Please enable storage access in settings.';
       } else if (e.toString().contains('Exception:')) {
         // Extract the actual error message
         errorMessage = e.toString().replaceAll('Exception:', '').trim();
@@ -196,69 +199,74 @@ class _PaymentSuccessfulMessagePageState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutral400,
-      body: Column(
-        children: [
-          const SizedBox(height: 116),
-          const SuccessfulMessage(
-              para1: 'Thank you', para2: 'Payment done successfully'),
-          const SizedBox(height: 80),
-          // Download PDF Button
-          CustomButton(
-            label: isDownloading
-                ? 'Downloading...'
-                : 'Download Service History PDF',
-            type: ButtonType.secondary,
-            size: ButtonSize.large,
-            onTap: isDownloading ? null : _downloadPdf,
-            customWidth: 360.0,
-            customHeight: 56.0,
-          ),
-          const SizedBox(height: 24),
-          // Home Button
-          CustomButton(
-            label: 'Home',
-            type: ButtonType.primary,
-            size: ButtonSize.large,
-            onTap: () async {
-              print('🏠 Home button pressed');
-              print('🔑 Token: ${widget.token}');
-              print('👤 Customer ID: ${widget.customerId}');
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SuccessfulMessage(
+                  para1: 'Thank you', para2: 'Payment done successfully'),
+              const SizedBox(height: 60),
+              // Download PDF Button
+              CustomButton(
+                label: isDownloading
+                    ? 'Downloading...'
+                    : 'Download Service History PDF',
+                type: ButtonType.secondary,
+                size: ButtonSize.large,
+                customWidth: double.infinity,
+                onTap: isDownloading ? null : _downloadPdf,
+              ),
+              const SizedBox(height: 16),
+              // Home Button
+              CustomButton(
+                label: 'Home',
+                type: ButtonType.primary,
+                size: ButtonSize.large,
+                customWidth: double.infinity,
+                onTap: () async {
+                  print('🏠 Home button pressed');
+                  print('🔑 Token: ${widget.token}');
+                  print('👤 Customer ID: ${widget.customerId}');
 
-              // Ensure we have valid authentication data
-              if (widget.customerId != null &&
-                  widget.token != null &&
-                  widget.token!.isNotEmpty) {
-                print(
-                    '✅ Authentication data valid, navigating to VehicleDetailsHomePage');
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => VehicleDetailsHomePage(
-                          customerId: widget.customerId!,
-                          token: widget.token!)),
-                  (route) => false, // Remove all previous routes
-                );
-              } else {
-                print('❌ Authentication data missing or invalid');
-                // Fallback: navigate to login if authentication data is missing
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Authentication error. Please log in again.'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                // Navigate to login page
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                  (route) => false,
-                );
-              }
-            },
-            customWidth: 360.0,
-            customHeight: 56.0,
+                  // Ensure we have valid authentication data
+                  if (widget.customerId != null &&
+                      widget.token != null &&
+                      widget.token!.isNotEmpty) {
+                    print(
+                        '✅ Authentication data valid, navigating to VehicleDetailsHomePage');
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => VehicleDetailsHomePage(
+                              customerId: widget.customerId!,
+                              token: widget.token!)),
+                      (route) => false, // Remove all previous routes
+                    );
+                  } else {
+                    print('❌ Authentication data missing or invalid');
+                    // Fallback: navigate to login if authentication data is missing
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Authentication error. Please log in again.'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    // Navigate to login page
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()),
+                      (route) => false,
+                    );
+                  }
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
