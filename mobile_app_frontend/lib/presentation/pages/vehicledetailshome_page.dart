@@ -94,17 +94,44 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.neutral300,
-          title: Text(
-            'Logout',
-            style: AppTextStyles.textSmSemibold.copyWith(
-              color: AppColors.neutral100,
-            ),
+          backgroundColor: AppColors.neutral450,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary200,
+                      AppColors.primary300,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(
+                  Icons.logout,
+                  color: AppColors.neutral100,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Logout',
+                style: AppTextStyles.textLgSemibold.copyWith(
+                  color: AppColors.neutral100,
+                ),
+              ),
+            ],
           ),
           content: Text(
             'Are you sure you want to logout?',
             style: AppTextStyles.textSmRegular.copyWith(
-              color: AppColors.neutral100,
+              color: AppColors.neutral200,
             ),
           ),
           actions: [
@@ -115,19 +142,27 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
               child: Text(
                 'Cancel',
                 style: AppTextStyles.textSmMedium.copyWith(
-                  color: AppColors.neutral100,
+                  color: AppColors.neutral200,
                 ),
               ),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _performLogout();
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary200,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
               child: Text(
                 'Logout',
                 style: AppTextStyles.textSmMedium.copyWith(
-                  color: AppColors.primary300,
+                  color: AppColors.neutral100,
                 ),
               ),
             ),
