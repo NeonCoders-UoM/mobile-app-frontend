@@ -35,7 +35,7 @@ class AppointmentCard extends StatelessWidget {
             AppColors.neutral450.withOpacity(0.95),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -60,11 +60,11 @@ class AppointmentCard extends StatelessWidget {
                       AppColors.primary300,
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.event_note,
-                  color: Colors.white,
+                  color: AppColors.neutral100,
                   size: 24,
                 ),
               ),
@@ -99,7 +99,7 @@ class AppointmentCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.neutral400.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(
                 color: AppColors.neutral300.withOpacity(0.2),
               ),
@@ -108,7 +108,7 @@ class AppointmentCard extends StatelessWidget {
               children: [
                 Icon(
                   Icons.calendar_today,
-                  color: AppColors.primary200,
+                  color: AppColors.neutral100,
                   size: 18,
                 ),
                 const SizedBox(width: 12),
