@@ -38,7 +38,8 @@ class _OtpPageState extends State<OtpPage> {
   String message = "OTP expired. Please request a new code.";
   Timer? _timer;
   final _authService = AuthService();
-  final GlobalKey<OtpInputFieldState> _otpInputKey = GlobalKey<OtpInputFieldState>();
+  final GlobalKey<OtpInputFieldState> _otpInputKey =
+      GlobalKey<OtpInputFieldState>();
 
   @override
   void initState() {
@@ -88,10 +89,10 @@ class _OtpPageState extends State<OtpPage> {
   Future<void> _submitOtp() async {
     String enteredOtp = otpValues.join();
     final success = await _authService.verifyOtp(widget.email, enteredOtp);
-    
+
     // Check if widget is still mounted before using context
     if (!mounted) return;
-    
+
     if (success) {
       // ✅ Navigate with data to PersonaldetailsPage
       Navigator.pushReplacement(
@@ -136,60 +137,118 @@ class _OtpPageState extends State<OtpPage> {
         onBackPressed: () => Navigator.of(context).pop(),
       ),
       backgroundColor: AppColors.neutral400,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Center(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              OtpInputField(
-                key: _otpInputKey,
-                status: status,
-                otpValues: otpValues,
-                message: message,
-                onChanged: _onOtpChanged,
-              ),
-              const SizedBox(height: 8),
-              if (status != OtpStatus.expired)
-                Text(
-                  "OTP will expire in ${_formatTime(remainingSeconds)}",
-                  style: AppTextStyles.textXsmRegular.copyWith(
-                    color: AppColors.neutral300,
+              const SizedBox(height: 40),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.neutral450,
+                      AppColors.neutral450.withOpacity(0.95),
+                    ],
                   ),
-                )
-              else
-                Column(
-                  children: [
-                    Text(
-                      "OTP expired",
-                      style: AppTextStyles.textXsmBold.copyWith(
-                        color: AppColors.states['error'],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    TextButton(
-                      onPressed: _resendCode,
-                      child: Text(
-                        "Resend OTP",
-                        style: AppTextStyles.textSmMedium.copyWith(
-                          color: AppColors.primary100,
-                        ),
-                      ),
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-              const SizedBox(height: 8),
-              if (_hasInput)
-                SizedBox(
-                  width: 320,
-                  height: 50,
-                  child: CustomButton(
-                    label: 'Verify',
-                    type: ButtonType.primary,
-                    size: ButtonSize.medium,
-                    onTap: _submitOtp,
-                  ),
+                child: Column(
+                  children: [
+                    OtpInputField(
+                      key: _otpInputKey,
+                      status: status,
+                      otpValues: otpValues,
+                      message: message,
+                      onChanged: _onOtpChanged,
+                    ),
+                    const SizedBox(height: 24),
+                    if (status != OtpStatus.expired)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.timer_outlined,
+                            color: AppColors.neutral100,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "OTP expires in ${_formatTime(remainingSeconds)}",
+                            style: AppTextStyles.textSmRegular.copyWith(
+                              color: AppColors.neutral100,
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.states['error']!.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: AppColors.states['error']!,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: AppColors.states['error'],
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "OTP expired",
+                                  style: AppTextStyles.textSmSemibold.copyWith(
+                                    color: AppColors.states['error'],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: _resendCode,
+                            child: Text(
+                              "Resend OTP",
+                              style: AppTextStyles.textSmMedium.copyWith(
+                                color: AppColors.primary200,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 24),
+                    if (_hasInput)
+                      CustomButton(
+                        label: 'Verify',
+                        type: ButtonType.primary,
+                        size: ButtonSize.large,
+                        customWidth: double.infinity,
+                        onTap: _submitOtp,
+                      ),
+                  ],
                 ),
+              ),
             ],
           ),
         ),
