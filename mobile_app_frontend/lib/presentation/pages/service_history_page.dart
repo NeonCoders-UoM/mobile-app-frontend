@@ -305,7 +305,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: AppColors.neutral400,
       appBar: const CustomAppBar(title: 'Service History'),
       body: Column(
         children: [
@@ -327,7 +327,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
                   backgroundColor: AppColors.primary200,
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(6.0),
                   ),
                 ),
               ),
@@ -370,7 +370,7 @@ class _ServiceHistoryPageState extends State<ServiceHistoryPage> {
                   backgroundColor: AppColors.primary200,
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(6.0),
                   ),
                 ),
               ),
