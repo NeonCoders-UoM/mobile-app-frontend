@@ -136,7 +136,7 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
               AppColors.neutral450.withOpacity(0.95),
             ],
           ),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(6),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
@@ -163,8 +163,8 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
                     ],
                   ),
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
+                    topLeft: Radius.circular(6),
+                    topRight: Radius.circular(6),
                   ),
                 ),
                 child: Column(
