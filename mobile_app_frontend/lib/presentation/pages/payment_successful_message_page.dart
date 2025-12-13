@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/button.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_size.dart';
@@ -10,9 +13,6 @@ import 'package:mobile_app_frontend/data/repositories/service_history_repository
 import 'package:mobile_app_frontend/presentation/pages/login_page.dart';
 import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
 import 'package:mobile_app_frontend/core/services/local_storage.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class PaymentSuccessfulMessagePage extends StatefulWidget {
   final int customerId;
@@ -81,33 +81,56 @@ class _PaymentSuccessfulMessagePageState
         );
         print('✅ Web download initiated');
       } else {
-        // Mobile platform (Android/iOS)
-        print('📱 Mobile platform detected - saving to device');
+        print('📱 Mobile platform detected, requesting storage permission...');
 
         // Request storage permission
-        var status = await Permission.storage.status;
-        if (!status.isGranted) {
-          print('📋 Requesting storage permission...');
-          status = await Permission.storage.request();
-        }
-
-        // For Android 13+ (API 33+), use photos permission instead
+        PermissionStatus status;
         if (Platform.isAndroid) {
-          var photosStatus = await Permission.photos.status;
-          if (!photosStatus.isGranted) {
-            print('📋 Requesting photos permission (Android 13+)...');
-            photosStatus = await Permission.photos.request();
+          // For Android 13+ (API 33+), use photos permission
+          // For older Android versions, use storage permission
+          final androidInfo = await Permission.storage.request();
+          status = androidInfo;
+
+          if (status.isDenied) {
+            // Try photos permission for Android 13+
+            status = await Permission.photos.request();
           }
+        } else {
+          // For iOS, request photos permission
+          status = await Permission.photos.request();
         }
 
-        // Get the downloads directory
+        if (!status.isGranted) {
+          print('❌ Storage permission denied');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text(
+                    'Storage permission is required to download PDF'),
+                backgroundColor: Colors.orange,
+                action: SnackBarAction(
+                  label: 'Settings',
+                  textColor: Colors.white,
+                  onPressed: () => openAppSettings(),
+                ),
+              ),
+            );
+          }
+          return;
+        }
+
+        print('✅ Storage permission granted');
+
+        // Get the directory to save the file
         Directory? directory;
         if (Platform.isAndroid) {
+          // Save to Downloads folder on Android
           directory = Directory('/storage/emulated/0/Download');
           if (!await directory.exists()) {
             directory = await getExternalStorageDirectory();
           }
-        } else if (Platform.isIOS) {
+        } else {
+          // Save to Documents folder on iOS
           directory = await getApplicationDocumentsDirectory();
         }
 
@@ -115,30 +138,22 @@ class _PaymentSuccessfulMessagePageState
           throw Exception('Could not access storage directory');
         }
 
-        // Create file path
         final fileName =
             'service_history_${widget.vehicleId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
         final filePath = '${directory.path}/$fileName';
 
-        print('💾 Saving to: $filePath');
-
-        // Write file
+        print('💾 Saving PDF to: $filePath');
         final file = File(filePath);
         await file.writeAsBytes(pdfBytes);
-
-        print('✅ File saved successfully');
+        print('✅ PDF saved successfully');
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('PDF saved to Downloads/$fileName'),
+              content: Text(
+                  'PDF saved to ${Platform.isAndroid ? "Downloads" : "Documents"}'),
               backgroundColor: Colors.green,
-              duration: const Duration(seconds: 5),
-              action: SnackBarAction(
-                label: 'OK',
-                textColor: Colors.white,
-                onPressed: () {},
-              ),
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -165,10 +180,6 @@ class _PaymentSuccessfulMessagePageState
         errorMessage = 'Session expired. Please log in again.';
       } else if (e.toString().contains('Network error')) {
         errorMessage = 'Network connection error. Please check your internet.';
-      } else if (e.toString().contains('storage') ||
-          e.toString().contains('permission')) {
-        errorMessage =
-            'Storage permission denied. Please enable storage access in settings.';
       } else if (e.toString().contains('Exception:')) {
         // Extract the actual error message
         errorMessage = e.toString().replaceAll('Exception:', '').trim();
@@ -199,74 +210,69 @@ class _PaymentSuccessfulMessagePageState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutral400,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SuccessfulMessage(
-                  para1: 'Thank you', para2: 'Payment done successfully'),
-              const SizedBox(height: 60),
-              // Download PDF Button
-              CustomButton(
-                label: isDownloading
-                    ? 'Downloading...'
-                    : 'Download Service History PDF',
-                type: ButtonType.secondary,
-                size: ButtonSize.large,
-                customWidth: double.infinity,
-                onTap: isDownloading ? null : _downloadPdf,
-              ),
-              const SizedBox(height: 16),
-              // Home Button
-              CustomButton(
-                label: 'Home',
-                type: ButtonType.primary,
-                size: ButtonSize.large,
-                customWidth: double.infinity,
-                onTap: () async {
-                  print('🏠 Home button pressed');
-                  print('🔑 Token: ${widget.token}');
-                  print('👤 Customer ID: ${widget.customerId}');
-
-                  // Ensure we have valid authentication data
-                  if (widget.customerId != null &&
-                      widget.token != null &&
-                      widget.token!.isNotEmpty) {
-                    print(
-                        '✅ Authentication data valid, navigating to VehicleDetailsHomePage');
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => VehicleDetailsHomePage(
-                              customerId: widget.customerId!,
-                              token: widget.token!)),
-                      (route) => false, // Remove all previous routes
-                    );
-                  } else {
-                    print('❌ Authentication data missing or invalid');
-                    // Fallback: navigate to login if authentication data is missing
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content:
-                            Text('Authentication error. Please log in again.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    // Navigate to login page
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginPage()),
-                      (route) => false,
-                    );
-                  }
-                },
-              ),
-            ],
+      body: Column(
+        children: [
+          const SizedBox(height: 116),
+          const SuccessfulMessage(
+              para1: 'Thank you', para2: 'Payment done successfully'),
+          const SizedBox(height: 80),
+          // Download PDF Button
+          CustomButton(
+            label: isDownloading
+                ? 'Downloading...'
+                : 'Download Service History PDF',
+            type: ButtonType.secondary,
+            size: ButtonSize.large,
+            onTap: isDownloading ? null : _downloadPdf,
+            customWidth: 360.0,
+            customHeight: 56.0,
           ),
-        ),
+          const SizedBox(height: 24),
+          // Home Button
+          CustomButton(
+            label: 'Home',
+            type: ButtonType.primary,
+            size: ButtonSize.large,
+            onTap: () async {
+              print('🏠 Home button pressed');
+              print('🔑 Token: ${widget.token}');
+              print('👤 Customer ID: ${widget.customerId}');
+
+              // Ensure we have valid authentication data
+              if (widget.customerId != null &&
+                  widget.token != null &&
+                  widget.token!.isNotEmpty) {
+                print(
+                    '✅ Authentication data valid, navigating to VehicleDetailsHomePage');
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => VehicleDetailsHomePage(
+                          customerId: widget.customerId!,
+                          token: widget.token!)),
+                  (route) => false, // Remove all previous routes
+                );
+              } else {
+                print('❌ Authentication data missing or invalid');
+                // Fallback: navigate to login if authentication data is missing
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Authentication error. Please log in again.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                // Navigate to login page
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
+              }
+            },
+            customWidth: 360.0,
+            customHeight: 56.0,
+          ),
+        ],
       ),
     );
   }
