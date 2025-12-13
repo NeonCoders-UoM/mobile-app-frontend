@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:mobile_app_frontend/core/theme/app_colors.dart';
+import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/data/repositories/service_history_repository.dart';
 import 'package:mobile_app_frontend/presentation/pages/payment_successful_message_page.dart';
 import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
@@ -84,7 +86,16 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) return const Center(child: CircularProgressIndicator());
+    if (loading) {
+      return Scaffold(
+        backgroundColor: AppColors.neutral400,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary200,
+          ),
+        ),
+      );
+    }
     if (status == 'Paid') {
       // Redirect to the enhanced success page
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -101,6 +112,38 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
       });
       return const SizedBox.shrink();
     }
-    return Center(child: Text('Payment status: $status'));
+    return Scaffold(
+      backgroundColor: AppColors.neutral400,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 80,
+                color: AppColors.neutral200,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Payment Status',
+                style: AppTextStyles.textLgSemibold.copyWith(
+                  color: AppColors.neutral100,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                status ?? 'Unknown',
+                style: AppTextStyles.textMdRegular.copyWith(
+                  color: AppColors.neutral200,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
