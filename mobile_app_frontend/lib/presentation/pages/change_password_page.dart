@@ -126,6 +126,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 label: 'Change password',
                 type: ButtonType.primary,
                 size: ButtonSize.large,
+                customWidth: double.infinity,
                 onTap: () async {
                   final currentPassword = _currentPasswordController.text;
                   final newPassword = _newPasswordController.text;
