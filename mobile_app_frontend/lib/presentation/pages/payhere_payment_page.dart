@@ -131,7 +131,7 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
           print('📤 Confirming payment with backend...');
           print('   Order ID: ${paymentObject["order_id"]}');
           print('   Payment ID: $paymentId');
-          
+
           final confirmResponse = await http.post(
             Uri.parse('http://192.168.8.161:5039/api/payhere/confirm-payment'),
             headers: {'Content-Type': 'application/json'},
@@ -147,7 +147,8 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
             final confirmData = jsonDecode(confirmResponse.body);
             print('   Backend response: ${confirmData['message']}');
           } else {
-            print('⚠️ Backend confirmation failed: ${confirmResponse.statusCode}');
+            print(
+                '⚠️ Backend confirmation failed: ${confirmResponse.statusCode}');
             print('   Response: ${confirmResponse.body}');
             // Continue anyway - user has paid, we'll handle this manually if needed
           }
@@ -223,38 +224,80 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.neutral500,
+      backgroundColor: AppColors.neutral400,
       appBar: AppBar(
-        backgroundColor: AppColors.neutral500,
+        backgroundColor: AppColors.neutral400,
         elevation: 0,
-        title: const Text('Pay & Download PDF'),
+        title: Text(
+          'Pay & Download PDF',
+          style: AppTextStyles.textLgSemibold.copyWith(
+            color: AppColors.neutral100,
+          ),
+        ),
+        iconTheme: IconThemeData(color: AppColors.neutral100),
       ),
-      body: Center(
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Card(
-            color: AppColors.neutral400,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 5,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Pay Rs.500 to download your Service History PDF',
-                    style: AppTextStyles.textLgBold
-                        .copyWith(color: AppColors.primary200),
-                    textAlign: TextAlign.center,
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.neutral450,
+                      AppColors.neutral450.withOpacity(0.95),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.picture_as_pdf,
+                      size: 64,
+                      color: AppColors.primary200,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Service History PDF',
+                      style: AppTextStyles.textLgSemibold.copyWith(
+                        color: AppColors.neutral100,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Pay Rs.500 to download your complete service history',
+                      style: AppTextStyles.textSmRegular.copyWith(
+                        color: AppColors.neutral200,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
                       onPressed: _isProcessing ? null : _startPayment,
-                      icon: const Icon(Icons.lock_open, color: Colors.white),
-                      label: _isProcessing
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary200,
+                        disabledBackgroundColor:
+                            AppColors.primary300.withOpacity(0.5),
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      child: _isProcessing
                           ? const SizedBox(
                               width: 20,
                               height: 20,
@@ -263,21 +306,25 @@ class _PayHerePaymentPageState extends State<PayHerePaymentPage> {
                                 strokeWidth: 2,
                               ),
                             )
-                          : Text('Pay & Download',
-                              style: AppTextStyles.textMdSemibold
-                                  .copyWith(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary200,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 16.0, horizontal: 24.0),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0)),
-                      ),
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.lock_open,
+                                    color: Colors.white),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Pay & Download',
+                                  style: AppTextStyles.textMdSemibold.copyWith(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
