@@ -49,7 +49,8 @@ class _DeleteVehiclePageState extends State<DeleteVehiclePage> {
     });
 
     try {
-      final vehicleProvider = Provider.of<VehicleProvider>(context, listen: false);
+      final vehicleProvider =
+          Provider.of<VehicleProvider>(context, listen: false);
       await vehicleProvider.deleteVehicle(
         widget.customerId,
         widget.vehicleId,
@@ -74,18 +75,20 @@ class _DeleteVehiclePageState extends State<DeleteVehiclePage> {
         setState(() {
           _isDeleting = false;
         });
-        
+
         String errorMessage = 'Failed to delete vehicle. Please try again.';
-        
+
         // Provide specific error messages based on the exception
         if (e.toString().contains('Invalid password')) {
-          errorMessage = 'Invalid password. Please check your password and try again.';
+          errorMessage =
+              'Invalid password. Please check your password and try again.';
         } else if (e.toString().contains('Vehicle not found')) {
           errorMessage = 'Vehicle not found.';
         } else if (e.toString().contains('Invalid request')) {
-          errorMessage = 'Invalid request. Please check your input and try again.';
+          errorMessage =
+              'Invalid request. Please check your input and try again.';
         }
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -113,20 +116,21 @@ class _DeleteVehiclePageState extends State<DeleteVehiclePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 24),
               Text(
                 "Are you sure you want to delete the vehicle?",
                 style: AppTextStyles.textLgSemibold.copyWith(
                   color: AppColors.neutral100,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 16),
               Text(
-                "Once you delete your vehicle, it cannot be undone. All your data will be permanently erased from this app including your vehicle information, preferences, saved content, and any activity history! 🚗✅",
+                "Once you delete your vehicle, it cannot be undone. All your data will be permanently erased from this app including your vehicle information, preferences, saved content, and any activity history!",
                 style: AppTextStyles.textSmRegular.copyWith(
-                  color: AppColors.neutral100,
+                  color: AppColors.neutral200,
                 ),
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: 32),
               InputFieldAtom(
                 label: 'Password Confirmation',
                 placeholder: 'Enter your password to confirm',
@@ -135,27 +139,36 @@ class _DeleteVehiclePageState extends State<DeleteVehiclePage> {
                 state: InputFieldState.defaultState,
                 obscureText: true,
               ),
-              const SizedBox(height: 36),
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  label: _isDeleting ? 'Deleting...' : 'Delete Vehicle',
-                  type: ButtonType.danger,
-                  size: ButtonSize.medium,
-                  onTap: _isDeleting ? null : _handleDeleteVehicle,
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _isDeleting ? null : _handleDeleteVehicle,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade600,
+                  disabledBackgroundColor: Colors.red.shade300,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: Text(
+                  _isDeleting ? 'Deleting...' : 'Delete Vehicle',
+                  style: AppTextStyles.textMdSemibold.copyWith(
+                    color: Colors.white,
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  label: 'Go Back',
-                  type: ButtonType.primary,
-                  size: ButtonSize.medium,
-                  onTap: () => Navigator.of(context).pop(),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Cancel',
+                    style: AppTextStyles.textMdSemibold.copyWith(
+                      color: AppColors.neutral200,
+                    ),
+                  ),
                 ),
               ),
-              // Add extra padding at the bottom to ensure content doesn't get cut off
               const SizedBox(height: 40),
             ],
           ),
