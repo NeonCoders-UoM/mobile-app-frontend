@@ -48,6 +48,85 @@ class FuelInputFormState extends State<FuelInputForm> {
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppColors.primary200,
+              onPrimary: AppColors.neutral100,
+              surface: AppColors.neutral450,
+              onSurface: AppColors.neutral100,
+              background: AppColors.neutral500,
+              onBackground: AppColors.neutral100,
+            ),
+            dialogBackgroundColor: AppColors.neutral450,
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary200,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: AppColors.neutral450,
+              headerBackgroundColor: AppColors.primary200,
+              headerForegroundColor: AppColors.neutral100,
+              dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.neutral100;
+                }
+                return AppColors.neutral200;
+              }),
+              dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.primary200;
+                }
+                return Colors.transparent;
+              }),
+              todayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.primary200;
+                }
+                return AppColors.primary300.withOpacity(0.3);
+              }),
+              todayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.neutral100;
+                }
+                return AppColors.primary200;
+              }),
+              yearForegroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.neutral100;
+                }
+                return AppColors.neutral200;
+              }),
+              yearBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.primary200;
+                }
+                return Colors.transparent;
+              }),
+              dayOverlayColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.hovered)) {
+                  return AppColors.primary300.withOpacity(0.1);
+                }
+                if (states.contains(MaterialState.pressed)) {
+                  return AppColors.primary300.withOpacity(0.2);
+                }
+                return null;
+              }),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 8,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
