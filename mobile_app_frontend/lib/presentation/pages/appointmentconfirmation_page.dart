@@ -61,7 +61,6 @@ class _AppointmentconfirmationPageState
     }
   }
 
-
   Future<void> _proceedToServiceCenterSelection() async {
     // Navigate directly to service center selection without creating appointment
     Navigator.pushReplacement(
@@ -103,7 +102,6 @@ class _AppointmentconfirmationPageState
 //             vehicleId: widget.vehicleId,
 //             token: widget.token,
 //           ),
-
         ),
       ),
     );
@@ -147,84 +145,85 @@ class _AppointmentconfirmationPageState
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                height: 440,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.neutral450,
-                  border: Border.all(color: AppColors.neutral200),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: widget.selectedServices.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No Selected Services',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 16,
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral450,
+                    border: Border.all(color: AppColors.neutral200),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: widget.selectedServices.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No Selected Services',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              )
+                            : ListView.builder(
+                                itemCount: widget.selectedServices.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 6),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          widget.selectedServices[index]
+                                              .serviceName,
+                                          style: AppTextStyles.textLgRegular
+                                              .copyWith(
+                                            color: AppColors.neutral200,
+                                          ),
+                                        ),
+                                        Checkbox(
+                                            value: true,
+                                            onChanged: (_) {},
+                                            checkColor: Colors.white,
+                                            activeColor: AppColors.primary200)
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ServiceselectionPage(
+                                  selectedDate: selectedDate,
+                                  customerId: widget.customerId,
+                                  vehicleId: widget.vehicleId,
+                                  token: widget.token,
                                 ),
                               ),
-                            )
-                          : ListView.builder(
-                              itemCount: widget.selectedServices.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 6),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        widget.selectedServices[index]
-                                            .serviceName,
-                                        style: AppTextStyles.textLgRegular
-                                            .copyWith(
-                                          color: AppColors.neutral200,
-                                        ),
-                                      ),
-                                      Checkbox(
-                                          value: true,
-                                          onChanged: (_) {},
-                                          checkColor: Colors.white,
-                                          activeColor: AppColors.primary200)
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                    const SizedBox(height: 8),
-                    GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ServiceselectionPage(
-                                selectedDate: selectedDate,
-                                customerId: widget.customerId,
-                                vehicleId: widget.vehicleId,
-                                token: widget.token,
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.all(8.0),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              '+',
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: AppColors.neutral200,
                               ),
                             ),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.all(8.0),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            '+',
-                            style: TextStyle(
-                              fontSize: 24,
-                              color: AppColors.neutral200,
-                            ),
-                          ),
-                        )),
-                  ],
+                          )),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 24),

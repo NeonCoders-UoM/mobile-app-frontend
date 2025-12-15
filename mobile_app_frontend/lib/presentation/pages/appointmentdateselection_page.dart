@@ -64,56 +64,58 @@ class _AppointmentdateselectionPageState
                 ),
               ),
               const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                height: 440,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.neutral450,
-                  border: Border.all(color: AppColors.neutral200),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'No Selected Services',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral450,
+                    border: Border.all(color: AppColors.neutral200),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Spacer(),
+                      const Text(
+                        'No Selected Services',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 320),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ServiceselectionPage(
-                              selectedDate: selectedDate,
-                              customerId: widget.customerId,
-                              vehicleId: widget.vehicleId,
-                              token: widget.token,
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ServiceselectionPage(
+                                selectedDate: selectedDate,
+                                customerId: widget.customerId,
+                                vehicleId: widget.vehicleId,
+                                token: widget.token,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.all(8.0),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          '+',
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: AppColors.neutral200,
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(8.0),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            '+',
+                            style: TextStyle(
+                              fontSize: 24,
+                              color: AppColors.neutral200,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: CustomButton(

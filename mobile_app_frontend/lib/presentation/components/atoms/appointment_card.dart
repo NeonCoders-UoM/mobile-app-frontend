@@ -23,68 +23,106 @@ class AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.neutral400,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      elevation: 4,
-      child: Container(
-        width: 360,
-        height: 152,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.neutral450,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.neutral450.withOpacity(0.5)),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.neutral450,
+            AppColors.neutral450.withOpacity(0.95),
+          ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.home, color: AppColors.neutral150, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  servicecenterName,
-                  style: AppTextStyles.textLgMedium.copyWith(
-                    color: AppColors.neutral150,
-                    fontSize: 16,
+        borderRadius: BorderRadius.circular(4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary200,
+                      AppColors.primary300,
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-              ],
+                child: Icon(
+                  Icons.event_note,
+                  color: AppColors.neutral100,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Service Appointment',
+                      style: AppTextStyles.textSmMedium.copyWith(
+                        color: AppColors.neutral200,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      servicecenterName,
+                      style: AppTextStyles.textLgMedium.copyWith(
+                        color: AppColors.neutral100,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.neutral400.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: AppColors.neutral300.withOpacity(0.2),
+              ),
             ),
-            const SizedBox(height: 8),
-            Row(
+            child: Row(
               children: [
-                const Icon(Icons.access_time,
-                    color: AppColors.neutral150, size: 18),
-                const SizedBox(width: 8),
+                Icon(
+                  Icons.calendar_today,
+                  color: AppColors.neutral100,
+                  size: 18,
+                ),
+                const SizedBox(width: 12),
                 Text(
                   date,
                   style: AppTextStyles.textLgMedium.copyWith(
-                    color: AppColors.neutral150,
-                    fontSize: 16,
+                    color: AppColors.neutral100,
+                    fontSize: 15,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: 84,
-                height: 40,
-                child: CustomButton(
-                  label: 'Invoice',
-                  type: ButtonType.primary,
-                  size: ButtonSize.small,
-                  onTap: _onInvoicePressed,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

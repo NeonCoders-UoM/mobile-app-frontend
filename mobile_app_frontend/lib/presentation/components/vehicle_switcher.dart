@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/vehicle.dart';
+import '../../core/theme/app_colors.dart';
 import '../../state/providers/vehicle_provider.dart';
+import '../pages/add_vehicledeails_page.dart';
 
 class VehicleSwitcher extends StatelessWidget {
   final int customerId;
@@ -121,93 +123,340 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Add Vehicle'),
-      content: Form(
-        key: _formKey,
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 500),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.neutral450,
+              AppColors.neutral450.withOpacity(0.95),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(
-                decoration:
-                    const InputDecoration(labelText: 'Registration Number'),
-                onSaved: (v) => _formData['registrationNumber'] = v ?? '',
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              // Header with gradient
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary200,
+                      AppColors.primary300,
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(6),
+                    topRight: Radius.circular(6),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.directions_car,
+                        size: 32,
+                        color: AppColors.neutral100,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Add New Vehicle',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.neutral100,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Fill in the vehicle details',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.neutral100.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Brand'),
-                onSaved: (v) => _formData['brand'] = v ?? '',
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+
+              // Form content
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildModernTextField(
+                        label: 'Registration Number',
+                        icon: Icons.pin,
+                        onSaved: (v) =>
+                            _formData['registrationNumber'] = v ?? '',
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildModernTextField(
+                        label: 'Brand',
+                        icon: Icons.business,
+                        onSaved: (v) => _formData['brand'] = v ?? '',
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildModernTextField(
+                        label: 'Model',
+                        icon: Icons.drive_eta,
+                        onSaved: (v) => _formData['model'] = v ?? '',
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildModernTextField(
+                        label: 'Chassis Number',
+                        icon: Icons.numbers,
+                        onSaved: (v) => _formData['chassisNumber'] = v ?? '',
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildModernTextField(
+                        label: 'Mileage',
+                        icon: Icons.speed,
+                        keyboardType: TextInputType.number,
+                        onSaved: (v) =>
+                            _formData['mileage'] = int.tryParse(v ?? '0') ?? 0,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildModernTextField(
+                        label: 'Fuel Type',
+                        icon: Icons.local_gas_station,
+                        onSaved: (v) => _formData['fuel'] = v ?? '',
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildModernTextField(
+                        label: 'Year',
+                        icon: Icons.calendar_today,
+                        keyboardType: TextInputType.number,
+                        onSaved: (v) =>
+                            _formData['year'] = int.tryParse(v ?? '0') ?? 0,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border:
+                                Border.all(color: Colors.red.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.error_outline,
+                                  color: Colors.red, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _error!,
+                                  style: const TextStyle(
+                                      color: Colors.red, fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _loading
+                                    ? null
+                                    : () => Navigator.of(context).pop(),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppColors.neutral400.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color:
+                                          AppColors.neutral300.withOpacity(0.3),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Cancel',
+                                      style: TextStyle(
+                                        color: AppColors.neutral100,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _loading
+                                    ? null
+                                    : () async {
+                                        if (_formKey.currentState?.validate() ??
+                                            false) {
+                                          _formKey.currentState?.save();
+                                          setState(() {
+                                            _loading = true;
+                                            _error = null;
+                                          });
+                                          try {
+                                            await Provider.of<VehicleProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .addVehicle(widget.customerId,
+                                                    _formData, widget.token);
+                                            Navigator.of(context).pop();
+                                          } catch (e) {
+                                            setState(() {
+                                              _error = e.toString();
+                                              _loading = false;
+                                            });
+                                          }
+                                        }
+                                      },
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        AppColors.primary200,
+                                        AppColors.primary300,
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primary200
+                                            .withOpacity(0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: _loading
+                                        ? SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                AppColors.neutral100,
+                                              ),
+                                            ),
+                                          )
+                                        : Text(
+                                            'Add Vehicle',
+                                            style: TextStyle(
+                                              color: AppColors.neutral100,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Model'),
-                onSaved: (v) => _formData['model'] = v ?? '',
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Chassis Number'),
-                onSaved: (v) => _formData['chassisNumber'] = v ?? '',
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Mileage'),
-                keyboardType: TextInputType.number,
-                onSaved: (v) =>
-                    _formData['mileage'] = int.tryParse(v ?? '0') ?? 0,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Fuel'),
-                onSaved: (v) => _formData['fuel'] = v ?? '',
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Year'),
-                keyboardType: TextInputType.number,
-                onSaved: (v) => _formData['year'] = int.tryParse(v ?? '0') ?? 0,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              if (_error != null) ...[
-                const SizedBox(height: 8),
-                Text(_error!, style: const TextStyle(color: Colors.red)),
-              ]
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _loading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+    );
+  }
+
+  Widget _buildModernTextField({
+    required String label,
+    required IconData icon,
+    required FormFieldSetter<String> onSaved,
+    required FormFieldValidator<String> validator,
+    TextInputType? keyboardType,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.neutral400.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.neutral300.withOpacity(0.2),
         ),
-        ElevatedButton(
-          onPressed: _loading
-              ? null
-              : () async {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    _formKey.currentState?.save();
-                    setState(() {
-                      _loading = true;
-                      _error = null;
-                    });
-                    try {
-                      await Provider.of<VehicleProvider>(context, listen: false)
-                          .addVehicle(
-                              widget.customerId, _formData, widget.token);
-                      Navigator.of(context).pop();
-                    } catch (e) {
-                      setState(() {
-                        _error = e.toString();
-                        _loading = false;
-                      });
-                    }
-                  }
-                },
-          child:
-              _loading ? const CircularProgressIndicator() : const Text('Add'),
+      ),
+      child: TextFormField(
+        keyboardType: keyboardType,
+        onSaved: onSaved,
+        validator: validator,
+        style: const TextStyle(color: Colors.white, fontSize: 15),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white, fontSize: 14),
+          prefixIcon: Icon(icon, color: Colors.white, size: 20),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          floatingLabelStyle: const TextStyle(color: Colors.white),
         ),
-      ],
+      ),
     );
   }
 }

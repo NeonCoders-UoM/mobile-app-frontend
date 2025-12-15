@@ -1,9 +1,12 @@
-import 'dart:html' as html;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:mobile_app_frontend/core/theme/app_colors.dart';
+import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/data/repositories/service_history_repository.dart';
 import 'package:mobile_app_frontend/presentation/pages/payment_successful_message_page.dart';
+import 'package:mobile_app_frontend/utils/platform/web_utils.dart';
 
 class PaymentSuccessPage extends StatefulWidget {
   final int vehicleId;
@@ -38,7 +41,7 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
     }
     final response = await http.get(
       Uri.parse(
-          'http://localhost:5039/api/payhere/payment-status?orderId=$orderId'),
+          'http://192.168.8.161:5039/api/payhere/payment-status?orderId=$orderId'),
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -62,12 +65,16 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
         widget.vehicleId,
         token: widget.token,
       );
-      final blob = html.Blob([pdfBytes], 'application/pdf');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'service_history_${widget.vehicleId}.pdf')
-        ..click();
-      html.Url.revokeObjectUrl(url);
+      if (kIsWeb) {
+        WebUtils.downloadFile(
+          pdfBytes,
+          'service_history_${widget.vehicleId}.pdf',
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Download not supported on mobile yet')),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to download PDF: $e')),
@@ -79,7 +86,16 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) return const Center(child: CircularProgressIndicator());
+    if (loading) {
+      return Scaffold(
+        backgroundColor: AppColors.neutral400,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary200,
+          ),
+        ),
+      );
+    }
     if (status == 'Paid') {
       // Redirect to the enhanced success page
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -96,6 +112,38 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
       });
       return const SizedBox.shrink();
     }
-    return Center(child: Text('Payment status: $status'));
+    return Scaffold(
+      backgroundColor: AppColors.neutral400,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 80,
+                color: AppColors.neutral200,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Payment Status',
+                style: AppTextStyles.textLgSemibold.copyWith(
+                  color: AppColors.neutral100,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                status ?? 'Unknown',
+                style: AppTextStyles.textMdRegular.copyWith(
+                  color: AppColors.neutral200,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

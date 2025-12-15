@@ -93,7 +93,7 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://localhost:5039/api/Services'), // <-- Replace with your backend URL
+            'http://192.168.8.161:5039/api/Services'), // Backend URL for actual devices
         headers: {
           'Content-Type': 'application/json',
           if (widget.token != null) 'Authorization': 'Bearer ${widget.token}',
@@ -136,14 +136,80 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
-      builder: (BuildContext context, Widget? child) {
+      builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppColors.primary200,
               onPrimary: AppColors.neutral100,
-              surface: AppColors.neutral400,
+              surface: AppColors.neutral450,
               onSurface: AppColors.neutral100,
+              background: AppColors.neutral500,
+              onBackground: AppColors.neutral100,
+            ),
+            dialogBackgroundColor: AppColors.neutral450,
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary200,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: AppColors.neutral450,
+              headerBackgroundColor: AppColors.primary200,
+              headerForegroundColor: AppColors.neutral100,
+              dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.neutral100;
+                }
+                return AppColors.neutral200;
+              }),
+              dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.primary200;
+                }
+                return Colors.transparent;
+              }),
+              todayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.primary200;
+                }
+                return AppColors.primary300.withOpacity(0.3);
+              }),
+              todayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.neutral100;
+                }
+                return AppColors.primary200;
+              }),
+              yearForegroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.neutral100;
+                }
+                return AppColors.neutral200;
+              }),
+              yearBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.primary200;
+                }
+                return Colors.transparent;
+              }),
+              dayOverlayColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.hovered)) {
+                  return AppColors.primary300.withOpacity(0.1);
+                }
+                if (states.contains(MaterialState.pressed)) {
+                  return AppColors.primary300.withOpacity(0.2);
+                }
+                return null;
+              }),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 8,
             ),
           ),
           child: child!,
@@ -332,16 +398,43 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                     Container(
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: AppColors.neutral300,
-                        borderRadius: BorderRadius.circular(8.0),
-                        border: Border.all(color: AppColors.neutral200),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.neutral450,
+                            AppColors.neutral450.withOpacity(0.95),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.info_outline,
-                            color: AppColors.primary200,
-                            size: 24.0,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppColors.primary200,
+                                  AppColors.primary300,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Icon(
+                              Icons.info_outline,
+                              color: AppColors.neutral100,
+                              size: 20.0,
+                            ),
                           ),
                           const SizedBox(width: 12.0),
                           Expanded(
@@ -561,29 +654,33 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                       ),
                     ),
                     const SizedBox(height: 8.0),
-                    GestureDetector(
+                    InkWell(
                       onTap: () => _selectDate(context),
+                      borderRadius: BorderRadius.circular(4),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12.0, vertical: 16.0),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.neutral200),
+                          color: AppColors.neutral400.withOpacity(0.4),
+                          border: Border.all(
+                            color: AppColors.neutral300.withOpacity(0.2),
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            Icon(
+                              Icons.calendar_today,
+                              color: AppColors.neutral100,
+                              size: 18.0,
+                            ),
+                            const SizedBox(width: 12),
                             Text(
                               _formatDate(_selectedDate),
                               style: AppTextStyles.textSmRegular.copyWith(
                                 color: AppColors.neutral100,
                               ),
-                            ),
-                            const Icon(
-                              Icons.calendar_today,
-                              color: AppColors.neutral200,
-                              size: 20.0,
                             ),
                           ],
                         ),
@@ -685,12 +782,16 @@ class _AddUnverifiedServicePageState extends State<AddUnverifiedServicePage> {
                     const SizedBox(height: 16.0),
 
                     // Cancel Button
-                    CustomButton(
-                      label: 'Cancel',
-                      type: ButtonType.secondary,
-                      size: ButtonSize.large,
-                      customWidth: double.infinity,
-                      onTap: () => Navigator.pop(context),
+                    Center(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Cancel',
+                          style: AppTextStyles.textMdSemibold.copyWith(
+                            color: AppColors.neutral200,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 32.0),
                   ],

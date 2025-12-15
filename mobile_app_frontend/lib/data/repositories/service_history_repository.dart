@@ -465,15 +465,64 @@ class ServiceHistoryRepository {
       {String? token}) async {
     final url = ApiConfig.getServiceHistoryPdfDownloadUrl(vehicleId);
     print('📄 Downloading service history PDF from: $url');
-    final response = await http.get(
-      Uri.parse(url),
-      headers: _getHeaders(token: token),
-    );
-    if (response.statusCode == 200) {
-      return response.bodyBytes;
-    } else {
-      print('❌ Failed to download PDF: ${response.statusCode}');
-      throw Exception('Failed to download PDF');
+    print('🔑 Token present: ${token != null && token.isNotEmpty}');
+    print(
+        '🔑 Token value: ${token?.substring(0, token.length > 20 ? 20 : token.length)}...');
+
+    try {
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: _getHeaders(token: token),
+          )
+          .timeout(ApiConfig.connectTimeout);
+
+      print('📡 PDF Download Response Status: ${response.statusCode}');
+      print('📡 Response Headers: ${response.headers}');
+
+      if (response.statusCode == 200) {
+        print(
+            '✅ PDF downloaded successfully (${response.bodyBytes.length} bytes)');
+        return response.bodyBytes;
+      } else if (response.statusCode == 403) {
+        // Payment required or not authorized
+        String errorMessage = 'Payment required to download PDF';
+        try {
+          final errorData = json.decode(response.body);
+          errorMessage = errorData['message'] ?? errorMessage;
+        } catch (e) {
+          errorMessage =
+              response.body.isNotEmpty ? response.body : errorMessage;
+        }
+        print('❌ 403 Forbidden: $errorMessage');
+        throw Exception(errorMessage);
+      } else if (response.statusCode == 404) {
+        print('❌ 404 Not Found: Vehicle or service history not found');
+        throw Exception('Vehicle or service history not found');
+      } else if (response.statusCode == 401) {
+        print('❌ 401 Unauthorized: Invalid or expired token');
+        throw Exception('Authentication failed. Please log in again.');
+      } else {
+        String errorMessage =
+            'Failed to download PDF (Status: ${response.statusCode})';
+        try {
+          final errorData = json.decode(response.body);
+          errorMessage = errorData['message'] ?? errorMessage;
+        } catch (e) {
+          // If not JSON, use raw response
+          if (response.body.isNotEmpty) {
+            errorMessage = response.body;
+          }
+        }
+        print('❌ Download failed: $errorMessage');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      print('❌ Exception during PDF download: $e');
+      if (e is Exception) {
+        rethrow;
+      }
+      throw Exception('Network error: $e');
     }
   }
 }

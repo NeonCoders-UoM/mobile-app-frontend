@@ -30,7 +30,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   InputFieldState _currentPasswordFieldState = InputFieldState.defaultState;
   InputFieldState _newPasswordFieldState = InputFieldState.defaultState;
   InputFieldState _retypeNewPasswordFieldState = InputFieldState.defaultState;
-  
+
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureRetypePassword = true;
@@ -66,9 +66,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     return Scaffold(
       backgroundColor: AppColors.neutral400,
       appBar: CustomAppBar(title: 'Change password'),
-      body: Center(
-        child: SizedBox(
-          width: 360,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Column(
             children: [
               SizedBox(
@@ -126,6 +126,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 label: 'Change password',
                 type: ButtonType.primary,
                 size: ButtonSize.large,
+                customWidth: double.infinity,
                 onTap: () async {
                   final currentPassword = _currentPasswordController.text;
                   final newPassword = _newPasswordController.text;
@@ -181,7 +182,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   }
                 },
                 customHeight: 56,
-                customWidth: 360,
               ),
             ],
           ),

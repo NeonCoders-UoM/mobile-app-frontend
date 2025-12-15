@@ -56,10 +56,19 @@ class EnterPaymentDetailsPage extends StatelessWidget {
               print("Selected Exp Year: $value");
             },
             onPayNowTap: () {
-              print("Pay Now tapped with details: ");
-              print("Card Holder: " + cardHolderController.text);
-              print("Card Number: " + cardNumberController.text);
-              print("Label: " + labelController.text);
+              // Validate form fields
+              if (cardHolderController.text.isEmpty ||
+                  cardNumberController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please fill in all required fields'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+              
+              // Show success message and navigate
               Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -69,7 +78,6 @@ class EnterPaymentDetailsPage extends StatelessWidget {
                           token: token,
                           appointmentId: appointmentId,
                           advancePaymentAmount: advancePaymentAmount)));
-              // Add payment processing logic here
             },
           ),
         ),

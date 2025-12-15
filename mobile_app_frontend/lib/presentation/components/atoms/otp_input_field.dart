@@ -36,7 +36,7 @@ class OtpInputFieldState extends State<OtpInputField> {
       widget.otpValues.length,
       (index) => TextEditingController(),
     );
-    
+
     // Auto-focus the first field after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_focusNodes.isNotEmpty) {
@@ -58,12 +58,12 @@ class OtpInputFieldState extends State<OtpInputField> {
 
   void _onOtpChanged(int index, String value) {
     widget.onChanged(index, value);
-    
+
     // Auto-focus to next field if a digit is entered
     if (value.isNotEmpty && index < widget.otpValues.length - 1) {
       _focusNodes[index + 1].requestFocus();
     }
-    
+
     // Auto-focus to previous field if digit is deleted and current field is empty
     if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
@@ -105,45 +105,53 @@ class OtpInputFieldState extends State<OtpInputField> {
       children: [
         Text(
           "Enter code",
-          style: AppTextStyles.displaySmSemibold.copyWith(color: Colors.white),
+          style: AppTextStyles.displaySmSemibold
+              .copyWith(color: AppColors.neutral100),
         ),
         const SizedBox(height: 8),
         Text(
           "We've sent an SMS with an activation code to your Email",
           style: AppTextStyles.textXsmRegular
-              .copyWith(color: AppColors.neutral150),
+              .copyWith(color: AppColors.neutral200),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(widget.otpValues.length, (index) {
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 6),
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                border: Border.all(color: _borderColor(), width: 1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: TextField(
-                controller: _controllers[index],
-                focusNode: _focusNodes[index],
-                onChanged: (value) => _onOtpChanged(index, value),
-                textAlign: TextAlign.center,
-                keyboardType: TextInputType.number,
-                maxLength: 1,
-                style: AppTextStyles.textLgBold.copyWith(color: Colors.white),
-                decoration: const InputDecoration(
-                  counterText: "",
-                  border: InputBorder.none,
+            return Flexible(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: 48,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.neutral450.withOpacity(0.5),
+                  border: Border.all(
+                    color: _borderColor(),
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                alignment: Alignment.center,
+                child: TextField(
+                  controller: _controllers[index],
+                  focusNode: _focusNodes[index],
+                  onChanged: (value) => _onOtpChanged(index, value),
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  maxLength: 1,
+                  style: AppTextStyles.textLgBold
+                      .copyWith(color: AppColors.neutral100),
+                  decoration: const InputDecoration(
+                    counterText: "",
+                    border: InputBorder.none,
+                  ),
                 ),
               ),
             );
           }),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         if (widget.status == OtpStatus.error)
           Text(
             widget.message,

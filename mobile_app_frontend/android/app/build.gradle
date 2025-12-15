@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.mobile_app_frontend"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -16,7 +16,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
@@ -24,7 +24,7 @@ android {
         applicationId = "com.example.mobile_app_frontend"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -35,10 +35,21 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // New plugins for camera and document upload functionality
+    implementation project(':camera_android_camerax')
+    implementation project(':permission_handler_android')
+    implementation project(':device_info_plus')
+    implementation project(':share_plus')
+    implementation project(':image_picker_android')
 }

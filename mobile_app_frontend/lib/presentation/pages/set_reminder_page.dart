@@ -264,27 +264,51 @@ class _SetReminderPageState extends State<SetReminderPage> {
                         vehicleName: _vehicle?['model'] ?? '',
                         vehicleId: _vehicle?['registrationNumber'] ?? '',
                       ),
-                      const SizedBox(height: 48.0),
+                      const SizedBox(height: 12.0),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Additional vehicle details
-                            Text(
-                              'Vehicle Registration No: ${_vehicle?['registrationNumber'] ?? ''}',
-                              style: AppTextStyles.textSmRegular.copyWith(
-                                color: AppColors.neutral200,
+                            // Vehicle details card
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppColors.neutral300.withOpacity(0.3),
+                                    AppColors.neutral300.withOpacity(0.15),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: AppColors.neutral200.withOpacity(0.25),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Vehicle Registration No: ${_vehicle?['registrationNumber'] ?? ''}',
+                                    style: AppTextStyles.textSmRegular.copyWith(
+                                      color: AppColors.neutral100,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8.0),
+                                  Text(
+                                    'Vehicle Model: ${_vehicle?['model'] ?? ''}',
+                                    style: AppTextStyles.textSmRegular.copyWith(
+                                      color: AppColors.neutral100,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 4.0),
-                            Text(
-                              'Vehicle Model: ${_vehicle?['model'] ?? ''}',
-                              style: AppTextStyles.textSmRegular.copyWith(
-                                color: AppColors.neutral200,
-                              ),
-                            ),
-                            const SizedBox(height: 48.0),
+                            const SizedBox(height: 24.0),
                             // Service Name Input (now a dropdown)
                             Text(
                               'Service',

@@ -30,79 +30,151 @@ class ServiceCenterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.neutral400,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      elevation: 3,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.neutral450,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.neutral450.withOpacity(0.5)),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.neutral450,
+            AppColors.neutral450.withOpacity(0.95),
+          ],
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left Column - Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    servicecenterName,
-                    style: AppTextStyles.textMdSemibold.copyWith(
-                      color: AppColors.neutral100,
-                      fontSize: 16,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with icon
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary200,
+                      AppColors.primary300,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.store,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Service Center',
+                      style: AppTextStyles.textSmMedium.copyWith(
+                        color: AppColors.neutral200,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    address,
-                    style: AppTextStyles.textMdRegular
-                        .copyWith(color: AppColors.neutral150),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    distance,
-                    style: AppTextStyles.textMdRegular
-                        .copyWith(color: AppColors.neutral150),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Loyalty Points : $loyaltyPoints",
-                    style: AppTextStyles.textMdRegular
-                        .copyWith(color: AppColors.neutral150),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Estimated Cost : $estimatedCost",
-                    style: AppTextStyles.textMdRegular
-                        .copyWith(color: AppColors.neutral150),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      servicecenterName,
+                      style: AppTextStyles.textMdSemibold.copyWith(
+                        color: AppColors.neutral100,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Info container
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.neutral400.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.neutral300.withOpacity(0.2),
               ),
             ),
-            const SizedBox(width: 16),
-            Align(
-              alignment: Alignment.topRight,
-              child: SizedBox(
-                width: 68,
-                height: 40,
-                child: CustomButton(
-                  label: 'View',
-                  type: ButtonType.primary,
-                  size: ButtonSize.small,
-                  onTap: onTap,
+            child: Column(
+              children: [
+                _buildInfoRow(Icons.location_on, address),
+                const SizedBox(height: 12),
+                _buildInfoRow(Icons.directions_car, distance),
+                const SizedBox(height: 12),
+                _buildInfoRow(Icons.star, 'Loyalty Points: $loyaltyPoints'),
+                const SizedBox(height: 12),
+                _buildInfoRow(Icons.attach_money, 'Estimated: $estimatedCost'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // View button
+          Align(
+            alignment: Alignment.centerRight,
+            child: ElevatedButton(
+              onPressed: onTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary200,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'View Details',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: AppColors.primary200,
+          size: 18,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTextStyles.textMdRegular.copyWith(
+              color: AppColors.neutral100,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

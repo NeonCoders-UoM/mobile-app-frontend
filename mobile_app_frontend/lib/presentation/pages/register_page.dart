@@ -194,8 +194,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
-                const SizedBox(height: 24),
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

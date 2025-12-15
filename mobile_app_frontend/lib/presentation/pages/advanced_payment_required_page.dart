@@ -59,84 +59,102 @@ class _AdvancedPaymentRequiredPageState
     return Scaffold(
       backgroundColor: AppColors.neutral400,
       appBar: CustomAppBar(
-        title: '',
+        title: 'Advance Payment',
+        showTitle: true,
         onBackPressed: () => Navigator.of(context).pop(),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Center(
-              child: SizedBox(
-                width: 380,
+          ? Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary200,
+              ),
+            )
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 24),
                     Text(
                       'Advance Payment Required',
                       style: AppTextStyles.textLgSemibold.copyWith(
                         color: AppColors.neutral100,
                       ),
                     ),
-                    SizedBox(
-                      height: 28,
-                    ),
+                    const SizedBox(height: 16),
                     Text(
                       'To secure your appointment, you must make an advance payment of Rs.${advancePaymentAmount.toStringAsFixed(2)}. The remaining amount of Rs.${remainingAmount.toStringAsFixed(2)} will be paid at the service center after your service is completed.',
                       style: AppTextStyles.textSmRegular.copyWith(
-                        color: AppColors.neutral150,
-                        fontSize: 12.0,
+                        color: AppColors.neutral200,
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(
-                      height: 32,
-                    ),
+                    const SizedBox(height: 32),
                     Container(
-                      width: 380,
-                      height: 104,
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppColors.neutral100,
-                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.neutral450,
+                            AppColors.neutral450.withOpacity(0.95),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Terms & Conditions',
-                            style: AppTextStyles.textXsmRegular.copyWith(
-                              color: AppColors.neutral400,
+                            style: AppTextStyles.textSmSemibold.copyWith(
+                              color: AppColors.neutral100,
                             ),
                           ),
+                          const SizedBox(height: 16),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Image.asset(
-                                'assets/icons/green_tick.png',
-                                height: 24,
-                                width: 24,
+                              Icon(
+                                Icons.check_circle,
+                                size: 20,
+                                color: AppColors.states['ok'],
                               ),
-                              Text(
-                                'Advance payments are non-refundable under any circumstances.',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.normal,
-                                  color: AppColors.neutral400,
-                                  height: 1.5,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Advance payments are non-refundable under any circumstances.',
+                                  style: AppTextStyles.textSmRegular.copyWith(
+                                    color: AppColors.neutral200,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
+                          const SizedBox(height: 12),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Image.asset(
-                                'assets/icons/green_tick.png',
-                                height: 24,
-                                width: 24,
+                              Icon(
+                                Icons.check_circle,
+                                size: 20,
+                                color: AppColors.states['ok'],
                               ),
-                              Text(
-                                'Appointments cannot be rescheduled.',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.normal,
-                                  color: AppColors.neutral400,
-                                  height: 1.5,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Appointments cannot be rescheduled.',
+                                  style: AppTextStyles.textSmRegular.copyWith(
+                                    color: AppColors.neutral200,
+                                  ),
                                 ),
                               ),
                             ],
@@ -144,50 +162,50 @@ class _AdvancedPaymentRequiredPageState
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: 52,
-                    ),
+                    const SizedBox(height: 32),
                     CustomButton(
                       label: 'Proceed to Payment',
                       type: ButtonType.primary,
                       size: ButtonSize.large,
-                      onTap: () => {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SelectPaymentMethodPage(
-                                    customerId: widget.customerId,
-                                    vehicleId: widget.vehicleId,
-                                    token: widget.token,
-                                    appointmentId: widget.appointmentId,
-                                    advancePaymentAmount:
-                                        advancePaymentAmount))),
-                      },
-                      customHeight: 56,
-                      customWidth: 380,
-                    ),
-                    SizedBox(
-                      height: 32,
-                    ),
-                    CustomButton(
-                      label: 'Cancel Booking',
-                      type: ButtonType.danger,
-                      size: ButtonSize.large,
-                      onTap: () => {
+                      customWidth: double.infinity,
+                      onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CostEstimatePage(
+                            builder: (context) => SelectPaymentMethodPage(
                               customerId: widget.customerId,
                               vehicleId: widget.vehicleId,
                               token: widget.token,
                               appointmentId: widget.appointmentId,
+                              advancePaymentAmount: advancePaymentAmount,
                             ),
                           ),
-                        )
+                        );
                       },
-                      customHeight: 56,
-                      customWidth: 380,
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CostEstimatePage(
+                                customerId: widget.customerId,
+                                vehicleId: widget.vehicleId,
+                                token: widget.token,
+                                appointmentId: widget.appointmentId,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Cancel Booking',
+                          style: AppTextStyles.textMdSemibold.copyWith(
+                            color: AppColors.neutral200,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

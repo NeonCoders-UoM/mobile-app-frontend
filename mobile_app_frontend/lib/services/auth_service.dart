@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String _baseUrl = 'http://localhost:5039/api';
+  final String _baseUrl = 'http://192.168.8.161:5039/api';
 
   Future<bool> registerCustomer({
     required String firstName,
@@ -274,7 +274,6 @@ class AuthService {
     required String token,
     required String registrationNumber,
     required String chassisNumber,
-    required String category,
     required String model,
     required String brand,
     required String fuel,
@@ -293,7 +292,6 @@ class AuthService {
       body: jsonEncode({
         "registrationNumber": registrationNumber,
         "chassisNumber": chassisNumber,
-        "category": category,
         "model": model,
         "brand": brand,
         "fuel": fuel,
@@ -325,29 +323,106 @@ class AuthService {
     return response.statusCode == 200;
   }
 
+  Future<bool> verifyPassword({
+    required int customerId,
+    required String token,
+    required String password,
+  }) async {
+    try {
+      // First get the customer's email
+      final customerDetails = await getCustomerDetails(
+        customerId: customerId,
+        token: token,
+      );
+
+      if (customerDetails == null || customerDetails['email'] == null) {
+        print('❌ Could not retrieve customer email');
+        throw Exception('Could not retrieve customer information. Please try again.');
+      }
+
+      final email = customerDetails['email'];
+      print('🔑 VERIFY Password for CustomerID: $customerId with email: $email');
+
+      // Use direct HTTP call to login endpoint for password verification
+      final url = Uri.parse('$_baseUrl/Auth/login-customer');
+      
+      print('🔐 Making login request to: $url');
+      print('📧 Email: $email');
+      print('🔒 Password: ${password.length} characters');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      print('🔍 Login Response Code: ${response.statusCode}');
+      print('🔍 Login Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('✅ Password verified successfully via direct login call');
+        return true;
+      } else {
+        print('❌ Password verification failed: ${response.statusCode}');
+        throw Exception('Invalid password. Please check your password and try again.');
+      }
+    } catch (e) {
+      print('❌ Error verifying password: $e');
+      rethrow;
+    }
+  }
+
   Future<bool> deleteVehicle({
     required int customerId,
     required int vehicleId,
     required String token,
+    required String password,
   }) async {
+    // First verify the password
+    final isPasswordValid = await verifyPassword(
+      customerId: customerId,
+      token: token,
+      password: password,
+    );
+
+    if (!isPasswordValid) {
+      throw Exception('Invalid password. Please check your password and try again.');
+    }
+
+    // If password is valid, proceed with vehicle deletion
     final url =
         Uri.parse('$_baseUrl/Customers/$customerId/vehicles/$vehicleId');
 
-    final response = await http.delete(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      print('✅ Vehicle deleted');
-      return true;
-    } else {
-      print(
-          '❌ Failed to delete vehicle: ${response.statusCode} ${response.body}');
-      return false;
+      print('🔑 DELETE Vehicle: $vehicleId for CustomerID: $customerId');
+      print('🔐 Using Token: $token');
+      print('🔍 Response Code: ${response.statusCode}');
+      print('🔍 Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('✅ Vehicle deleted successfully');
+        return true;
+      } else if (response.statusCode == 404) {
+        print('❌ Vehicle not found');
+        throw Exception('Vehicle not found.');
+      } else {
+        print('❌ Failed to delete vehicle: ${response.statusCode} ${response.body}');
+        throw Exception('Failed to delete vehicle. Please try again.');
+      }
+    } catch (e) {
+      print('❌ Error deleting vehicle: $e');
+      rethrow;
     }
   }
 
@@ -429,7 +504,8 @@ class AuthService {
         print('✅ Forgot password OTP sent successfully');
         return true;
       } else {
-        print('❌ Forgot password failed: ${response.statusCode} ${response.body}');
+        print(
+            '❌ Forgot password failed: ${response.statusCode} ${response.body}');
         return false;
       }
     } catch (e) {
@@ -464,7 +540,8 @@ class AuthService {
         print('✅ Password reset successfully');
         return true;
       } else {
-        print('❌ Password reset failed: ${response.statusCode} ${response.body}');
+        print(
+            '❌ Password reset failed: ${response.statusCode} ${response.body}');
         return false;
       }
     } catch (e) {
@@ -490,7 +567,8 @@ class AuthService {
         print('✅ Forgot password OTP resent successfully');
         return true;
       } else {
-        print('❌ Resend forgot password OTP failed: ${response.statusCode} ${response.body}');
+        print(
+            '❌ Resend forgot password OTP failed: ${response.statusCode} ${response.body}');
         return false;
       }
     } catch (e) {
