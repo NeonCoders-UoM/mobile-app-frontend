@@ -27,7 +27,7 @@ class SuccessfulMessage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
             Image.asset(
-              'icons/success_msg.png',
+              'assets/icons/success_msg.png',
               height: 96,
               width: 96,
             ),

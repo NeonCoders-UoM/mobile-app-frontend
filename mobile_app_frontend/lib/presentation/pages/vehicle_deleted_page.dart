@@ -5,10 +5,17 @@ import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_s
 import 'package:mobile_app_frontend/presentation/components/atoms/enums/button_type.dart';
 import 'package:mobile_app_frontend/presentation/components/atoms/successful-message.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
-import 'package:mobile_app_frontend/presentation/pages/login_page.dart'; // or next step
 
 class VehicleDeletedPage extends StatelessWidget {
-  const VehicleDeletedPage({super.key});
+  final int customerId;
+  final String token;
+
+  const VehicleDeletedPage({
+    super.key,
+    required this.customerId,
+    required this.token,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,8 +36,17 @@ class VehicleDeletedPage extends StatelessWidget {
             type: ButtonType.primary,
             size: ButtonSize.large,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => LoginPage()));
+              // Navigate back to vehicle details home page
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VehicleDetailsHomePage(
+                    customerId: customerId,
+                    token: token,
+                  ),
+                ),
+                (route) => false, // Clear the navigation stack
+              );
             },
             customWidth: 360.0,
             customHeight: 56.0,

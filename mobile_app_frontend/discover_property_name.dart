@@ -9,7 +9,7 @@ void main() async {
 }
 
 Future<void> discoverCorrectPropertyName() async {
-  final baseUrl = 'http://localhost:5039/api';
+  final baseUrl = 'http://192.168.8.186:5039/api';
 
   // Test all possible property name combinations
   final allPossibleNames = [

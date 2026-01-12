@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/vehicle.dart';
 import '../../state/providers/vehicle_provider.dart';
+import '../pages/add_vehicledeails_page.dart';
 
 class VehicleSwitcher extends StatelessWidget {
   final int customerId;
