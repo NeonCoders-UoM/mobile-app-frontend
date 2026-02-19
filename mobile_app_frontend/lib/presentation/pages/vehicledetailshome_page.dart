@@ -9,6 +9,9 @@ import 'package:mobile_app_frontend/presentation/components/molecules/vehicle_he
 import 'package:mobile_app_frontend/presentation/components/atoms/vehicle_detail_row.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/delete_vehicle_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/initiate_transfer_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/pending_transfers_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/vehicle_transfer_history_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/fuel_summary_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/scheduled_reminders.dart';
 import 'package:mobile_app_frontend/presentation/pages/service_history_page.dart';
@@ -523,15 +526,11 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
                                         token: widget.token,
                                       ),
                                     ),
-                                    _buildFeatureCard(
+                                    _buildFeatureCardWithMenu(
                                       context,
                                       "assets/icons/delete.svg",
-                                      "Delete",
-                                      DeleteVehiclePage(
-                                        customerId: widget.customerId,
-                                        vehicleId: selectedVehicle.vehicleId,
-                                        token: widget.token,
-                                      ),
+                                      "Transfer",
+                                      selectedVehicle,
                                     ),
                                   ],
                                 ),
@@ -802,4 +801,249 @@ class _VehicleDetailsHomePageState extends State<VehicleDetailsHomePage> {
       ),
     );
   }
-}
+
+  Widget _buildFeatureCardWithMenu(
+    BuildContext context,
+    String assetPath,
+    String label,
+    vehicle,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        _showTransferMenu(context, vehicle);
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.neutral300.withOpacity(0.6),
+                  AppColors.neutral300.withOpacity(0.35),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: AppColors.neutral200.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 12,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: SvgPicture.asset(
+              assetPath,
+              height: 28,
+              color: AppColors.neutral100,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Flexible(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10,
+                color: AppColors.neutral100,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTransferMenu(BuildContext context, vehicle) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.neutral400,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.neutral200,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Transfer Options',
+              style: AppTextStyles.textLgSemibold.copyWith(
+                color: AppColors.neutral100,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildMenuOption(
+              context,
+              Icons.send_outlined,
+              'Transfer Vehicle',
+              'Transfer ownership to another user',
+              () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => InitiateTransferPage(
+                      vehicleId: vehicle.vehicleId,
+                      customerId: widget.customerId,
+                      vehicleName: vehicle.model,
+                      registrationNumber: vehicle.registrationNumber,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            _buildMenuOption(
+              context,
+              Icons.inbox_outlined,
+              'Pending Transfers',
+              'View incoming transfer requests',
+              () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PendingTransfersPage(
+                      customerId: widget.customerId,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            _buildMenuOption(
+              context,
+              Icons.history_outlined,
+              'Transfer History',
+              'View all transfer records',
+              () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VehicleTransferHistoryPage(
+                      vehicleId: vehicle.vehicleId,
+                      vehicleName: vehicle.model,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            _buildMenuOption(
+              context,
+              Icons.delete_outline,
+              'Delete Vehicle',
+              'Permanently remove this vehicle',
+              () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DeleteVehiclePage(
+                      customerId: widget.customerId,
+                      vehicleId: vehicle.vehicleId,
+                      token: widget.token,
+                    ),
+                  ),
+                );
+              },
+              isDestructive: true,
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuOption(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap, {
+    bool isDestructive = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.neutral300.withOpacity(0.6),
+              AppColors.neutral300.withOpacity(0.35),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isDestructive
+                ? AppColors.states['error']!.withOpacity(0.3)
+                : AppColors.neutral200.withOpacity(0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDestructive
+                    ? AppColors.states['error']!.withOpacity(0.2)
+                    : AppColors.primary300.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: isDestructive
+                    ? AppColors.states['error']
+                    : AppColors.primary100,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: AppTextStyles.textMdSemibold.copyWith(
+                  color: isDestructive
+                      ? AppColors.states['error']
+                      : AppColors.neutral100,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.neutral200,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }}

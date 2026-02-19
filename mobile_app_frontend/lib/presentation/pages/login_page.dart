@@ -10,7 +10,10 @@ import 'package:mobile_app_frontend/presentation/pages/register_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/vehicledetailshome_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/forgot_password_page.dart';
 import 'package:mobile_app_frontend/services/auth_service.dart';
+import 'package:mobile_app_frontend/services/google_auth_service.dart';
 import 'package:mobile_app_frontend/core/services/local_storage.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:mobile_app_frontend/services/admob_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -24,15 +27,85 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   final _authService = AuthService();
+  final _googleAuthService = GoogleAuthService();
 
   InputFieldState _emailFieldState = InputFieldState.defaultState;
   InputFieldState _passwordFieldState = InputFieldState.defaultState;
+
+  // AdMob variables
+  InterstitialAd? _interstitialAd;
+  bool _isAdLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Delay ad loading to ensure network is ready
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        _loadInterstitialAd();
+      }
+    });
+  }
+
+  /// Load interstitial ad in background
+  Future<void> _loadInterstitialAd() async {
+    _interstitialAd = await AdMobService.loadInterstitialAd(maxRetries: 2);
+    if (_interstitialAd != null) {
+      setState(() => _isAdLoaded = true);
+      print('✅ Login ad loaded and ready');
+    } else {
+      print('⚠️ Ad failed to load, will skip ad');
+    }
+  }
 
   void _togglePasswordVisibility() {
     setState(() {
       _obscurePassword = !_obscurePassword;
     });
+  }
+
+  /// Navigate to home page
+  void _navigateToHome(String token, int customerId) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => VehicleDetailsHomePage(
+          customerId: customerId,
+          token: token,
+        ),
+      ),
+    );
+  }
+
+  /// Show ad and navigate to home
+  void _showAdAndNavigate(String token, int customerId) {
+    if (_isAdLoaded && _interstitialAd != null) {
+      // Set up ad callbacks
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (ad) {
+          print('🎬 Interstitial ad displayed');
+        },
+        onAdDismissedFullScreenContent: (ad) {
+          print('❌ Ad closed by user');
+          ad.dispose();
+          _navigateToHome(token, customerId);
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          print('⚠️ Ad failed to show: $error');
+          ad.dispose();
+          _navigateToHome(token, customerId);
+        },
+      );
+
+      // Show the ad
+      _interstitialAd!.show();
+    } else {
+      // No ad loaded, go directly to home
+      print('⚠️ No ad available, navigating directly');
+      _navigateToHome(token, customerId);
+    }
   }
 
   Future<void> _handleLogin() async {
@@ -64,15 +137,8 @@ class _LoginPageState extends State<LoginPage> {
 
       print('💾 Authentication data saved after login');
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => VehicleDetailsHomePage(
-            customerId: customerId,
-            token: token,
-          ),
-        ),
-      );
+      // Show ad then navigate
+      _showAdAndNavigate(token, customerId);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -82,6 +148,43 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() {
       _isLoading = false;
+    });
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
+    try {
+      final result = await _googleAuthService.signInWithGoogle();
+
+      if (result != null) {
+        final token = result['token'];
+        final customerId = result['customerId'];
+
+        await LocalStorageService.saveAuthData(
+          token: token,
+          customerId: customerId,
+        );
+
+        print('💾 Authentication data saved after Google login');
+
+        // Show ad then navigate
+        _showAdAndNavigate(token, customerId);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google sign-in was cancelled or failed')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google sign-in error: $e')),
+      );
+    }
+
+    setState(() {
+      _isGoogleLoading = false;
     });
   }
 
@@ -97,6 +200,14 @@ class _LoginPageState extends State<LoginPage> {
       context,
       MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
     );
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -181,9 +292,57 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-                
+                const SizedBox(height: 16),
 
-                
+                // Divider with "or"
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.white38, thickness: 1)),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('or', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                    ),
+                    Expanded(child: Divider(color: Colors.white38, thickness: 1)),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Google Sign-In Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
+                    icon: _isGoogleLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Image.asset(
+                            'assets/google_logo.png',
+                            height: 24,
+                            width: 24,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.g_mobiledata, color: Colors.white, size: 28);
+                            },
+                          ),
+                    label: Text(
+                      _isGoogleLoading ? 'Signing in...' : 'Sign in with Google',
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.white38),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Center(
                   child: Row(
