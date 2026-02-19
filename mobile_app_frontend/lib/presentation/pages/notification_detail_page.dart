@@ -3,6 +3,7 @@ import 'package:mobile_app_frontend/core/theme/app_colors.dart';
 import 'package:mobile_app_frontend/core/theme/app_text_styles.dart';
 import 'package:mobile_app_frontend/presentation/pages/appointment_page.dart';
 import 'package:mobile_app_frontend/presentation/pages/feedback_page.dart';
+import 'package:mobile_app_frontend/presentation/pages/pending_transfers_page.dart';
 
 class NotificationDetailPage extends StatefulWidget {
   final Map<String, dynamic> notification;
@@ -64,6 +65,10 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
         return Icons.settings;
       case 'safety_reminder':
         return Icons.warning;
+      case 'vehicle_transfer':
+      case 'transfer':
+      case 'transfer_request':
+        return Icons.swap_horiz;
       default:
         return Icons.notifications;
     }
@@ -90,6 +95,10 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
         return 'Maintenance Reminder';
       case 'safety_reminder':
         return 'Safety Reminder';
+      case 'vehicle_transfer':
+      case 'transfer':
+      case 'transfer_request':
+        return 'Vehicle Transfer Request';
       default:
         return 'Notification';
     }
@@ -481,31 +490,56 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            // Navigate to AppointmentPage
-                            final vehicleId = int.tryParse(
-                                    _notification['vehicleId']?.toString() ??
-                                        '') ??
-                                widget.vehicleId ??
-                                1;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AppointmentPage(
-                                  customerId: widget.customerId,
-                                  vehicleId: vehicleId,
-                                  token: widget.token,
+                            // Check if this is a transfer notification
+                            if (type == 'vehicle_transfer' || 
+                                type == 'transfer' || 
+                                type == 'transfer_request') {
+                              // Navigate to PendingTransfersPage for transfer notifications
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PendingTransfersPage(
+                                    customerId: widget.customerId,
+                                  ),
                                 ),
-                              ),
-                            );
+                              );
+                            } else {
+                              // Navigate to AppointmentPage for other notifications
+                              final vehicleId = int.tryParse(
+                                      _notification['vehicleId']?.toString() ??
+                                          '') ??
+                                  widget.vehicleId ??
+                                  1;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AppointmentPage(
+                                    customerId: widget.customerId,
+                                    vehicleId: vehicleId,
+                                    token: widget.token,
+                                  ),
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _getPriorityColor(priority),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          icon: const Icon(Icons.calendar_today),
-                          label: const Text(
-                            'Book Service Appointment',
+                          icon: Icon(
+                            type == 'vehicle_transfer' || 
+                            type == 'transfer' || 
+                            type == 'transfer_request'
+                                ? Icons.inbox_outlined
+                                : Icons.calendar_today
+                          ),
+                          label: Text(
+                            type == 'vehicle_transfer' || 
+                            type == 'transfer' || 
+                            type == 'transfer_request'
+                                ? 'View Pending Transfers'
+                                : 'Book Service Appointment',
                             style: TextStyle(fontSize: 16),
                           ),
                         ),

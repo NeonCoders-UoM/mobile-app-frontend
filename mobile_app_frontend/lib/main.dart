@@ -3,8 +3,14 @@ import 'package:mobile_app_frontend/presentation/pages/start_page.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile_app_frontend/state/providers/vehicle_provider.dart';
 import 'package:mobile_app_frontend/data/repositories/vehicle_repository.dart';
+import 'package:mobile_app_frontend/services/admob_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize AdMob
+  await AdMobService.initialize();
+  
   runApp(
     MyApp(),
   );
