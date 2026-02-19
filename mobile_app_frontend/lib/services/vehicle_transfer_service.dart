@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:mobile_app_frontend/core/models/vehicle_transfer.dart';
 
 class VehicleTransferService {
-  final String _baseUrl = 'http://192.168.1.4:5039/api';
+  final String _baseUrl = 'http://192.168.8.161:5039/api';
 
   /// Initiate a vehicle transfer to another user
   Future<Map<String, dynamic>> initiateTransfer({
