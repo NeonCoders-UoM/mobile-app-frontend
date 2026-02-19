@@ -3,7 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
 class GoogleAuthService {
-  final String _baseUrl = 'http://192.168.1.4:5039/api';
+  final String _baseUrl = 'http://192.168.8.161:5039/api';
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     // Web Client ID - used to get ID tokens for backend authentication
